@@ -1,6 +1,7 @@
 
 #include "exODT.h"
 #include "ALE_util.h"
+#include <boost/progress.hpp>
 
 using namespace std;
 using namespace bpp;
@@ -60,7 +61,7 @@ int main(int argc, char ** argv)
   //cf. ALEPAPER
   scalar_type old_p=model->p(ale);
 
-  int steps=0,accapted=0;
+  int steps=0,accapted=0,sampled=0;
   int N_steps=1000;
   if (argc>3) N_steps=atoi(argv[3]);
   int burnin=100;
@@ -71,6 +72,8 @@ int main(int argc, char ** argv)
   vector<Tree*> sample_trees;
   vector<string> sample_strings;
 
+
+  boost::progress_display pd( N_steps );
   while (steps<N_steps+burnin)
     {
       vector<scalar_type> ds;
@@ -116,6 +119,8 @@ int main(int argc, char ** argv)
 
       if ( ( accapted>burnin and steps%print_mod==0 ) or allprint) 
 	{
+	  sampled++:
+	  ++pd;
 	  cout << "sample_rates "<< steps << "\t" << delta << "\t" << tau << "\t" << lambda << "\t" << log(old_p) << endl; 
 	  sample_model->set_model_parameter("delta",delta);
 	  sample_model->set_model_parameter("tau",tau);
