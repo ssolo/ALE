@@ -62,19 +62,37 @@ int main(int argc, char ** argv)
   scalar_type old_p=model->p(ale);
 
   int steps=0,accapted=0,sampled=0;
-  int N_steps=1000;
-  if (argc>3) N_steps=atoi(argv[3]);
+  int N_samples=1000;
+  if (argc>3) N_samples=atoi(argv[3]);
   int burnin=100;
-  if (argc>4) N_steps=atoi(argv[4]);
+  if (argc>4) burnin=atoi(argv[4]);
   bool allprint=false;
   int print_mod=10;
   int subsamples=10;
   vector<Tree*> sample_trees;
   vector<string> sample_strings;
 
+  cout << "Starting burnin.."  << endl;
 
-  boost::progress_display pd( N_steps );
-  while (steps<N_steps+burnin)
+  string rate_name=ale_file+".ratelist";
+  string event_name=ale_file+".eventlist";
+  string sample_name=ale_file+".treelist";
+
+  ofstream rate_out( rate_name.c_str() );
+  ofstream event_out( event_name.c_str() );
+  ofstream sample_out( sample_name.c_str() );
+  
+  rate_out <<  "#ALEsample using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl;
+  rate_out <<  "#" << "sample" << "\t" << "step" << "\t" << "duplication_rate" << "\t" << "transfer_rate" << "\t" << "loss_rate" << "\t" << "log_likelihood"<< endl;
+  
+  event_out <<  "#ALEsample using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl;
+  event_out <<  "#" << "subsample"<<"\t"<< "sample" << "\t" << "step" << "\t" << "duplications" << "\t" << "transfers" << "\t" << "losses" << "\t" << "speciations"<< endl;
+
+  sample_out <<  "#ALEsample using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl;
+
+  boost::progress_display pd( burnin );
+  
+  while (sampled<N_samples)
     {
       vector<scalar_type> ds;
 
@@ -111,36 +129,64 @@ int main(int argc, char ** argv)
 	{
 	  old_p=new_p;
 	  delta=new_delta; tau=new_tau; lambda=new_lambda;
+	  if (accapted<burnin) ++pd;
+	  if (accapted==burnin) 
+	    { 
+	      cout << "\nFinished burnin. \n Sampling:" <<endl;   
+	      pd.restart(N_samples);
+	    }
 	  accapted++;
 	}      
       steps++;
 
-      cout << steps << " " << accapted << endl;
-
       if ( ( accapted>burnin and steps%print_mod==0 ) or allprint) 
 	{
-	  sampled++:
+	  sampled++;
 	  ++pd;
-	  cout << "sample_rates "<< steps << "\t" << delta << "\t" << tau << "\t" << lambda << "\t" << log(old_p) << endl; 
 	  sample_model->set_model_parameter("delta",delta);
 	  sample_model->set_model_parameter("tau",tau);
 	  sample_model->set_model_parameter("lambda",lambda);
 	  sample_model->calculate_EGb();
+	  sample_model->p(ale);
+	  rate_out << sampled << "\t" << steps << "\t" << delta << "\t" << tau << "\t" << lambda << "\t" << log(old_p) << endl;
+	  
 	  for (int i=0;i<subsamples;i++) 
 	    {		  
 	      string sample_tree=sample_model->sample(false);
-	      sample_trees.push_back(TreeTemplateTools::parenthesisToTree(sample_tree));
-	      sample_strings.push_back(sample_tree);
-	      cout << "sample_rec " << steps << "\t" << i << "\t" << sample_tree << endl;
-	      cout << "sample_events " << steps << "\t" << i << "\t" << model->MLRec_events["D"] << "\t" << model->MLRec_events["T"] << "\t" << model->MLRec_events["L"]<< "\t" << model->MLRec_events["S"] <<endl;
+	      sample_out << sample_tree << endl;
+	      tree_type * G=TreeTemplateTools::parenthesisToTree(sample_tree);
+	      vector<Node*> leaves = G->getLeaves();
+	      for (vector<Node*>::iterator it=leaves.begin();it!=leaves.end();it++ )
+		{
+		  string name=(*it)->getName();
+		  vector<string> tokens;
+		  boost::split(tokens,name,boost::is_any_of(".@"),boost::token_compress_on);
+		  (*it)->setName(tokens[0]);
+		  tokens.clear();
+		}
+	      leaves.clear();
+	      sample_trees.push_back(G);	      
+	      event_out << i << "\t" << sampled << "\t" << steps << "\t" << model->MLRec_events["D"] << "\t" << model->MLRec_events["T"] << "\t" << model->MLRec_events["L"]<< "\t" << model->MLRec_events["S"] <<endl;
 	    }	      
 	}
+      
     }
-  cout << endl;
+  cout << "Calculating consensus tree."<<endl;
   Tree* con_tree= TreeTools::thresholdConsensus(sample_trees,0.5);
-  cout << TreeTemplateTools::treeToParenthesis(*con_tree) << endl;
+
+  string con_name=ale_file+".cons_tree";
+
+  ofstream con_out( con_name.c_str() );
+
+  con_out <<  "#ALEsample using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl;
   TreeTools::computeBootstrapValues(*con_tree,sample_trees);
   string con_tree_sup=TreeTemplateTools::treeToParenthesis(*con_tree);
-  cout << "#cons. tree: " << con_tree_sup;
+  cout <<endl<< "#cons. tree: " << con_tree_sup;
+
+  cout << "Results in:" << endl;
+  cout << rate_name << endl;
+  cout << event_name << endl;
+  cout << sample_name << endl;
+  cout << con_name << endl;
 
 }

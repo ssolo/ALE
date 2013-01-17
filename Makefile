@@ -23,7 +23,6 @@ CC=g++ -pipe
 #Bio++ did not complie/link with clang.
 
 FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall
-#for debuging..
 DEV_FLAGS =  -g -Wall -lprofiler
 
 ifndef OSTYPE
