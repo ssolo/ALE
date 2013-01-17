@@ -140,7 +140,7 @@ int main(int argc, char ** argv)
   //and output it..
   string outname=ale_file+".ml_rec"; 
   ofstream fout( outname.c_str() );
-  fout << "ML ALE version 0.1 by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl<<endl;
+  fout <<  "#ALEml using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl<<endl;
   fout << "S:\t"<<ml_model->string_parameter["S_with_ranks"] <<endl;
   fout << endl;
   fout << "Input ale from:\t"<<ale_file<<endl;

@@ -19,16 +19,13 @@ int main(int argc, char ** argv)
     }
   
 
-  //we need a dared species tree in newick format
-  string Sstring;
-  ifstream file_stream (argv[1]);
-  getline (file_stream,Sstring);
-
+  cout << "Read species tree from: " << argv[1] <<".."<<endl;
   //we need an .ale file containing observed conditional clade probabilities
   //cf. ALEobserve
   string ale_file=argv[2];
   approx_posterior * ale;
   ale=load_ALE_from_file(ale_file);
+  cout << "Read summary of tree sample for "<<ale->observations<<" trees from: " << ale_file <<".."<<endl;
 
   //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();

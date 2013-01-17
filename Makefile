@@ -22,8 +22,10 @@ CC=g++ -pipe
 #
 #Bio++ did not complie/link with clang.
 
-FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall
-DEV_FLAGS =  -g -Wall -lprofiler
+FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall -fopenmp
+DEV_FLAGS =  -g -Wall -lprofiler 
+
+MPI_INCLUDE=-I/usr/lib/openmpi/include/ 
 
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
