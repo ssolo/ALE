@@ -18,7 +18,10 @@ int main(int argc, char ** argv)
       return 1;
     }
   
-
+  //we need a dared species tree in newick format
+  string Sstring;
+  ifstream file_stream_S (argv[1]);
+  getline (file_stream_S,Sstring);
   cout << "Read species tree from: " << argv[1] <<".."<<endl;
   //we need an .ale file containing observed conditional clade probabilities
   //cf. ALEobserve
