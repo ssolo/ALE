@@ -8,7 +8,7 @@ bool fexists(const char *filename)
   return ifile;
 };
 
-approx_posterior * obsorve_ALE_from_file(vector<string> fnames, int burnin,int every,int until)
+approx_posterior * observe_ALE_from_file(vector<string> fnames, int burnin,int every,int until)
 {
 
   vector<string> trees;
@@ -33,21 +33,21 @@ approx_posterior * obsorve_ALE_from_file(vector<string> fnames, int burnin,int e
     }
   if (trees.size()<1)
     return NULL;
-  vector<string> obsorve_trees;
+  vector<string> observe_trees;
   if (until==-1)
     until=trees.size();
   for (int i=0;i<min((int)trees.size(),until);i++)
-    obsorve_trees.push_back(trees[i]);
-  cout << obsorve_trees.size() << endl;
+    observe_trees.push_back(trees[i]);
+  cout << observe_trees.size() << endl;
   approx_posterior* ale=new approx_posterior(trees[0]);// NO del-loc
-  ale->observation(obsorve_trees);
+  ale->observation(observe_trees);
   trees.clear();
-  obsorve_trees.clear();
+  observe_trees.clear();
   
   return ale;     
 }
  
-approx_posterior * obsorve_ALE_from_file(string fname, int burnin,int every,int until)
+approx_posterior * observe_ALE_from_file(string fname, int burnin,int every,int until)
 {
   vector<string> trees;
   ifstream file_stream (fname.c_str());
@@ -66,18 +66,18 @@ approx_posterior * obsorve_ALE_from_file(string fname, int burnin,int every,int 
 	}
     }
   approx_posterior* ale=new approx_posterior(trees[0]);// NO del-loc
-  vector<string> obsorve_trees;
+  vector<string> observe_trees;
   if (until==-1)
     until=trees.size();
   for (int i=0;i<min((int)trees.size(),until);i++)
-    obsorve_trees.push_back(trees[i]);
-  ale->observation(obsorve_trees,true);
+    observe_trees.push_back(trees[i]);
+  ale->observation(observe_trees,true);
   trees.clear();
-  obsorve_trees.clear();
+  observe_trees.clear();
   return ale;     
 }
 
-approx_posterior * obsorve_ALE_from_string(string tree)
+approx_posterior * observe_ALE_from_string(string tree)
 {
   vector<string> trees;
   trees.push_back(tree);
@@ -85,7 +85,7 @@ approx_posterior * obsorve_ALE_from_string(string tree)
   ale->observation(trees,true);
   return ale;     
 }
-approx_posterior * obsorve_ALE_from_strings(vector<string> trees)
+approx_posterior * observe_ALE_from_strings(vector<string> trees)
 {
   approx_posterior* ale=new approx_posterior(trees[0]);// NO del-loc  
   ale->observation(trees,true);
@@ -93,7 +93,7 @@ approx_posterior * obsorve_ALE_from_strings(vector<string> trees)
 }
 
 
-approx_posterior * obsorve_ALE_from_nexus(string fname, int burnin,int every,int until)
+approx_posterior * observe_ALE_from_nexus(string fname, int burnin,int every,int until)
 {
   vector<string> trees;
   map <string,string> translate;
@@ -147,16 +147,16 @@ approx_posterior * obsorve_ALE_from_nexus(string fname, int burnin,int every,int
     }
   cout << "translated nexus." <<endl;
   approx_posterior* ale=new approx_posterior(trees[0]);// NO del-loc
-  vector<string> obsorve_trees;
+  vector<string> observe_trees;
   if (until==-1)
     until=trees.size();
   for (int i=0;i<min((int)trees.size(),until);i++)
-    obsorve_trees.push_back(trees[i]);
+    observe_trees.push_back(trees[i]);
 
-  cout << "start obsorve." <<endl;
-  ale->observation(obsorve_trees,false);
+  cout << "start observe." <<endl;
+  ale->observation(observe_trees,false);
   trees.clear();
-  obsorve_trees.clear();
+  observe_trees.clear();
   return ale;     
 }
 

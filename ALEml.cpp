@@ -70,17 +70,9 @@ int main(int argc, char ** argv)
   model->set_model_parameter("event_node",1);
 
   string ale_file=argv[2];
-
-  string ale_name=ale_file+".ale";
   approx_posterior * ale;
+  ale=load_ALE_from_file(ale_file);
 
-  if (fexists(ale_name.c_str()))
-    ale=load_ALE_from_file(ale_name);
-  else
-    {  
-      ale=obsorve_ALE_from_file(ale_file,0);
-      //ale->save_state(ale_name);
-    }
   vector <string> tokens;
   boost::split(tokens,ale_file,boost::is_any_of("/"),boost::token_compress_on);
   ale_file=tokens[tokens.size()-1];
@@ -139,7 +131,7 @@ int main(int argc, char ** argv)
   fout << "ML ALE version 0.1 by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl<<endl;
   fout << "S:\t"<<max_model->string_parameter["S_with_ranks"] <<endl;
   fout << endl;
-  fout << "Input gene trees from:\t"<<ale_name<<endl;
+  fout << "Input ale from:\t"<<ale_file<<endl;
   fout << "rate of\t Duplications\tTransfers\tLosses" <<endl;
   fout << "ML \t"<< delta << "\t" << tau << "\t" << lambda << endl;
   fout << endl;

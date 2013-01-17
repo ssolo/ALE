@@ -9,36 +9,16 @@ int main(int argc, char ** argv)
   //RandomTools::setSeed(20110426);
   
   //we need a species tree
-
   string Sstring;
   ifstream file_stream (argv[1]);
   getline (file_stream,Sstring);
 
   //we need an ale
   string ale_file=argv[2];
-  vector <string> tokens;
-  boost::split(tokens,name,boost::is_any_of("."),boost::token_compress_on);
-  ale_file=tokens[0];
+
   // exODT always takes an approx_posterior object as its input
   approx_posterior * ale;
-  //ale=load_ALE_from_file(ale_file);
-
-  string ale_name=ale_file+".ale";
-  // we construct the approx posterior object based on the MCMC chain or load it if it already exists
-  if (fexists(ale_name.c_str()))
-    {
-      ale=load_ALE_from_file(ale_name);
-      cout << "# loaded."<<endl;
-    }
-  else
-    {  
-      ale=obsorve_ALE_from_file(ale_file,1000);
-      cout << "# obsorved."<<endl;
-      ale->save_state(ale_name);
-      cout << "# saved."<<endl;
-    }
-  //ale->alpha=0;
-  //ale->beta=0;
+  ale=load_ALE_from_file(ale_file);
 
   // initilaize the exODT model using some initial DTL rates
   exODT_model* model=new exODT_model();

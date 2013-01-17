@@ -11,7 +11,7 @@ bpp_DIR= /usr/local/
 boost_libs= -lboost_mpi -lboost_serialization 
 
 
-MPI_INCLUDE=-I/usr/lib/openmpi/include/ 
+#MPI_INCLUDE=-I/usr/lib/openmpi/include/ 
 
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
@@ -62,6 +62,6 @@ ALEml:	libexODT.a ALEml.cpp Makefile
 ALEsample:	libexODT.a ALEsample.cpp Makefile
 	$(CC) ALEsample.cpp -o ALEsample $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
-ALEobsorve:	libexODT.a ALEobsorve.cpp Makefile
-	$(CC) ALEobsorve.cpp -o ALEobsorve $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+ALEobserve:	libexODT.a ALEobserve.cpp Makefile
+	$(CC) ALEobserve.cpp -o ALEobserve $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 

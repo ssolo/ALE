@@ -846,7 +846,7 @@ pair<string,scalar_type> approx_posterior::mpp_tree()
 //random tree from unrooted posterior
 string approx_posterior::random_tree()
 {
-  // we start at an obsorved partition
+  // we start at an observed partition
   
   set<int> gamma;
   scalar_type sum=0;  
@@ -959,7 +959,7 @@ string approx_posterior::random_split(set <int> gamma)
 	  }      
       if (p_sum<0)
       	break;
-      //sum the prob.s of all unobsorved bipartitons
+      //sum the prob.s of all unobserved bipartitons
       Bip_count=Bip_counts[g_id];
       if (gamma.size()==1 or (int)gamma.size()==Gamma_size-1) Bip_count=observations;
       int nbip=binomial(gamma.size(),gp_size);
