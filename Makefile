@@ -1,17 +1,29 @@
+#Please change to reflect your Bio++ and Boost installation:
+bpp_DIR= /usr/local/
+boost_DIR=/usr/local/
+#works:
+# for Bio++ v2.0.3 (maybe works for 2.0.x)
+# for Boost v1.51 (should work for other versions) 
 
 CC=g++ -pipe
-CC=g++
+
+#works: 
+#on Ubuntu 
+#g++ -v
+#gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5)  
+#
+#and OS X 10.7
+#g++ -v
+#gcc version 4.8.0 20120930 (experimental) (GCC) 
+#ALSO
+#llvm-g++ -v 
+#gcc version 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00)
+#from http://hpc.sourceforge.net
+#
+#Bio++ did not complie/link with clang.
 
 FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall
 DEV_FLAGS =  -g -Wall -lprofiler
-
-boost_DIR=/usr/local/
-#bpp_DIR= $(HOME)/newest_bpp/
-bpp_DIR= /usr/local/
-boost_libs= -lboost_mpi -lboost_serialization 
-
-
-#MPI_INCLUDE=-I/usr/lib/openmpi/include/ 
 
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
@@ -19,18 +31,16 @@ ifndef OSTYPE
 endif
 
 ifeq ($(OSTYPE),darwin)
+	#CC=llvm-g++
 	bpp_libs = $(bpp_DIR)lib/libbpp-core.a $(bpp_DIR)lib/libbpp-phyl.a $(bpp_DIR)lib/libbpp-seq.a 
-	boost_libs = 
-	STATIC = libexODT.a $(boost_DIR)lib/libboost_serialization.a  $(boost_DIR)lib/libboost_mpi.a	
+	STATIC = libexODT.a 
 else
 	bpp_libs = -lbpp-core -lbpp-seq -lbpp-phyl
-	boost_libs = -lboost_mpi -lboost_serialization 
-	#boost_DIR= $(HOME)/
 	STATIC= libexODT.a	
 endif
 
-DYNAMIC =  -L. -L$(bpp_DIR)lib $(bpp_libs) $(boost_libs) 
-LINK = $(DYNAMIC) #-lexODT
+DYNAMIC =  -L. -L$(bpp_DIR)lib $(bpp_libs) 
+LINK = $(DYNAMIC) 
 INCLUDE = -I$(boost_DIR)include -I$(bpp_DIR)include  $(MPI_INCLUDE)
 
 

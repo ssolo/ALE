@@ -4,6 +4,7 @@
 
 using namespace std;
 using namespace bpp;
+
 int main(int argc, char ** argv)
 {
   //RandomTools::setSeed(20110426);
@@ -13,27 +14,43 @@ int main(int argc, char ** argv)
   ifstream file_stream (argv[1]);
   getline (file_stream,Sstring);
 
-  //we need an ale
+  //we need an .ale file containing observed conditional clade probabilities
   string ale_file=argv[2];
-
-  // exODT always takes an approx_posterior object as its input
   approx_posterior * ale;
   ale=load_ALE_from_file(ale_file);
 
-  // initilaize the exODT model using some initial DTL rates
+  //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();
-  model->set_model_parameter("D",2);
+  //
+  model->set_model_parameter("D",1);
   model->set_model_parameter("DD",10);
   model->construct(Sstring);
-  model->set_model_parameter("event_node",0);
-  
-  scalar_type delta=0.01,tau=0.01,lambda=0.02;
+  //cf. section S1.4 of the Supporting Material of www.pnas.org/cgi/doi/10.1073/pnas.1202997109
+  //for a description of the event node approximation 
+  model->set_model_parameter("event_node",1);
 
+  //and a finer grained reconciliation model for sampling
+  sample_model->set_model_parameter("D",10);
+  sample_model->set_model_parameter("DD",10);
+  sample_model->construct(Sstring);
+  //stocahstic sampling is not compatible with the event node approximation
+  sample_model->set_model_parameter("event_node",0);
+  
+  sample_model->set_model_parameter("leaf_events",1);
+
+  //a set of inital rates
+  scalar_type delta=0.01,tau=0.01,lambda=0.02;
   model->set_model_parameter("delta",delta);
   model->set_model_parameter("tau",tau);
   model->set_model_parameter("lambda",lambda);
+  //calculate_EGb() must always be called after chaging rates to calculate E-s and G-s 
+  //cf. http://arxiv.org/abs/1211.4606
   model->calculate_EGb();
+
+  //p(ale) calculates the probability of the obsorved set of gene trees, i.e. Pi(Gamma) 
+  //cf. ALEPAPER
   scalar_type old_p=model->p(ale);
+
   int steps=0;
   int N_steps=1000;
   int burnin=100;
@@ -43,8 +60,6 @@ int main(int argc, char ** argv)
   vector<Tree*> sample_trees;
   vector<string> sample_strings;
 
-
-  model->set_model_parameter("leaf_events",0);
 
   while (steps<N_steps+burnin)
     {
