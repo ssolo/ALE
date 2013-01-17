@@ -57,7 +57,13 @@ public:
 
 int main(int argc, char ** argv)
 {
-  cout << "ML ALE v0.1" <<endl;
+  cout << "ALEml using ALE v"<< ALE_VERSION <<endl;
+
+  if (argc<3) 
+    {
+      cout << "usage:\n ./ALEml species_tree.newick gene_tree_sample.ale" << endl;
+      return 1;
+    }
 
   //we need a dared species tree in newick format
   string Sstring;

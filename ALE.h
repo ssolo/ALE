@@ -1,5 +1,7 @@
 #pragma once
 
+#define ALE_VERSION "0.1"
+
 #include <iostream>
 #include <Bpp/Numeric/Random.all>
 #include <Bpp/Phyl/TreeTemplate.h>
