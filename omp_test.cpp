@@ -12,7 +12,8 @@ int main(int argc, char ** argv)
   ifstream file_stream ("example_data/cy36_green.tree");
   getline (file_stream,Sstring);
   //we need an ale
-  string ale_name="example_data/sc_cy36HBG285662.ale";//argv[1];
+  string ale_name="example_data/sc_cy36HBG285662.ale";
+  if (argc>1) ale_name=argv[1];
   approx_posterior * ale=load_ALE_from_file(ale_name);
 
   // initilaize the exODT model using some initial DTL rates
@@ -68,6 +69,16 @@ int main(int argc, char ** argv)
 
   omp_set_num_threads(8);
   cout << endl << "trying OMP_NUM_THREADS=8" << endl; 
+  t_0=omp_get_wtime();
+  cout << model->p(ale) << endl;
+  t_1=omp_get_wtime();
+  cout << t_1-t_0 <<"s"<< endl << endl;
+
+  RandomTools::setSeed(20110426);
+  cout << model->sample() << endl;
+
+  omp_set_num_threads(12);
+  cout << endl << "trying OMP_NUM_THREADS=12" << endl;
   t_0=omp_get_wtime();
   cout << model->p(ale) << endl;
   t_1=omp_get_wtime();
