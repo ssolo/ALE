@@ -14,7 +14,8 @@ exODT_model::exODT_model()
   scalar_parameter["stem_length"]=1;
   //number of discretization slices per time slice
   scalar_parameter["D"]=3;
-  scalar_parameter["DD"]=5;
+  //number of subdiscretizations for ODE calculations
+  scalar_parameter["DD"]=10;
 }
 
 
@@ -228,8 +229,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
       time_slice_begins[rank]=slice_begin;
     }
 
-  ///*
-  //test of slices
+  //annotate time orders in bootstrap values
   for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
     {
       Node * node = (*it).first;     
@@ -241,46 +241,33 @@ void exODT_model::construct(string Sstring,scalar_type N)
       out2<< t_end[branch];
       int rank=id_ranks[branch];
       out<<rank;
-      //out<<"["<< out1.str().substr(0,4)<< "-" << out2.str().substr(0,4)<< "r" << rank << "id" <<branch  << "]";
-      
-      /*
-	out<<"[";
-      for (vector <int> ::iterator it=branch_slices[branch].begin();it!=branch_slices[branch].end();it++)
-	{	  
-	  out << (*it) <<".";
-	  for (vector <scalar_type> ::iterator jt=time_slice_times[(*it)].begin();jt!=time_slice_times[(*it)].end();jt++)
-	    {
-	      stringstream tmpout; 
-	      tmpout<< (*jt);
-	      out << tmpout.str().substr(0,5) <<"|";
-	    }
-	  stringstream tmpout; 
-	  tmpout<<  time_slice_begins[(*it)];
-	  out << tmpout.str().substr(0,5) <<"||";
-	  }
-	  
-	  out<<"]";
-      */
-
       node->setBranchProperty("ID",BppString(out.str()));
-      //if (node->isLeaf())
-      //node->setName(node->getName()+"-"+out.str());
-      //node->setBranchProperty("ID",BppString(""));
     }  
-  //cout << TreeTemplateTools::treeToParenthesis(*S,false,"ID") << endl;
   string_parameter["S_with_ranks"]=TreeTemplateTools::treeToParenthesis(*S,false,"ID");
   for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
     (*it).first->setBranchProperty("ID",BppString(""));
 
-//*/
-
+  //event node approximation
+  //cf. section S1.4 of the Supporting Material of www.pnas.org/cgi/doi/10.1073/pnas.1202997109
+  //compatible with p(ale)
+  //not compatible with sample() and p_MLRec(ale)
   set_model_parameter("event_node",0);
+  //the calculation of depends only very weakly on the value of N  
+  //default value of N=1e6 is set in exODT.h 
   set_model_parameter("N",N);
+  //if we assume the that height of the species tree is equal to its expectec value under the colaescent
+  // cf. http://arxiv.org/abs/1211.4606
+  //Delta is sigma, i.e. the speciation rate of the Moran model in http://arxiv.org/abs/1211.4606 and ALEPAPER
   set_model_parameter("Delta_bar",N*2.);
+  //Lambda is not used
   set_model_parameter("Lambda_bar",N*2.);
-  set_model_parameter("tau",0.17);
+  // delta is the gene duplication rate
   set_model_parameter("delta",0.2);
+  // tau is the gene transfer rate
+  set_model_parameter("tau",0.17);
+  // lambda is the gene loss rate
   set_model_parameter("lambda",1.0);
+
   for (int branch=0;branch<last_branch;branch++)	
     {
       branch_counts["Os"].push_back(0);
@@ -290,7 +277,6 @@ void exODT_model::construct(string Sstring,scalar_type N)
       branch_counts["Ls"].push_back(0);
       branch_counts["count"].push_back(0);    
       branch_counts["copies"].push_back(0);
-
     }
   
   //del-locs

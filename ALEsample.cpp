@@ -33,15 +33,13 @@ int main(int argc, char ** argv)
   exODT_model* model=new exODT_model();
   //
   model->set_model_parameter("D",1);
-  model->set_model_parameter("DD",10);
   model->construct(Sstring);
   //cf. section S1.4 of the Supporting Material of www.pnas.org/cgi/doi/10.1073/pnas.1202997109
-  model->set_model_parameter("event_node",0);
+  model->set_model_parameter("event_node",1);
 
   //and a finer grained reconciliation model for sampling
   exODT_model* sample_model=new exODT_model();
   sample_model->set_model_parameter("D",10);
-  sample_model->set_model_parameter("DD",10);
   sample_model->construct(Sstring);
   //stocahstic sampling is not compatible with the event node approximation
   sample_model->set_model_parameter("event_node",0);

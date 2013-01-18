@@ -80,7 +80,6 @@ int main(int argc, char ** argv)
   //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();
   model->set_model_parameter("D",1);
-  model->set_model_parameter("DD",10);
   model->construct(Sstring);
   model->set_model_parameter("event_node",1);
 
@@ -121,11 +120,9 @@ int main(int argc, char ** argv)
 
   cout << "Calculating ML reconciled gene tree.."<<endl;
  
-
   //a finer grained reconciliation model for recovering the ML reconciliation
   exODT_model* ml_model=new exODT_model();
   ml_model->set_model_parameter("D",10);
-  ml_model->set_model_parameter("DD",10);
   ml_model->construct(Sstring);
   ml_model->set_model_parameter("delta", delta);
   ml_model->set_model_parameter("tau", tau);

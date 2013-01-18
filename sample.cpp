@@ -1,7 +1,11 @@
 #include "exODT.h"
 using namespace std;
 using namespace bpp;
-
+//
+//consider reimplemtation for clarity!
+//
+//The general structure of the calculation, and lot of the code, is the same as p(ale) cf. model.cpp.
+//(this could be made more clear)
 string exODT_model::sample(bool max_rec)
 {
   MLRec_events.clear();
@@ -83,14 +87,18 @@ string exODT_model::sample(bool max_rec)
       root_t_i=max_root_t_i;      
     }
   register_O(root_e);
-  
-  //cout << root_t_i <<" "<< root_rank <<" "<< root_e <<endl;
   return sample(false,-1,root_t_i,root_rank,root_e,0,"","",max_rec)+";";
   //del-locs
 }
 
+//
+//consider reimplemtation for clarity!
+//
+//The general structure of the calculation, and lot of the code, is the same as p(ale) cf. model.cpp.
+//(this could be made more clear)
 string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,int e,scalar_type branch_length,string branch_events, string transfer_token,bool max_rec)
 {
+  // it could be nice to implemant a sampling temperature ?  
   //scalar_type beta=1;
   stringstream topptmp;
   if (e==alpha)
@@ -100,8 +108,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   else
     topptmp<<id_ranks[e];
 
-
-  //cout << "INP " << S_node << " " << ale_pointer->set2name(ale_pointer->id_sets[g_id]) << " " << t_i << " " << rank << " " << topptmp.str() << endl;
   approx_posterior * ale=ale_pointer;
   bool is_a_leaf=false; 
 
@@ -124,14 +130,12 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	  p_part.push_back(0);
 	else
 	  {
-	    //XX
-	    //cout << ale->p_dip(g_id,gp_id,gpp_id) << " " << g_id << " " << gp_id << " " << gpp_id << endl;
 	    p_part.push_back(ale->p_dip(g_id,gp_id,gpp_id));
 	  }
       }
   else
     {
-	  //root biprartition needs to be handled seperatly
+      //root biprartition needs to be handled seperatly
       map<set<long int>,int> bip_parts;
       for (map <long int,scalar_type> :: iterator it = ale->Bip_counts.begin(); it != ale->Bip_counts.end(); it++)
 	{
@@ -238,7 +242,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
       else
 	//top of root stem
 	tpdt=t_begin[time_slices[rank][0]];
-      //cout << "t= " << t << "; tpdpt= " << tpdt<< " " << rank << " " << last_rank << " " << t_i << " " << scalar_parameter["D"] <<  endl;
 
       /*
       if (scalar_parameter["event_node"]==1 and 0)
@@ -251,8 +254,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
       //scalar_type N=vector_parameter["N"][rank];
       scalar_type Delta_bar=vector_parameter["Delta_bar"][rank];
       //scalar_type Lambda_bar=vector_parameter["Lambda_bar"][rank];
-      //OMG
-      //scalar_type p_Delta_bar=1-exp(-Delta_bar/N*Delta_t);			     
       scalar_type p_Delta_bar=Delta_bar*Delta_t;			     
       scalar_type Ebar=Ee[-1][t];
 
@@ -311,11 +312,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	  for (int branch_i=0;branch_i<n;branch_i++)			  
 	    {
 	      int e = time_slices[rank][branch_i];		
-	      scalar_type tau_e=vector_parameter["tau"][e];
-	      //G_bar*=exp(- tau_e*Delta_t);
-		    
-	      //scalar_type p_Ntau_e=1-exp(-N*tau_e*Delta_t);
-	      //OMG
+	      scalar_type tau_e=vector_parameter["tau"][e];		    
 	      scalar_type p_Ntau_e=1-exp(-tau_e*Delta_t);
 	      //non-leaf directed partition
 	      if (not is_a_leaf)
@@ -405,12 +402,8 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	    {
 	      int e = time_slices[rank][branch_i];		
 	      scalar_type tau_e=vector_parameter["tau"][e];
-	      //OMG
-	      //scalar_type p_Ntau_e=1-exp(-N*tau_e*Delta_t);
 	      scalar_type p_Ntau_e=1-exp(-tau_e*Delta_t);
 	      scalar_type TLb=p_Ntau_e*Ebar*q[g_id][t][e];
-	      //cout << "te: " << t << " " << e << " " << g_id<< endl;
-	      //cout << "TLb: " << p_Ntau_e<<" x "<<Ebar<<" x "<<q[g_id][t][e] << endl;
 	      //TL_bar EVENT
 	      resum+=TLb;
 	      if (1)
@@ -436,7 +429,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	    }
 	  //0 EVENT
 	  scalar_type empty=G_bar*q[g_id][t][alpha]; 
-	  //cout <<" !empty! "<< G_bar << " " << q[g_id][t][alpha] <<" "<<G_bar*q[g_id][t][alpha] <<endl;
 	  resum+=empty;
 	  if (1)
 	    {
@@ -470,36 +462,13 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	  scalar_type Eet=Ee[e][t];	
 	  scalar_type delta_e=vector_parameter["delta"][e];
 	  scalar_type p_delta_e=1-exp(-delta_e*Delta_t);
-	  //cout << "me 1" <<endl;
 	  if (S_node)
 	    {
 	      //boundaries for branch e
 	      //boundary at present
 	      if (t==0)
 		{
-		  /*
-		  if (is_a_leaf && extant_species[e]==gid_sps[g_id])			  
-		    {
-		      //cout << "me" <<endl;
-		      resum=1;
-		      sample_ps.push_back(1);
-		      step step;
-		      step.e=e;
-		      step.ep=-1;
-		      step.epp=-1;
-		      step.t=t;
-		      step.rank=rank;
-		      step.g_id=g_id;
-		      step.gp_id=-1;
-		      step.gpp_id=-1;
-		      step.event="0";			
-		      sample_steps.push_back(step);      
-		    }//q[g_id][t][e]=1;
-		  else
-		    {
-		      ;
-		    }//q[g_id][t][e]=0;
-		  */;
+		 ;
 		}
 	      //boundary between slice rank and rank-1
 	      else if (t_i==0 )
@@ -654,8 +623,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		scalar_type Sb_pa_ppe= p_Delta_bar*q[gp_id][t][alpha]*qppe*pp;
 		scalar_type Sb_pe_ppa= p_Delta_bar*qpe*q[gpp_id][t][alpha]*pp;
 		//S_bar EVENT
-		//cout << "Sb a e " <<  p_Delta_bar<< " " <<q[gp_id][t][alpha]<< " " <<qppe<< " " <<pp<<endl;
-		//cout << "Sb e a " <<  p_Delta_bar<< " " <<qpe<< " " <<q[gpp_id][t][alpha]<< " " <<pp<<endl;
 		resum+=Sb_pa_ppe;
 		if(1)
 		  {
@@ -697,7 +664,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 
 		scalar_type D=p_delta_e*qpe*qppe*pp;
 		resum+=D;
-		//cout << "D " << p_delta_e << " x " << qpe <<  " x " << qppe << " x " << pp << endl;  
 		if(1)
 		  {
 		    sample_ps.push_back(D);
@@ -722,7 +688,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	      }
 
 	  scalar_type SLb=p_Delta_bar*Eet*q[g_id][t][alpha];
-	  //cout << "SLb " << p_Delta_bar << " x " << Eet<< " x " << q[g_id][t][alpha]<<endl;
 	  //SL_bar EVENT
 	  resum+=SLb;
 	  if(1)
@@ -748,8 +713,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	  //q[g_id][tpdt_nl][e]+=q_sum_nl;
 
 	  scalar_type empty=Get*q[g_id][t][e];
-	  //cout << "te: " << t << " " << e << " " << g_id<< endl;
-	  //cout << "0 " << Get << " x " << q[g_id][t][e]<<endl;
 
 	  //0 EVENT
 	  resum+=empty;
@@ -798,10 +761,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   int step_i=-1;
   scalar_type reresum=0;
   scalar_type r=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);
-  for (int i=0;i<(int)sample_ps.size();i++)
-    {
-      //cout <<" ? i="<< i << " " << sample_steps[i].event << " " << sample_ps[i]/resum << " " << sample_ps[i] <<endl;
-    }
   scalar_type max_resum=0;
   int max_i=0;
   for (int i=0;i<(int)sample_ps.size();i++)
@@ -819,14 +778,8 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	    break;
 	}
     }
-  //cout << step_i << endl;
-  //if (step_i>0 )
-    //cout <<" ? "<< sample_steps[step_i].event << " " << sample_ps[step_i]/resum << " " << sample_ps[step_i] <<endl;
-
-  //return "";
   if (max_rec)
     step_i=max_i;
-  //cout << "? " << step_i <<endl;
   step back_step=sample_steps[step_i];
   sample_steps.clear();
   sample_ps.clear();
@@ -839,16 +792,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   else
     toptmp<<id_ranks[back_step.e];
 
-  //cout << "STEP " << back_step.t << " " << toptmp.str() << " " << back_step.rank << " " << back_step.event << endl;
-  //out << ".... " <<  ale_pointer->set2name(ale_pointer->id_sets[back_step.g_id]) << " " << back_step.gp_id << " " << back_step.gpp_id << " " << resum << endl;
-
-  //cout << "from " << e << " " << t << " " << endl; 
-  //  step back_step=q_step[g_id][t][e];
-  //cout << back_step.event<<endl;
   scalar_type new_branch_length=branch_length+t-back_step.t;
-  //if (back_step.t!=back_step.t)
-  //new_branch_length=branch_length;
-  //cout <<" wtf " << t << " " << ale_pointer->id_sets[g_id].size() << " " << e << endl;
 
   if (back_step.t==0 and ale_pointer->id_sets[g_id].size()==1 and e!=-1)
     {
@@ -867,21 +811,19 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   if (back_step.event=="D" or back_step.event=="Tb" or back_step.event=="S" or back_step.event=="Sb")
     {
 
-      //cout << back_step.event << " " << back_step.ep << "-" << back_step.epp <<" "<<back_step.t <<endl; 
       stringstream transfer_token_stream;
       transfer_token_stream<<"";
       stringstream branch_string;
       if (back_step.event=="S")
 	{
 	  register_S(e);
-	  branch_string<< branch_events//<<back_step.event<<"@"
+	  branch_string<< branch_events
 		       <<"."<<id_ranks[e]<<":"<<max(new_branch_length,(scalar_type)0.0); 
 	}
       else
 	{
 	  if (back_step.event=="Tb")
 	    {
-	      //cout << "T";
 	      int this_e,this_gid;
 
 	      if (back_step.ep==alpha)
@@ -905,7 +847,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	      register_Tto(this_e);
 	      stringstream tmp;
 	      tmp<<back_step.rank<<"|"<<t<<"|"<<named_branch.str()<<"|"<<this_gid;
-	      //tmp<<back_step.t<<"|"<<this_e;
 	      register_Ttoken(transfer_token+"|"+tmp.str());
 	      // Tto
 	      
@@ -929,16 +870,13 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	      else
 		named_branch<<id_ranks[this_e];
 	      if  (transfer_token!="")
-		transfer_token_stream<< transfer_token;// << "(" << transfer_token<<")";	      
+		transfer_token_stream<< transfer_token;
 	      else
-		transfer_token_stream<< rank<<"|"<<t<<"|"<<named_branch.str()<<"|"<<g_id;// << "(" << transfer_token<<")";
-	      //transfer_token_stream<< t<<"|"<<this_e;
-
+		transfer_token_stream<< rank<<"|"<<t<<"|"<<named_branch.str()<<"|"<<g_id;
 	      branch_string<< branch_events<<"T@"<<rank<<"|"<<named_branch.str()<<":"<<max(new_branch_length,(scalar_type)0.0); 	    
 	    }
 	  else
 	    {
-	      //cout << "D";
 	      register_D(e);	  
 	      stringstream Dtoken_stream;
 	      stringstream named_branch;
@@ -978,7 +916,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
     }
   else if ( back_step.event=="TLb" or back_step.event=="SL" or back_step.event=="SLb" or back_step.event=="0")
     {
-      //cout << back_step.event << " " << back_step.e <<" "<<back_step.t <<endl; 
 
       stringstream branch_string;
       stringstream transfer_token_stream;
@@ -996,7 +933,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		register_L(g);
 	      else
 		register_L(f);
-	      branch_string<<"."//<<back_step.event<<"@"
+	      branch_string<<"."
 			   <<id_ranks[e];
 	    }
 	  else
@@ -1015,16 +952,14 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		    named_branch<<id_ranks[back_step.e];
 
 		  tmp<<back_step.rank<<"|"<<t<<"|"<< named_branch.str()<<"|"<<g_id;
-		  //tmp<<back_step.t<<"|"<<back_step.e;
 		  register_Ttoken(transfer_token+"|"+tmp.str());
 		  transfer_token="";
 	      
-		  branch_string<<""//<<back_step.event
+		  branch_string<<""
 			       <<"@"<<back_step.rank<<"|"<<named_branch.str();
 		}
 	      else  if (back_step.event=="SLb")
 		{
-		  //cout << "L";
 		  register_L(e);
 		  register_Tfrom(e);
 		  stringstream named_branch;
@@ -1036,9 +971,8 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		    named_branch<<id_ranks[e];
 
 		  transfer_token_stream<< rank<<"|"<<t<<"|"<<named_branch.str()<<"|"<<g_id;
-		  //transfer_token_stream<< back_step.t<<"|"<<e;
 
-		  branch_string<<".T"//<<back_step.event
+		  branch_string<<".T"
 			       <<"@"<<rank<<"|"<<named_branch.str();
 		}
 	    }
@@ -1061,20 +995,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
       cout << endl;
       cout << ale_pointer->constructor_string <<endl;
       signal=-11;
-      //cout<<signal_string << endl;
-      /*
-	for (int branch=0;branch<last_branch;branch++)	
-	{
-	cout << " " << branch ;	  
-	cout << " d " << vector_parameter["delta"][branch];
-	cout << " t " << vector_parameter["tau"][branch]*vector_parameter["N"][0];
-	cout << " l " << vector_parameter["lambda"][branch];
-	if (branch<36) cout << " D " << vector_parameter["Delta_bar"][branch];
-	if (branch<36) cout << " L " << vector_parameter["Lambda_bar"][branch];
-	if (branch<36) cout << " N " << vector_parameter["N"][branch];	  
-	cout << endl;	  
-	}
-      */
     }
   return "error";
 }

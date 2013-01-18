@@ -65,7 +65,7 @@ void approx_posterior::construct(string tree_string)
   beta=0;
 
   Gamma_size=Gamma.size();
-  //maybe use boost pow
+  //maybe should use boost pow
   //number of partitions of Gamma
   K_Gamma=pow(2.,(int)Gamma_size-1)-1;
   //number of unrooted trees on Gamma_size leaves
@@ -750,9 +750,6 @@ scalar_type approx_posterior::p(string tree_string)
 	if (gamma.count(*st)==0)
 	  not_gamma.insert(*st);
       p*=rec_map[not_gamma]*p_bip(gamma);
-      //cout <<"   "<<(*it).second<<"\t*"<<rec_map[not_gamma]<<"\t*"<<p_bip(gamma)<<endl;
-      //cout <<"   "<<set2name(gamma)<<"\t*"<<set2name(not_gamma)<<"\t*"<<"BIP"<<endl;
-      //cout << p << "\t" << set2name(gamma) << " o " << set2name(not_gamma)  <<endl;     
       break;
     }
   return p;
@@ -798,11 +795,9 @@ pair<string,scalar_type> approx_posterior::mpp_tree()
       scalar_type pp=qmpp[g_id]*qmpp[not_g_id]*p_bip(g_id);
       sum_pp+=pp;
       if (max_pp<pp) {max_pp=pp; max_bip=g_id; max_not_bip=not_g_id;}
-      //cout << qmpp[g_id]*qmpp[not_g_id]*p_bip(g_id) << endl;      
     }    
   stringstream bs;
   //we looked at everything twice..
-  //bs<<max_pp/sum_pp*2;
   bs<<max_pp/sum_pp*2<<":"<<min(Bip_bls[max_bip]/Bip_counts[max_bip],(scalar_type)0.99);
 
   string max_tree="("+mpp_backtrack(max_bip,&qmpp)+","+mpp_backtrack(max_not_bip,&qmpp)+")"+bs.str()+";\n";
@@ -838,7 +833,6 @@ pair<string,scalar_type> approx_posterior::mpp_tree()
       if (cp>max_cp) {max_cp=cp; max_gp_id=gp_id; max_gpp_id=gpp_id;}
     }
   stringstream bs;
-  //bs<<max_cp/sum_cp;
   bs<<max_cp/sum_cp<<":"<<Bip_bls[g_id]/Bip_counts[g_id];
   return "("+mpp_backtrack(max_gp_id,qmpp)+","+mpp_backtrack(max_gpp_id,qmpp)+")"+bs.str();
 }
@@ -868,42 +862,6 @@ string approx_posterior::random_tree()
   set <int> not_gamma;
   for (int i=1;i<Gamma_size+1;i++) if (!gamma.count(i)) not_gamma.insert(i);
   return "("+random_split(gamma)+":1,"+random_split(not_gamma)+":1);\n";
-  /*
-  // we start at an arbritrary partition
-  
-  set<int> gamma;
-  scalar_type sum=0;
-  for (int g_size=1;g_size<(int)Gamma.size();g_size++)
-    sum+=binomial(Gamma_size,g_size);
-
-  scalar_type rnd=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);    
-  scalar_type re_sum=0;
-  int gamma_size;
-  for (int g_size=1;g_size<(int)Gamma.size();g_size++)
-    {
-      re_sum+=binomial(Gamma_size,g_size);
-      gamma_size=g_size;
-      if (re_sum>sum*rnd)
-	break;
-    }
-  if (gamma_size>Gamma_size/2) gamma_size=Gamma_size-gamma_size;
-
-  for (int i=0;i<gamma_size;i++) 
-    {
-      while (1)
-	{
-	  int rnd_i=RandomTools::giveIntRandomNumberBetweenZeroAndEntry(Gamma_size)+1;
-	  if (gamma.count(rnd_i)==0)
-	    {
-	      gamma.insert(rnd_i);
-	      break;
-	    }
-	}
-    }
-  set <int> not_gamma;
-  for (int i=1;i<Gamma_size+1;i++) if (!gamma.count(i)) not_gamma.insert(i);
-  return "("+random_split(gamma)+":1,"+random_split(not_gamma)+":1);\n";
-  */
 }
 
 string approx_posterior::random_split(set <int> gamma)

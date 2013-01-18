@@ -87,7 +87,6 @@ class approx_posterior
   std::map <long int,int> set_sizes;//del-loc
   std::map <int, std::vector <long int > > size_ordered_bips;//del-loc
 
-
   //must load
   long int last_leafset_id;
   std::map<std::string,int> leaf_ids;//del-loc

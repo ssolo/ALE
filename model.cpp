@@ -2,10 +2,7 @@
 using namespace std;
 using namespace bpp;
 
-//oMP// 
-//oMP// add openMP into this function
-//oMP// 
-
+//p(ale) calculates Pi(Gamma) cf. ALEPAPER
 scalar_type exODT_model::p(approx_posterior *ale)
 {
   ale_pointer=ale;
@@ -17,18 +14,6 @@ scalar_type exODT_model::p(approx_posterior *ale)
       (*it).second.clear();
     }      
   q.clear();
-
-  //cout << "start" << endl;  
-  //iterate over directed patitions (i.e. clades) ordered by the number of leaves
-  //cout << "start loop" << endl;
-  //test  
-  //long int tmp_g_id=-1;
-  //cout << ale->set2name(ale->id_sets[tmp_g_id]) <<endl;
-  //test  
-
-  //oMP// 
-  //oMP// I sort the directed partitions by size (number of gene tree leaves) to insure that we calculate things in the propoer order
-  //oMP// 
 
   //directed partitions and thier sizes
   vector <long int>  g_ids;//del-loc
@@ -75,16 +60,6 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	  gid_sps[g_id]=species_name;
 	}	 
     }
-   
-  //oMP// 
-  //oMP// below is the loop that iterates over the sorted g_ids, it is this one that should be amicable to openMP  
-  //oMP// the importatn thing is that we can only do the g_ids in parallel that have the same number of leaves
-  //oMP// hence the sorting above..
-  //oMP// 
-  //oMP// the calculation fills out the global q, cf. exODT.h, this is latter needed for sampling reconcilations! 
-  //oMP// 
-  //oMP// 
-
 
   for (int i=0;i<(int)g_ids.size();i++)
     {	
@@ -175,20 +150,21 @@ scalar_type exODT_model::p(approx_posterior *ale)
 
 	      //root
 	      scalar_type Delta_t=tpdt-t;
-	      //scalar_type N=vector_parameter["N"][rank];
+	      //Delat_bar corresponds to sigma in ALEPAPER
 	      scalar_type Delta_bar=vector_parameter["Delta_bar"][rank];
 	      //scalar_type Lambda_bar=vector_parameter["Lambda_bar"][rank];
-	      //OMG
-	      //scalar_type p_Delta_bar=1-exp(-Delta_bar/N*Delta_t);			     
 	      scalar_type p_Delta_bar=Delta_bar*Delta_t;			     
 	      scalar_type Ebar=Ee[-1][t];
 		    
 	      //boundaries for branch alpha virtual branch  
+
 	      //boundary at present
 	      if (t==0)
 		q[g_id][t][alpha]=0;
+
 	      //boundary between slice rank and rank-1 slice is trivial	
 	      ;//q[g_id][t][alpha]=q[g_id][t][alpha];	  
+
 	      //boundaries for branch alpha virtual branch.  
 	      if(1)
 		{
@@ -222,8 +198,8 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			      scalar_type SL_fLg=q[g_id][t][f]*Egt;
 			      scalar_type SL_Lfg=q[g_id][t][g]*Eft;
 			      //SL EVENT
-			      q_sum+=SL_fLg+SL_Lfg;
 			      //q[g_id][t][e]=q[g_id][t][f]*Egt + q[g_id][t][g]*Eft;
+			      q_sum+=SL_fLg+SL_Lfg;
 			      //SL.
 
 			      //non-leaf directed partition
@@ -239,12 +215,10 @@ scalar_type exODT_model::p(approx_posterior *ale)
 				    //q[g_id][t][e]+=q[gp_id][t][f]*q[gpp_id][t][g] +q[gpp_id][t][f]*q[gp_id][t][g];
 				    q_sum+= S_pf_ppg + S_ppf_pg;
 				    //S.
-
 				  }
-
 			      q[g_id][t][e]=q_sum; 
-
 			    }
+
 			  //branches that cross to next time slice  
 			  else
 			    {
@@ -258,8 +232,11 @@ scalar_type exODT_model::p(approx_posterior *ale)
 
 	      if(1)
 		{
+
 		  //events within slice rank at time t on alpha virtual branch
-		  scalar_type G_bar=Ge[-1][t];//exp(-(Delta_bar*(n-N)/N+Lambda_bar)*Delta_t );	
+		  scalar_type G_bar=Ge[-1][t];
+		  //note that the coalescent approximation in http://arxiv.org/abs/1211.4606 is exp(-(Delta_bar*(n-N)/N+Lambda_bar)*Delta_t );	
+
 		  q[g_id][tpdt][alpha]=0;
 		  scalar_type q_sum=0;
 		  scalar_type q_sum_nl=0;
@@ -267,11 +244,8 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		    {
 		      int e = time_slices[rank][branch_i];		
 		      scalar_type tau_e=vector_parameter["tau"][e];
-		      //G_bar*=exp(- tau_e*Delta_t);
-		    
-		      //scalar_type p_Ntau_e=1-exp(-N*tau_e*Delta_t);
-		      //OMG
 		      scalar_type p_Ntau_e=1-exp(-tau_e*Delta_t);
+
 		      //non-leaf directed partition
 		      if (not is_a_leaf)
 			for (int i=0;i<N_parts;i++)
@@ -282,8 +256,8 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			    scalar_type T_ep_app=p_Ntau_e*q[gp_id][t][e]*q[gpp_id][t][alpha]*pp;
 			    scalar_type T_ap_epp=p_Ntau_e*q[gp_id][t][alpha]*q[gpp_id][t][e]*pp;
 			    //T EVENT
-			    q_sum_nl+=T_ep_app+T_ap_epp;
 			    //q[g_id][tpdt][alpha]+=p_Ntau_e*(q[gp_id][t][e]*q[gpp_id][t][alpha]+q[gp_id][t][alpha]*q[gpp_id][t][e]);
+			    q_sum_nl+=T_ep_app+T_ap_epp;
 			    //T.
 
 			  }
@@ -297,8 +271,8 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			scalar_type pp=p_part[i];
 			scalar_type Sb=p_Delta_bar*(2*q[gp_id][t][alpha]*q[gpp_id][t][alpha])*pp;
 			//S_bar EVENT
-			q_sum_nl+=Sb;
 			//q[g_id][tpdt][alpha]+=p_Delta_bar*(2*q[gp_id][t][alpha]*q[gpp_id][t][alpha]);
+			q_sum_nl+=Sb;
 			//S_bar.
 
 		      }	    
@@ -309,30 +283,19 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		    {
 		      int e = time_slices[rank][branch_i];		
 		      scalar_type tau_e=vector_parameter["tau"][e];
-		      //OMG
-		      //scalar_type p_Ntau_e=1-exp(-N*tau_e*Delta_t);
 		      scalar_type p_Ntau_e=1-exp(-tau_e*Delta_t);
 		      scalar_type TLb=p_Ntau_e*Ebar*q[g_id][t][e];
 		      //TL_bar EVENT
-		      q_sum+=TLb;
 		      //q[g_id][tpdt][alpha]+=p_Ntau_e*Ebar*q[g_id][t][e];
+		      q_sum+=TLb;
 		      //TL_bar.
 
 		    }
-		  //0 EVENT
 		  scalar_type empty=G_bar*q[g_id][t][alpha]; 
-		  q_sum+=empty;
-
+		  //0 EVENT
 		  //q[g_id][tpdt][alpha]+=G_bar*q[g_id][t][alpha];
+		  q_sum+=empty;
 		  //0.
-		  //max
-		  /*
-		    if (max_term<empty) 
-		    {
-		    max_term=empty;
-		    }
-		  */
-		  //max		    
 
 		  q[g_id][tpdt][alpha]+=q_sum;
 		  //events within slice rank at time t on alpha virtual branch.
@@ -353,7 +316,6 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      scalar_type q_sum_nl=0;
 
 		      //non-leaf directed partition		   
-
 		      if (not is_a_leaf)
 			for (int i=0;i<N_parts;i++)
 			  {	
@@ -364,39 +326,35 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			    scalar_type qppe=q[gpp_id][t][e];
 			    scalar_type Sb_pa_ppe= p_Delta_bar*q[gp_id][t][alpha]*qppe*pp;
 			    scalar_type Sb_pe_ppa= p_Delta_bar*qpe*q[gpp_id][t][alpha]*pp;
-			    //S_bar EVENT
-			    q_sum_nl+= Sb_pa_ppe + Sb_pe_ppa;
 
+			    //S_bar EVENT
 			    //q[g_id][tpdt][e]+=p_Delta_bar*(q[gp_id][t][alpha]*q[gpp_id][t][e]+q[gp_id][t][e]*q[gpp_id][t][alpha]);			  
+			    q_sum_nl+= Sb_pa_ppe + Sb_pe_ppa;
 			    //S_bar.
 
 			    scalar_type D=p_delta_e*qpe*qppe*pp;
 			    //D EVENT
-			    q_sum_nl+= D;
-
 			    //q[g_id][tpdt][e]+=p_delta_e*q[gp_id][t][e]*q[gpp_id][t][e];
+			    q_sum_nl+= D;
 			    //D.
 
 			  }
 
 		      scalar_type SLb=p_Delta_bar*Eet*q[g_id][t][alpha];
 		      //SL_bar EVENT
-		      q_sum_nl+=SLb;
-
 		      //q[g_id][tpdt][e]+=p_Delta_bar*Eet*q[g_id][t][alpha];
+		      q_sum_nl+=SLb;
 		      //SL_bar.
 
 		      q[g_id][tpdt_nl][e]+=q_sum_nl;
 
 		      scalar_type empty=Get*q[g_id][t][e];
 		      //0 EVENT
-		      q_sum+=empty;
-
 		      //q[g_id][tpdt][e]=Get*q[g_id][t][e];
+		      q_sum+=empty;
 		      //0.
-		    
+		   
 		      q[g_id][tpdt][e]+=q_sum;
-
 		      //events within slice rank at time t on branch e. 
 		    }
 		}
@@ -409,7 +367,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
       gpp_ids.clear();
       p_part.clear();
     }
-  //cout << "end loop" << endl;
+
   scalar_type root_norm=0;
   for (int rank=0;rank<last_rank;rank++)
     {
@@ -440,38 +398,6 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	  root_sum+=q[-1][t][alpha]/root_norm;	      
 	}
     }
-  /*test
-    for (int rank=0;rank<last_rank;rank++)
-    {
-    int n=time_slices[rank].size();
-    for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++)
-    {
-    scalar_type t=time_slice_times[rank][t_i];
-		
-    cout << rank << " " << n << " " << t << " " << q[tmp_g_id][t][alpha]<< endl;
-	  
-    for (int branch_i=0;branch_i<n;branch_i++)
-    {	    
-    int branch = time_slices[rank][branch_i];
-    scalar_type tmp_q=q[tmp_g_id][t][branch];
-    Node * tmp_node = id_nodes[branch];
-    //cout << branch << " " << t_i << " " << rank <<" "<< tmp_node << endl;
-    stringstream out;
-    string name = (* (dynamic_cast<const BppString *>(tmp_node->getBranchProperty("ID")))).toSTL();
-    if (tmp_q>0)
-    out << log(tmp_q) ;
-    //out << Ge[branch][t];
-    tmp_node->setBranchProperty("ID",BppString(name+out.str().substr(0,4)+"|"));	      
-    //if (tmp_node->isLeaf())
-    //tmp_node->setName(tmp_node->getName()+out.str().substr(0,4)+"|");
-    }
-    }
-    }
-    cout << TreeTemplateTools::treeToParenthesis(*S,false,"ID") << endl;
-    for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
-    (*it).first->setBranchProperty("ID",BppString(""));
-  */
-  //test
 
   //del-locs
   g_ids.clear();
@@ -480,6 +406,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
   return root_sum;	
 }
 
+//historic simplified approximate ODEs for Gs & Es ignoring transfer to alpha - not used anymore
 void exODT_model::calculate_EG()
 {
   if (scalar_parameter["tau_avg"]!=0 or true)
@@ -576,7 +503,7 @@ void exODT_model::calculate_EG()
     }
 }
 
-
+// ODEs for Gs & Es cf. the appendix of http://arxiv.org/abs/1211.4606
 void exODT_model::calculate_EGb()
 {
 
@@ -781,18 +708,14 @@ void exODT_model::calculate_EGb()
 
 		E_k4[e]=h_lambda*(1-Ee_y[e])-( h_delta*(1- Ee_y[e]) + (h_Delta_bar+h_tau_avg)*(1-Ee_y[-1])) * Ee_y[e];
 		G_k4[e]=-1*(h_lambda+h_delta*(1-2*Ee_y[e])  + (h_Delta_bar+h_tau_avg)*(1-Ee_y[-1]))* Ge_y[e];
-	      }
-	  
+	      }	  
 	    // y[n+1] = y[n] + h/6 (k1 + 2 k2 + 2 k3 + k4) 
 	    y_E[-1][ti+h]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
 	    y_G[-1][ti+h]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
 	    if (ii==scalar_parameter["DD"]-1)
 	      {
 		Ee[-1][tpdt]=y_E[-1][ti+h];
-		//Ee_y[-1]=y_E[-1][ti+h];
 		Ge[-1][t]=y_G[-1][ti+h];
-		//Ge_y[-1]=1;
-		//Ge[-1][tpdt]=y_G[-1][ti+h];	      
 	      }
 
 	    for (int i=0;i<(int)time_slices[rank].size();i++)
@@ -803,12 +726,8 @@ void exODT_model::calculate_EGb()
 		y_G[e][ti+h]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
 		if (ii==scalar_parameter["DD"]-1)
 		  {
-
 		    Ee[e][tpdt]=y_E[e][ti+h];
 		    Ge[e][t]=y_G[e][ti+h];
-		    //Ee_y[e]=y_E[e][ti+h];
-		    //Ge_y[e]=1;
-		    //Ge[e][tpdt]=y_G[e][ti+h];
 		  }
 	      }
 	    ti=ti+h;	  
@@ -825,10 +744,5 @@ void exODT_model::calculate_EGb()
   y_E.clear();
   for (map<int,map <scalar_type,scalar_type> >::iterator it=y_G.begin();it!=y_G.end();it++)
     (*it).second.clear();
-  y_G.clear();	 
-	   
-
-  
+  y_G.clear();	 	   
 }
-
-

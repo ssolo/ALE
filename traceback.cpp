@@ -2,7 +2,9 @@
 using namespace std;
 using namespace bpp;
 
-
+//High memory usage lowmem=false traceback is deprecated!
+//The current lowmem=true method uses sample(true) cf. sample.cpp. 
+//The general structure of the calculation, and lot of the code, is the same as p(ale) cf. model.cpp.
 pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem)
 {
   ale_pointer=ale;
@@ -91,8 +93,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 	      p_part.push_back(0);
 	    else
 	      {
-		//XX
-		//cout << ale->p_dip(g_id,gp_id,gpp_id) << " " << g_id << " " << gp_id << " " << gpp_id << endl;
 		p_part.push_back(ale->p_dip(g_id,gp_id,gpp_id));
 	      }
 	  }
@@ -160,10 +160,7 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 
 	      //root
 	      scalar_type Delta_t=tpdt-t;
-	      //scalar_type N=vector_parameter["N"][rank];
 	      scalar_type Delta_bar=vector_parameter["Delta_bar"][rank];
-	      //scalar_type Lambda_bar=vector_parameter["Lambda_bar"][rank];
-	      //OMG
 	      //scalar_type p_Delta_bar=1-exp(-Delta_bar/N*Delta_t);			      
 	      scalar_type p_Delta_bar=Delta_bar*Delta_t;
 			      
@@ -615,39 +612,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
       gpp_ids.clear();
       p_part.clear();
     }
-  //cout << "end loop" << endl;
-  /*
-    for (int rank=0;rank<last_rank;rank++)
-    {
-    int n=time_slices[rank].size();
-    for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++)
-    {
-    scalar_type t=time_slice_times[rank][t_i];
-		
-    //cout << rank << " " << n << " " << t << " " << q[tmp_g_id][t][alpha]<< endl;
-	  
-    for (int branch_i=0;branch_i<n;branch_i++)
-    {	    
-    int branch = time_slices[rank][branch_i];
-    scalar_type tmp_q=q[tmp_g_id][t][branch];
-    Node * tmp_node = id_nodes[branch];
-    //cout << branch << " " << t_i << " " << rank <<" "<< tmp_node << endl;
-    stringstream out;
-    string name = (* (dynamic_cast<const BppString *>(tmp_node->getBranchProperty("ID")))).toSTL();
-    if (tmp_q>0)
-    out << log(tmp_q) ;
-    //out << Ge[branch][t];
-    tmp_node->setBranchProperty("ID",BppString(name+out.str().substr(0,4)+"|"));	      
-    //if (tmp_node->isLeaf())
-    //tmp_node->setName(tmp_node->getName()+out.str().substr(0,4)+"|");
-    }
-    }
-    }
-    cout << TreeTemplateTools::treeToParenthesis(*S,false,"ID") << endl;
-    for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
-    (*it).first->setBranchProperty("ID",BppString(""));
-  */
-  //test
   //del-locs
   g_ids.clear();
   g_id_sizes.clear();
@@ -710,13 +674,13 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
       MLRec_events.clear();
       Ttokens.clear();
       register_O(max_e);
-      //cout << g_id<<" " <<max_t<<" " <<max_rank<<" " <<max_e<<" " <<0<<" " <<"<<.";
       return_pair.first=sample(false,-1,max_t,max_rank,max_e,0,"","",true)+";\n";
       return_pair.second=max_term/root_norm;	
       return return_pair;
     }
 }
 
+//deprecated
 pair<string,scalar_type> exODT_model::traceback()
 {
   stringstream signal_stream;
@@ -795,6 +759,7 @@ pair<string,scalar_type> exODT_model::traceback()
   return return_pair;
 }
 
+//deprecated
 string exODT_model::traceback(long int g_id,scalar_type t,scalar_type rank,int e,scalar_type branch_length,string branch_events, string transfer_token)
 {
   /*
@@ -1013,24 +978,11 @@ string exODT_model::traceback(long int g_id,scalar_type t,scalar_type rank,int e
       cout << endl;
       cout << ale_pointer->constructor_string <<endl;
       signal=-11;
-      //cout<<signal_string << endl;
-      /*
-	for (int branch=0;branch<last_branch;branch++)	
-	{
-	cout << " " << branch ;	  
-	cout << " d " << vector_parameter["delta"][branch];
-	cout << " t " << vector_parameter["tau"][branch]*vector_parameter["N"][0];
-	cout << " l " << vector_parameter["lambda"][branch];
-	if (branch<36) cout << " D " << vector_parameter["Delta_bar"][branch];
-	if (branch<36) cout << " L " << vector_parameter["Lambda_bar"][branch];
-	if (branch<36) cout << " N " << vector_parameter["N"][branch];	  
-	cout << endl;	  
-	}
-      */
     }
   return "error";
 }
 
+//used by sample() consider moving to sample.cpp
 void exODT_model::register_O(int e)
 {
   if (e>-1) branch_counts["count"].at(e)+=1;
@@ -1081,6 +1033,7 @@ void exODT_model::register_Ttoken(string token)
   Ttokens.push_back(token);
 }
 
+//ad hoc function should be moved to a future exODT_util.cpp 
 void exODT_model::show_counts(string name)
 {
   for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
@@ -1115,6 +1068,7 @@ void exODT_model::show_counts(string name)
   
 }
 
+//ad hoc function should be moved to a future exODT_util.cpp 
 string exODT_model::counts_string()
 {
   stringstream out;
@@ -1148,6 +1102,7 @@ string exODT_model::counts_string()
   return out.str();
 }
 
+//ad hoc function should be moved to a future exODT_util.cpp 
 void exODT_model::show_rates(string name)
 {
   for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )

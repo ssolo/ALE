@@ -92,7 +92,8 @@ approx_posterior * observe_ALE_from_strings(vector<string> trees)
   return ale;     
 }
 
-
+//this function is specific to a dataset with a particular problem with species name seporators 
+//DO NOT USE AS IS
 approx_posterior * observe_ALE_from_nexus(string fname, int burnin,int every,int until)
 {
   vector<string> trees;
