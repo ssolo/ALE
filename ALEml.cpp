@@ -115,8 +115,10 @@ int main(int argc, char ** argv)
   delta=optimizer->getParameterValue("delta");
   tau=optimizer->getParameterValue("tau");
   lambda=optimizer->getParameterValue("lambda");  
-
+  scalar_type mlll=-optimizer->getFunctionValue();
   cout << endl << "ML rates: " << " delta=" << delta << "; tau=" << tau << "; lambda="<<lambda<<"."<<endl;
+  cout << "LL=" << mlll << endl;
+
   cout << "Calculating ML reconciled gene tree.."<<endl;
  
 

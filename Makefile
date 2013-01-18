@@ -26,8 +26,6 @@ FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall
 OMP_FLAGS = -fopenmp
 DEV_FLAGS =  -g -Wall -fopenmp -lprofiler 
 
-OMP_INCLUDE=-I/usr/lib/openmpi/include/ 
-
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
   export OSTYPE
@@ -60,7 +58,7 @@ model.o: ALE.h exODT.h model.cpp Makefile
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o model.o model.cpp
 
 model_omp.o: ALE.h exODT.h model_omp.cpp Makefile 
-	$(CC) $(FLAGS) $(OMP_FLAGS) $(INCLUDE) $(OMP_INCLUDE)  -c -o model_omp.o model_omp.cpp
+	$(CC) $(FLAGS) $(OMP_FLAGS) $(INCLUDE) -c -o model_omp.o model_omp.cpp
 
 traceback.o: ALE.h exODT.h traceback.cpp Makefile 
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o traceback.o traceback.cpp
@@ -73,23 +71,23 @@ libexODT.a: ALE.o ALE_util.o exODT.o model.o traceback.o sample.o Makefile
 	ar rcs libexODT.a ALE.o exODT.o model.o traceback.o  ALE_util.o  sample.o
 
 libexODT_omp.a: ALE.o ALE_util.o exODT.o model_omp.o traceback.o sample.o Makefile
-	ar rcs libexODT.a ALE.o exODT.o model_omp.o traceback.o  ALE_util.o  sample.o
+	ar rcs libexODT_omp.a ALE.o exODT.o model_omp.o traceback.o  ALE_util.o  sample.o
 
 ALEml:	libexODT.a ALEml.cpp Makefile
 	$(CC) ALEml.cpp -o ALEml $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
 ALEml_omp:	libexODT_omp.a ALEml.cpp Makefile
-	$(CC) ALEml.cpp -o ALEml_omp $(FLAGS) $(OMP_FLAGS) $(INCLUDE) $(OMP_INCLUDE) $(STATIC_OMP) $(LINK)
+	$(CC) ALEml.cpp -o ALEml_omp $(FLAGS) $(OMP_FLAGS) $(INCLUDE) $(STATIC_OMP) $(LINK)
 
 ALEsample:	libexODT.a ALEsample.cpp Makefile
 	$(CC) ALEsample.cpp -o ALEsample $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
 ALEsample_omp:	libexODT_omp.a ALEsample.cpp Makefile
-	$(CC) ALEsample.cpp -o ALEsample_omp $(FLAGS) $(OMP_FLAGS) $(INCLUDE) $(OMP_INCLUDE) $(STATIC_OMP) $(LINK)
+	$(CC) ALEsample.cpp -o ALEsample_omp $(FLAGS) $(OMP_FLAGS) $(INCLUDE) $(STATIC_OMP) $(LINK)
 
 ALEobserve:	libexODT.a ALEobserve.cpp Makefile
 	$(CC) ALEobserve.cpp -o ALEobserve $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
 omp_test:	libexODT.a omp_test.cpp Makefile
-	$(CC) omp_test.cpp -o omp_test $(FLAGS)  $(OMP_FLAGS) $(INCLUDE) $(OMP_INCLUDE) $(STATIC) $(LINK)
+	$(CC) omp_test.cpp -o omp_test $(FLAGS)  $(OMP_FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
