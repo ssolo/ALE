@@ -88,6 +88,6 @@ ALEsample_omp:	libexODT_omp.a ALEsample.cpp Makefile
 ALEobserve:	libexODT.a ALEobserve.cpp Makefile
 	$(CC) ALEobserve.cpp -o ALEobserve $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
-omp_test:	libexODT.a omp_test.cpp Makefile
-	$(CC) omp_test.cpp -o omp_test $(FLAGS)  $(OMP_FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+omp_test:	libexODT_omp.a omp_test.cpp Makefile
+	$(CC) omp_test.cpp -o omp_test $(FLAGS)  $(OMP_FLAGS) $(INCLUDE) $(STATIC_OMP) $(LINK)
 
