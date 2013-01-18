@@ -67,7 +67,7 @@ int main(int argc, char ** argv)
   int burnin=100;
   if (argc>4) burnin=atoi(argv[4]);
   bool allprint=false;
-  int print_mod=1;
+  int print_mod=10;
   int subsamples=10;
   vector<Tree*> sample_trees;
   vector<string> sample_strings;
