@@ -11,7 +11,6 @@ int main(int argc, char ** argv)
   cout << "ALEsample using ALE v"<< ALE_VERSION <<endl;
 
   //RandomTools::setSeed(20110426);
-
   if (argc<3) 
     {
       cout << "usage:\n ./ALEsample species_tree.newick gene_tree_sample.ale [samples=1000] [burnin=100]" << endl;
@@ -37,6 +36,7 @@ int main(int argc, char ** argv)
   model->set_model_parameter("DD",10);
   model->construct(Sstring);
   //cf. section S1.4 of the Supporting Material of www.pnas.org/cgi/doi/10.1073/pnas.1202997109
+  model->set_model_parameter("event_node",0);
 
   //and a finer grained reconciliation model for sampling
   exODT_model* sample_model=new exODT_model();
@@ -48,7 +48,7 @@ int main(int argc, char ** argv)
   //we want events on the leaves as well
   sample_model->set_model_parameter("leaf_events",1);
 
-  //a set of inital rates
+  //a set of inital rates 
   scalar_type delta=0.01,tau=0.01,lambda=0.02;
   model->set_model_parameter("delta",delta);
   model->set_model_parameter("tau",tau);
@@ -67,7 +67,7 @@ int main(int argc, char ** argv)
   int burnin=100;
   if (argc>4) burnin=atoi(argv[4]);
   bool allprint=false;
-  int print_mod=10;
+  int print_mod=1;
   int subsamples=10;
   vector<Tree*> sample_trees;
   vector<string> sample_strings;
@@ -95,7 +95,6 @@ int main(int argc, char ** argv)
   while (sampled<N_samples)
     {
       vector<scalar_type> ds;
-
       //rate proposal
       for (int i=0;i<3;i++)
 	{
@@ -124,7 +123,6 @@ int main(int argc, char ** argv)
       model->set_model_parameter("lambda",new_lambda);
       model->calculate_EGb();
       scalar_type new_p=model->p(ale);
-
       if (new_p>=old_p or new_p/old_p>RandomTools::giveRandomNumberBetweenZeroAndEntry(1))
 	{
 	  old_p=new_p;
@@ -166,10 +164,9 @@ int main(int argc, char ** argv)
 		}
 	      leaves.clear();
 	      sample_trees.push_back(G);	      
-	      event_out << i << "\t" << sampled << "\t" << steps << "\t" << model->MLRec_events["D"] << "\t" << model->MLRec_events["T"] << "\t" << model->MLRec_events["L"]<< "\t" << model->MLRec_events["S"] <<endl;
+	      event_out << i << "\t" << sampled << "\t" << steps << "\t" << sample_model->MLRec_events["D"] << "\t" << sample_model->MLRec_events["T"] << "\t" << sample_model->MLRec_events["L"]<< "\t" << sample_model->MLRec_events["S"] <<endl;
 	    }	      
-	}
-      
+	}      
     }
   cout << "Calculating consensus tree."<<endl;
   Tree* con_tree= TreeTools::thresholdConsensus(sample_trees,0.5);

@@ -23,7 +23,8 @@ CC=g++ -pipe
 #Bio++ did not complie/link with clang.
 
 FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall -fopenmp
-DEV_FLAGS =  -g -Wall -lprofiler 
+DEV_FLAGS =  -g -Wall -fopenmp 
+-lprofiler 
 
 MPI_INCLUDE=-I/usr/lib/openmpi/include/ 
 
@@ -56,7 +57,10 @@ exODT.o: ALE.h exODT.h exODT.cpp Makefile
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o exODT.o exODT.cpp
 
 model.o: ALE.h exODT.h model.cpp Makefile 
-	$(CC) $(FLAGS) $(INCLUDE)  -c -o model.o model.cpp
+	$(CC) $(FLAGS) $(INCLUDE)  -c -o model.o mode.cpp
+
+#model.o: ALE.h exODT.h model_omp.cpp Makefile 
+#	$(CC) $(FLAGS) $(INCLUDE)  -c -o model.o model_omp.cpp
 
 traceback.o: ALE.h exODT.h traceback.cpp Makefile 
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o traceback.o traceback.cpp
@@ -76,4 +80,7 @@ ALEsample:	libexODT.a ALEsample.cpp Makefile
 
 ALEobserve:	libexODT.a ALEobserve.cpp Makefile
 	$(CC) ALEobserve.cpp -o ALEobserve $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+omp_test:	libexODT.a omp_test.cpp Makefile
+	$(CC) omp_test.cpp -o omp_test $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
