@@ -22,11 +22,10 @@ CC=g++ -pipe
 #
 #Bio++ did not complie/link with clang.
 
-FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall -fopenmp
-DEV_FLAGS =  -g -Wall -fopenmp 
--lprofiler 
+FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall #-fopenmp
+DEV_FLAGS =  -g -Wall -fopenmp -lprofiler 
 
-MPI_INCLUDE=-I/usr/lib/openmpi/include/ 
+#MPI_INCLUDE=-I/usr/lib/openmpi/include/ 
 
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
@@ -57,7 +56,7 @@ exODT.o: ALE.h exODT.h exODT.cpp Makefile
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o exODT.o exODT.cpp
 
 model.o: ALE.h exODT.h model.cpp Makefile 
-	$(CC) $(FLAGS) $(INCLUDE)  -c -o model.o mode.cpp
+	$(CC) $(FLAGS) $(INCLUDE)  -c -o model.o model.cpp
 
 #model.o: ALE.h exODT.h model_omp.cpp Makefile 
 #	$(CC) $(FLAGS) $(INCLUDE)  -c -o model.o model_omp.cpp
