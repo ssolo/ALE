@@ -22,10 +22,11 @@ CC=g++ -pipe
 #
 #Bio++ did not complie/link with clang.
 
-FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall #-fopenmp
+FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall 
+OMP_FLAGS = -fopenmp
 DEV_FLAGS =  -g -Wall -fopenmp -lprofiler 
 
-#MPI_INCLUDE=-I/usr/lib/openmpi/include/ 
+OMP_INCLUDE=-I/usr/lib/openmpi/include/ 
 
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
@@ -35,16 +36,16 @@ endif
 ifeq ($(OSTYPE),darwin)
 	#CC=llvm-g++
 	bpp_libs = $(bpp_DIR)lib/libbpp-core.a $(bpp_DIR)lib/libbpp-phyl.a $(bpp_DIR)lib/libbpp-seq.a 
-	STATIC = libexODT.a 
 else
 	bpp_libs = -lbpp-core -lbpp-seq -lbpp-phyl
-	STATIC= libexODT.a	
 endif
+
+STATIC= libexODT.a
+STATIC_OMP= libexODT_omp.a
 
 DYNAMIC =  -L. -L$(bpp_DIR)lib $(bpp_libs) 
 LINK = $(DYNAMIC) 
-INCLUDE = -I$(boost_DIR)include -I$(bpp_DIR)include  $(MPI_INCLUDE)
-
+INCLUDE = -I$(boost_DIR)include -I$(bpp_DIR)include  
 
 ALE.o: ALE.h ALE.cpp Makefile 
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o ALE.o ALE.cpp
@@ -58,8 +59,8 @@ exODT.o: ALE.h exODT.h exODT.cpp Makefile
 model.o: ALE.h exODT.h model.cpp Makefile 
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o model.o model.cpp
 
-#model.o: ALE.h exODT.h model_omp.cpp Makefile 
-#	$(CC) $(FLAGS) $(INCLUDE)  -c -o model.o model_omp.cpp
+model_omp.o: ALE.h exODT.h model_omp.cpp Makefile 
+	$(CC) $(FLAGS) $(OMP_FLAGS) $(INCLUDE) $(OMP_INCLUDE)  -c -o model_omp.o model_omp.cpp
 
 traceback.o: ALE.h exODT.h traceback.cpp Makefile 
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o traceback.o traceback.cpp
@@ -71,15 +72,24 @@ sample.o: ALE.h exODT.h sample.cpp Makefile
 libexODT.a: ALE.o ALE_util.o exODT.o model.o traceback.o sample.o Makefile
 	ar rcs libexODT.a ALE.o exODT.o model.o traceback.o  ALE_util.o  sample.o
 
+libexODT_omp.a: ALE.o ALE_util.o exODT.o model_omp.o traceback.o sample.o Makefile
+	ar rcs libexODT.a ALE.o exODT.o model_omp.o traceback.o  ALE_util.o  sample.o
+
 ALEml:	libexODT.a ALEml.cpp Makefile
 	$(CC) ALEml.cpp -o ALEml $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
+ALEml_omp:	libexODT_omp.a ALEml.cpp Makefile
+	$(CC) ALEml.cpp -o ALEml_omp $(FLAGS) $(OMP_FLAGS) $(INCLUDE) $(OMP_INCLUDE) $(STATIC_OMP) $(LINK)
+
 ALEsample:	libexODT.a ALEsample.cpp Makefile
 	$(CC) ALEsample.cpp -o ALEsample $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+ALEsample_omp:	libexODT_omp.a ALEsample.cpp Makefile
+	$(CC) ALEsample.cpp -o ALEsample_omp $(FLAGS) $(OMP_FLAGS) $(INCLUDE) $(OMP_INCLUDE) $(STATIC_OMP) $(LINK)
 
 ALEobserve:	libexODT.a ALEobserve.cpp Makefile
 	$(CC) ALEobserve.cpp -o ALEobserve $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
 omp_test:	libexODT.a omp_test.cpp Makefile
-	$(CC) omp_test.cpp -o omp_test $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+	$(CC) omp_test.cpp -o omp_test $(FLAGS)  $(OMP_FLAGS) $(INCLUDE) $(OMP_INCLUDE) $(STATIC) $(LINK)
 
