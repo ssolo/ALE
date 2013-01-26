@@ -736,6 +736,7 @@ void approx_posterior::observation(vector<string> trees, bool count_topologies)
     }
 }
 
+
 // of an unrooted tree given by its Newick string (which can be rooted)
 scalar_type approx_posterior::p(string tree_string)
 {
@@ -998,6 +999,134 @@ vector<string> approx_posterior::all_trees(set <int> gamma)
 	(*it)+=";\n";
       }
   return all_trees_g;
+}
+
+
+scalar_type approx_posterior::count_all_trees(set <int> gamma)
+{
+  scalar_type count_trees_g=0;
+  if (gamma.size()==1)
+    {
+      count_trees_g=1;
+    }
+  else
+    {
+      set< set<int> > P_gamma=powerset< set<int> >(gamma);//del-loc  
+      for (set<set<int> >::iterator st=P_gamma.begin();st!=P_gamma.end();st++)
+	{
+	  if (gamma.size()>(*st).size() and (*st).size()>0 and (*st).count(*(gamma.begin()))==1)
+	    {
+
+	      set <int> not_st;//del-loc
+	      
+	      scalar_type count_trees_gp=count_all_trees(*st);//del-loc
+	      
+	      for (set<int>::iterator nst=gamma.begin();nst!=gamma.end();nst++)
+		if ((*st).count(*nst)==0)
+		  not_st.insert(*nst);
+	      
+	      scalar_type count_trees_gpp=count_all_trees(not_st);//del-loc
+
+	      count_trees_g+=count_trees_gp*count_trees_gpp;
+	      not_st.clear();
+	    }
+	}
+
+      P_gamma.clear();      
+    }
+  return count_trees_g;
+}
+
+scalar_type approx_posterior::count_trees()
+{
+  scalar_type count_trees_g=0;
+  
+  map<long int,scalar_type> g_id_count;//del-loc
+
+  for (map <int, vector <long int > > :: iterator it = size_ordered_bips.begin(); it != size_ordered_bips.end(); it++)
+    for (vector <long int >  :: iterator jt = (*it).second.begin(); jt != (*it).second.end(); jt++)
+      {
+	long int g_id=(*jt);
+	// leaves
+	if ((*it).first==1)
+	   g_id_count[g_id]=1;
+	else
+	  {
+	    g_id_count[g_id]=0;
+	    for (map< set<long int>,scalar_type> :: iterator kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
+	      {	  
+		vector <long int> parts;
+		for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
+		long int gp_id=parts[0];
+		long int gpp_id=parts[1];	    
+		g_id_count[g_id]+=g_id_count[gp_id]*g_id_count[gpp_id];
+	      }
+	  }
+      }
+
+  for (map <long int,scalar_type> :: iterator it = Bip_counts.begin(); it != Bip_counts.end(); it++)
+    {
+      long int g_id=(*it).first;
+      set <int> gamma=id_sets[g_id];
+      set <int> not_gamma;
+      for (set<int>::iterator st=Gamma.begin();st!=Gamma.end();st++)
+	if (gamma.count(*st)==0)
+	  not_gamma.insert(*st);
+      if ( gamma.size()>not_gamma.size())
+	count_trees_g+=g_id_count[set_ids[gamma]]*g_id_count[set_ids[not_gamma]];//count_trees(set_ids[gamma])*count_trees(set_ids[not_gamma]);
+      else if (gamma.size()==not_gamma.size())
+	count_trees_g+=g_id_count[set_ids[gamma]]*g_id_count[set_ids[not_gamma]]/2.0;//count_trees(set_ids[gamma])*count_trees(set_ids[not_gamma])/2.0;
+      //cout << count_trees(gamma) << " " << set2name(gamma) << " " << count_trees(not_gamma) << " " << set2name(not_gamma) <<endl; 
+    }
+  g_id_count.clear();
+  return count_trees_g;
+}
+scalar_type approx_posterior::count_trees(long int g_id)
+{
+  scalar_type count_trees_g=0;
+  //std::map <std::set <int>,long int>  set_ids;//del-loc  
+  //std::map< long int, std::set <int> > id_sets;//del-loc
+  //long int g_id=set_ids[gamma];
+  set<int> gamma=id_sets[g_id];
+  int gamma_size=gamma.size();
+  if (gamma_size==1)
+    {
+      count_trees_g=1;
+    }
+  else
+    {
+      set< long int > P_gamma;//=powerset< set<int> >(gamma);//del-loc  
+      for (map< set<long int>,scalar_type> :: iterator kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
+	{
+	  vector <long int> parts;
+	  for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
+	  long int gp_id=parts[0];
+	  long int gpp_id=parts[1];	    
+	  P_gamma.insert(gp_id);
+	  P_gamma.insert(gpp_id);
+	}
+      for (set<long int>::iterator st=P_gamma.begin();st!=P_gamma.end();st++)
+	{
+	  set<int> gammap=id_sets[(*st)];
+	  if (gamma.size()>gammap.size() and gammap.size()>0 and gammap.count(*(gamma.begin()))==1)
+	    {
+
+	      set <int> not_gammap;//del-loc    
+	      scalar_type count_trees_gp=count_trees((*st));//del-loc	      
+	      for (set<int>::iterator nst=gamma.begin();nst!=gamma.end();nst++)
+		if (gammap.count(*nst)==0)
+		  not_gammap.insert(*nst);	      
+	      scalar_type count_trees_gpp=count_trees(set_ids[not_gammap]);//del-loc
+	      not_gammap.clear();
+
+	      count_trees_g+=count_trees_gp*count_trees_gpp;
+	    }
+	  gammap.clear();
+	}
+      gamma.clear();
+      P_gamma.clear();      
+    }
+  return count_trees_g;
 }
 
 
