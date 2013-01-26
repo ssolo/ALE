@@ -119,6 +119,10 @@ class approx_posterior
   std::string set2name(std::set<int> leaf_set);
   std::string random_split(std::set<int> gamma);
   std::vector<std::string>  all_trees(std::set <int > gamma);//del-loc
+  scalar_type count_trees();
+  scalar_type count_trees(long int g_id);
+  scalar_type count_all_trees(std::set <int> gamma);
+
  private:
   ;
 };
