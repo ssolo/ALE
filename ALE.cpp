@@ -1139,11 +1139,9 @@ scalar_type approx_posterior::nbipp(string tree_string)
   map <set<int>,scalar_type> rec_map=recompose( tree_string);
   for (map <set<int>,scalar_type>::iterator it=rec_map.begin();it!=rec_map.end();it++) 
     {
-      p=(*it).second;
       set <int> gamma=(*it).first;
       n+=set_ids.count(gamma);
       c+=1;
-
     }
   return n/c;
 }
