@@ -1140,7 +1140,7 @@ scalar_type approx_posterior::nbipp(string tree_string)
   for (map <set<int>,scalar_type>::iterator it=rec_map.begin();it!=rec_map.end();it++) 
     {
       set <int> gamma=(*it).first;
-      n+=set_ids.count(gamma);
+      if (Bip_counts[set_ids[gamma]]) n+=1;
       c+=1;
     }
   return n/c;
