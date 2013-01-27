@@ -67,6 +67,7 @@ class approx_posterior
 
   void observation(std::vector<std::string> trees,bool count_topologies=false);
   scalar_type p(std::string tree);
+  scalar_type nbipp(std::string tree);
 
   scalar_type binomial(int n,int m);
   scalar_type trinomial(int n1,int n2,int n3);
