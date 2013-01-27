@@ -1130,4 +1130,21 @@ scalar_type approx_posterior::count_trees(long int g_id)
 }
 
 
+// of an unrooted tree given by its Newick string (which can be rooted)
+scalar_type approx_posterior::nbipp(string tree_string)
+{
+  scalar_type n=0;
+  scalar_type c=0;
+
+  map <set<int>,scalar_type> rec_map=recompose( tree_string);
+  for (map <set<int>,scalar_type>::iterator it=rec_map.begin();it!=rec_map.end();it++) 
+    {
+      p=(*it).second;
+      set <int> gamma=(*it).first;
+      n+=set_ids.count(gamma);
+      c+=1;
+
+    }
+  return n/c;
+}
 
