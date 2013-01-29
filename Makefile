@@ -31,11 +31,16 @@ ifndef OSTYPE
   export OSTYPE
 endif
 
+
 ifeq ($(OSTYPE),darwin)
-	#CC=llvm-g++
+	#pre Mountaion Lion compatibility
+	CC=llvm-g++ -mmacosx-version-min=10.6 
 	bpp_libs = $(bpp_DIR)lib/libbpp-core.a $(bpp_DIR)lib/libbpp-phyl.a $(bpp_DIR)lib/libbpp-seq.a 
+	OSSTRING=OSX
 else
 	bpp_libs = -lbpp-core -lbpp-seq -lbpp-phyl
+	OSSTRING=LINUX
+
 endif
 
 STATIC= libexODT.a
@@ -94,3 +99,9 @@ ALEcount:	libexODT.a ALEcount.cpp Makefile
 omp_test:	libexODT_omp.a omp_test.cpp Makefile
 	$(CC) omp_test.cpp -o omp_test $(FLAGS)  $(OMP_FLAGS) $(INCLUDE) $(STATIC_OMP) $(LINK)
 
+bin:  ALEobserve ALEml ALEml_omp ALEsample ALEsample_omp
+	mv ALEobserve binaries/ALEobserve_$(OSSTRING)
+	mv ALEml binaries/ALEml_$(OSSTRING)
+	mv ALEsample binaries/ALEsample_$(OSSTRING)
+	mv ALEml_omp binaries/ALEml_omp_$(OSSTRING)
+	mv ALEsample_omp binaries/ALEsample_omp_$(OSSTRING)
