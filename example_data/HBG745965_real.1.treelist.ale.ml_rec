@@ -1,0 +1,87 @@
+#ALEml using ALE v0.1 by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;
+
+S:	((((((ANASP:0.171429,ANAVT:0.171429)6:0.342857,NOSP7:0.514286)18:0.371429,TRIEI:0.885714)31:0.0285714,((((CYAA5:0.428571,CYAP8:0.428571)15:0.285714,(CYAP7:0.685714,MICAN:0.685714)24:0.0285714)25:0.114286,SYNY3:0.828571)29:0.0285714,SYNP2:0.857143)30:0.0571429)32:0.0285714,((THEEB:0.742857,CYAP4:0.742857)26:0.0285714,ACAM1:0.771429)27:0.171429)33:0.0571429,(((SYNR3:0.657143,(((PROMM:0.114286,PROM3:0.114286)4:0.485714,((PRMAR1:0.4,PROM4:0.4)14:0.0857143,((PROM1:0.0571429,PROMT:0.0571429)2:0.4,((PROM9:0.257143,(PROM2:0.228571,(PROM0:0.2,PROMS:0.2)7:0.0285714)8:0.0285714)9:0.0285714,(PROM5:0.142857,PROMP:0.142857)5:0.142857)10:0.171429)16:0.0285714)17:0.114286)21:0.0285714,((SYNPW:0.314286,SYNS3:0.314286)11:0.228571,(SYNPX:0.371429,(SYNS9:0.342857,SYNSC:0.342857)12:0.0285714)13:0.171429)19:0.0857143)22:0.0285714)23:0.142857,(SYNE7:0.0285714,SYNP6:0.0285714)1:0.771429)28:0.171429,((SYNJA:0.0857143,SYNJB:0.0857143)3:0.485714,GLVIO1:0.571429)20:0.4)34:0.0285714)35;
+
+
+Input ale from:	HBG745965_real.1.treelist.ale
+rate of	 Duplications	Transfers	Losses
+ML 	2.82226e-06	0.000726205	0.0267739
+
+reconciled G:	(((CYAP4_1_PE4082.26:0.0499193,ACAM1_1_PE3355:0.125265).27:0.0579775,((SYNP2_5_PE1508:0.087066,(SYNY3_4_PE2896:0.112969,((MICAN_1_PE6273:0.0793316,CYAP7_1_PE3059:0.0432215).24:0.0139896,(CYAP8_1_PE2812:0.029775,CYAA5_6_PE4434:0.102775).15:0.0395599).25:0.0290665).29:0.0274613).30:0.0286679,(TRIEI_1_PE498:0.0892023,(NOSP7_2_PE786:0.0317548,(ANAVT_4_PE3585:0.00312853,ANASP_6_PE3680:0.00389338).6:0.0096417).18:0.0362281).31:0.014399).32:0.0272128).33:0.0054265,(((SYNP6_1_PE1583:0.00216125,SYNE7_1_PE2524:0.00208109).1:0.144964,(SYNR3_2_PE65:0.136103,(((SYNPW_2_PE64:0.0471024,SYNS3_1_PE63:0.0570078).11:0.0219124,(SYNPX_1_PE63:0.0369715,(SYNS9_1_PE61:0.0436129,SYNSC_1_PE61:0.0203644).12:0.0171454).13:0.0264775).19:0.0232248,((PROMM_1_PE65:0.00443069,PROM3_1_PE69:0.0127479).4:0.052048,((PROM4_1_PE1785:0.10656,PRMAR1_1_PE1814:0.151992).14:0.0490206,((PROMT_1_PE2088:0.0019676,PROM1_1_PE2119:0.00196252).2:0.10963,((PROM9_1_PE1901:0.0126325,(PROM2_1_PE1926:0.00875781,(PROMS_1_PE1862:0.00198093,PROM0_1_PE1848:0.00507633).7:0.00621543).8:0.00283262).9:0.0468225,(PROM5_1_PE1846:0.019183,PROMP_1_PE1896:0.0269454).5:0.0267541).10:0.243893).16:0.0553092).17:0.0855861).21:0.02906).22:0.0659174).23:0.249361).28:0.0503882,(GLVIO1_1_PE4197:0.202666,(THEEB_1_PE509@2|THEEB:0.173975,(SYNJB_1_PE1307:0.0232563,SYNJA_1_PE767:0.0253897).3:0.179595)T@3|3:0.0539646).20:0.0415369).34:0.0054265).35:0;
+
+
+# of	 Duplications	Transfers	Losses	Speciations
+Total 	0	1	1	35
+
+# of	 Duplications	Transfers	Losses	gene copies
+S_terminal_branch	ACAM1	0	0	0	1
+S_terminal_branch	ANASP	0	0	0	1
+S_terminal_branch	ANAVT	0	0	0	1
+S_terminal_branch	CYAA5	0	0	0	1
+S_terminal_branch	CYAP4	0	0	0	1
+S_terminal_branch	CYAP7	0	0	0	1
+S_terminal_branch	CYAP8	0	0	0	1
+S_terminal_branch	GLVIO1	0	0	0	1
+S_terminal_branch	MICAN	0	0	0	1
+S_terminal_branch	NOSP7	0	0	0	1
+S_terminal_branch	PRMAR1	0	0	0	1
+S_terminal_branch	PROM0	0	0	0	1
+S_terminal_branch	PROM1	0	0	0	1
+S_terminal_branch	PROM2	0	0	0	1
+S_terminal_branch	PROM3	0	0	0	1
+S_terminal_branch	PROM4	0	0	0	1
+S_terminal_branch	PROM5	0	0	0	1
+S_terminal_branch	PROM9	0	0	0	1
+S_terminal_branch	PROMM	0	0	0	1
+S_terminal_branch	PROMP	0	0	0	1
+S_terminal_branch	PROMS	0	0	0	1
+S_terminal_branch	PROMT	0	0	0	1
+S_terminal_branch	SYNE7	0	0	0	1
+S_terminal_branch	SYNJA	0	0	0	1
+S_terminal_branch	SYNJB	0	0	0	1
+S_terminal_branch	SYNP2	0	0	0	1
+S_terminal_branch	SYNP6	0	0	0	1
+S_terminal_branch	SYNPW	0	0	0	1
+S_terminal_branch	SYNPX	0	0	0	1
+S_terminal_branch	SYNR3	0	0	0	1
+S_terminal_branch	SYNS3	0	0	0	1
+S_terminal_branch	SYNS9	0	0	0	1
+S_terminal_branch	SYNSC	0	0	0	1
+S_terminal_branch	SYNY3	0	0	0	1
+S_terminal_branch	THEEB	0	1	1	1
+S_terminal_branch	TRIEI	0	0	0	1
+S_internal_branch	1	0	0	0	1
+S_internal_branch	2	0	0	0	1
+S_internal_branch	3	0	0	0	1
+S_internal_branch	4	0	0	0	1
+S_internal_branch	5	0	0	0	1
+S_internal_branch	6	0	0	0	1
+S_internal_branch	7	0	0	0	1
+S_internal_branch	8	0	0	0	1
+S_internal_branch	9	0	0	0	1
+S_internal_branch	10	0	0	0	1
+S_internal_branch	11	0	0	0	1
+S_internal_branch	12	0	0	0	1
+S_internal_branch	13	0	0	0	1
+S_internal_branch	14	0	0	0	1
+S_internal_branch	15	0	0	0	1
+S_internal_branch	16	0	0	0	1
+S_internal_branch	17	0	0	0	1
+S_internal_branch	18	0	0	0	1
+S_internal_branch	19	0	0	0	1
+S_internal_branch	20	0	0	0	1
+S_internal_branch	21	0	0	0	1
+S_internal_branch	22	0	0	0	1
+S_internal_branch	23	0	0	0	1
+S_internal_branch	24	0	0	0	1
+S_internal_branch	25	0	0	0	1
+S_internal_branch	26	0	0	0	1
+S_internal_branch	27	0	0	0	1
+S_internal_branch	28	0	0	0	1
+S_internal_branch	29	0	0	0	1
+S_internal_branch	30	0	0	0	1
+S_internal_branch	31	0	0	0	1
+S_internal_branch	32	0	0	0	1
+S_internal_branch	33	0	0	0	1
+S_internal_branch	34	0	0	0	1
+S_internal_branch	35	0	0	0	1
