@@ -1,3 +1,4 @@
+//all code by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;
 #pragma once
 #include "ALE.h"
 

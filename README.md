@@ -10,8 +10,10 @@ The repository currently impliemnets two objects:
 2. The exODT_model object that impliments ALE in the context of our recently published reconcilation model (cf. http://arxiv.org/abs/1211.4606 ).
 
 
-In lieu of proper documentation please consult our manuscript "Efficient Exploration of the Space of Reconciled Gene Trees" (under review, soon available from the arxiv) together with the code and comments for the ALEobserve, ALEml, ALEsample programs that deploy these objects. 
+In lieu of more formal documentation please consult our manuscript "Efficient Exploration of the Space of Reconciled Gene Trees" (under review, soon available from the arxiv) together with the code and comments for the ALEobserve, ALEml, ALEsample programs that deploy these objects. 
 
 Example data and an associated README file are available in the example_data subdirectory.   
 
 Precompiled binaries for OSX and LINUX (including OpenMP versions) are available in the binaries subdirectory. 
+
+All code, data and documentation by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;

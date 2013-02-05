@@ -1,6 +1,7 @@
+//all code by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;
 #include "ALE.h"
-
-struct step 
+sALE.h
+truct step 
 {
   int e;
   int ep;
