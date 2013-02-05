@@ -1,0 +1,84 @@
+ALEobserve - construct an .ale file containg marginal clade frequencies used by ALEml and ALEsample
+
+e.g. for the provided example of all cyanobacterial genes from HOGENOMv5 family HBG745965 ( http://pbil.univ-lyon1.fr/databases/hogenom5/ ): HBG745965_real.1.treelist and  HBG745965_real.1.treelist are outputs from PhyloBayes (www.phylobayes.org/) obtained for the alignment HBG745965_real.phyl, to construct the relevant .ale files run:
+ 
+./ALEobserve_LINUX HBG745965_real.1.treelist 1000  
+and
+./ALEobserve HBG745965_real.2.treelist 1000  
+
+In both cases we discard the first 1000 trees as burnin.
+
+For comparison we also produce a .ale file for the single ML tree -- obtained using PhyML -www.atgc-montpellier.fr/phyml/ for the same alignment. 
+
+./ALEobserve HBG745965_real.seq.tree 
+
+(Note that the default burnin is 0 trees)
+
+In general ALEobserve takes a list os newick trees with identical leaf labels from FILE, and outputs FILE.ale. 
+
+ALEml - infer the maximum likelihood reconciled gene tree from a species tree and a .ale file
+
+e.g. for the above:
+./ALEml S.tree HBG745965_real.1.treelist.ale
+./ALEml S.tree HBG745965_real.2.treelist.ale
+./ALEml S.tree HBG745965_real.seq.tree.ale
+
+Comparing the outputs named e.g. HBG745965_real.1.treelist.ale.ml_rec we see that the joint trees have much fewer events.
+
+ALEsample - sample DTL rates and reconciled gene trees (this can take a significantly longer than ALEml).
+
+As an example for ALEsample we will use as out input HBG284202_real.ale:
+
+./ALEsample S.tree HBG284202_real.ale
+
+produces a series of files:
+HBG284202_real.ale.rateslist - list of sampled rates and log likelihood
+HBG284202_real.ale.eventlist - list of sampled event counts  
+HBG284202_real.ale.treelist - list of sampled trees
+
+
+To use provided binaries in ../binaries/ use
+on OSX use *_OSX or *_omp_OSX
+on LINUX use *_LINUX or *_omp_LINUX
+if you use the OpenMP version remember to set OMP_NUM_THREADS  
+
+
+RECONCILATION NOTATION
+
+The species tree is ultrametric - its branch lengths correspond to time. 
+
+The numbers in the bootstraps are branch labels corresponding to time order, with the root having time order 35, internal nodes ranging from 34 to 1 and all leaves having 0.
+These numbers serve both as branch labels and as time coordinates.  An event can occur, e.g. at time 18 on branch 10, this would mean that it occurred in the time interval between speciations 19 and 18 on the branch ending with speciation 11. Terminal branches are specified with leaf names. 
+
+There are 4 atomic events, speciation, duplication, transfer and loss. In the trees attached there are no duplications. The reconciliation model is that described in exODT.pdf, i.e. all transfers come from unrepresented species. 
+
+To explain the reconciliation notation lets look at the tree: 
+((SYNJB_1_PE950:0.0567907,SYNJA_1_PE2030:0.0454848).34.20.3:0.471496,((CYAP4_1_PE420:0.266217,(THEEB_1_PE1494:0.334417,GLVIO1_1_PE1169@0|GLVIO1:0.724426)T@1|THEEB:0.131324).27.26:0.198936,((TRIEI_1_PE668:0.263141,(NOSP7_2_PE4607:0.0631294,(ANAVT_4_PE931:0.0147708,ANASP_6_PE2969:0.0205304).6:0.0482404).18:0.147972).31:0.0665971,(ACAM1_1_PE135.T@27|SYNP2@26|ACAM1:0.251017,(((CYAA5_6_PE594:0.221589,CYAP8_1_PE2632:0.176689).15:0.054886,(CYAP7_1_PE2280:0.17352,MICAN_1_PE2716:0.244643).24:0.0380066).25:0.0613626,(SYNY3_4_PE2642:0.22923,((SYNE7_1_PE221:0.00291872,SYNP6_1_PE1291:0.00296591)@22|1.1:0.280026,(SYNR3_2_PE944:0.670514,((SYNPW_2_PE774:0.182687,SYNS3_1_PE1833:0.162686)@18|11.11:0.112066,((SYNPX_1_PE1481:0.117437,(SYNSC_1_PE1008:0.161326,SYNS9_1_PE925:0.146404).12:0.0190145).19.13:0.133917,((PROM3_1_PE1845:0.00426106,PROMM_1_PE495:0.0101808).4:0.144436,((PROM1_1_PE651:0.00569711,PROMT_1_PE635:0.0158877).16.2:0.37948,(PRMAR1_1_PE1063:0.316481,(PROM4_1_PE1056:0.246757,(PROM5_1_PE662@4|PROM5:0.159894,(PROMP_1_PE651.5:0.128953,(PROM9_1_PE623:0.0631102,(PROMS_1_PE651:0.00945917,(PROM0_1_PE623:0.0104173,PROM2_1_PE676@0|PROM2:0.0280294)T@1|PROM0:0.00690004).8.7:0.0223265).9:0.0287127).10:0.0655906)Tb@10|10:0.547024)T@10|PROM4:0.116101).14:0.0755022).17:0.191706).21:0.0627178).22:0.053263)T@22|22:0.0960767).23:0.810502)Tb@23|23:0.125576)T@23|SYNY3:0.118545).29:0.0848267).30:0.0585885).32:0.0795774).33:0.471496).35:0;
+and later this one:
+((ACAM1_1_PE135:0.251017,((CYAP4_1_PE420:0.266217,THEEB_1_PE1494:0.334417).26:0.130204,(GLVIO1_1_PE1169:0.724426,(SYNJB_1_PE950:0.0567907,SYNJA_1_PE2030:0.0454848).3:0.471496)@25|20.20:0.0830352)T@26|26:0.0795774).27:0.0343683,((TRIEI_1_PE668:0.263141,(NOSP7_2_PE4607:0.0631294,(ANAVT_4_PE931:0.0147708,ANASP_6_PE2969:0.0205304).6:0.0482404).18:0.147972).31:0.0665971,((SYNY3_4_PE2642:0.22923,((SYNP6_1_PE1291:0.00296591,SYNE7_1_PE221:0.00291872)@22|1.1:0.280026,(SYNR3_2_PE944:0.335257,(((PROMM_1_PE495:0.0101808,PROM3_1_PE1845:0.00426106).4:0.144436,((PROM4_1_PE1056:0.246757,PRMAR1_1_PE1063:0.316481).14:0.0752811,((PROMT_1_PE635:0.0158877,PROM1_1_PE651:0.00569711).2:0.37948,((PROM9_1_PE623:0.0631102,(PROM2_1_PE676:0.0280294,(PROMS_1_PE651:0.00945917,PROM0_1_PE623:0.0104173).7:0.00980812).8:0.0223265).9:0.0287127,(PROM5_1_PE662:0.159894,PROMP_1_PE651:0.128953).5:0.0196844).10:0.547024).16:0.116223).17:0.191706).21:0.0627178,((SYNPW_2_PE774:0.182687,SYNS3_1_PE1833:0.162686).11:0.112066,(SYNPX_1_PE1481:0.117437,(SYNSC_1_PE1008:0.161326,SYNS9_1_PE925:0.146404).12:0.0190145).13:0.133917).19:0.0326266).22:0.0960767).23:0.810502)Tb@23|23:0.125576)T@23|SYNY3:0.118545,((MICAN_1_PE2716:0.244643,CYAP7_1_PE2280:0.17352).24:0.0380066,(CYAA5_6_PE594:0.221589,CYAP8_1_PE2632:0.176689).15:0.054886).25:0.0613626).30.29:0.0848267).32:0.0343683).33:0;
+You can display this tree with -e.g.- NJplot ( pbil.univ-lyon1.fr/software/njplot.html ).
+
+The reconciliation is contained in the bootstrap values, one can easily display them in Njplot by ticking the appropriate box.   
+The rooting is part of the reconciliation. The branch lengths are substitutions per site. 
+
+To explain the reconciliation notation lets look at the first tree above:
+".35" above the root means that the branch of the gene tree (henceforth G) ends in an event corresponding to a node of G that is the speciation 35 of the species tree (henceforth S). (ignore the ":0" in "35:0" that is just a 0 branch length..)
+
+The two branches that emerge have labels ".33" and ".34.20.3" The first means that this branch of G ends  in an event corresponding to a node of G that is the speciation 33 of S, and nothing else happens in the meanwhile. The second ".34.20.3" describes a series of two loss events (at nodes 34 and 20 of S) leading to the event corresponding to a node of G that is the speciation 3 of S. Series of events coded in bootstrap values should always be read from left to right to get events forward in time with events separated by ".", i.e.  " .first_event.second_event.final_event( ". Only the final event is such that it leaves behind two descendent gene linages, events before it can be either a speciation and loss - as we saw above - or a transfer and loss. 
+
+This brings us to the notation for transfers. The (first) sequence tree has many transfer, the (second) joint tree has three.
+Lets look at the event "T@1|THEEB" in the first tree.
+All transfers have tow parts i) speciation to an unrepresented lineage and ii) transfer back to the represented tree.
+T@TIME|BRANCH indicates the TIME at which a speciation occurred from a given BRANCH, here it occurred at time 1 (in the time the interval between node 2 and 1 of S) on the branch leading to the extant species THEEB.
+If we look at the sons if this node we see that one of these has "@0|GLVIO1" appended to its name.
+This identifies the transfer back to the represented tree as occurring in the final time slice and corresponding to a transfer to the branch above the extant species  GLVIO1.
+The other son is the branch leading to THEEB from which the transfer gene descends. 
+(For leaves events that would go in the bootstrap value are appended after the name, the separators are "." or "@".) 
+
+"T@22|22" followed by "@18|11.11" can be read similarly with a gene linage transferred to branch 11 at time 18 descending from a gene at time 22 on branch 22 ending in a speciation at node 11 of S. The other descendant has ".22" as it should.
+
+A transfer and loss event can be seen in ".T@27|SYNP2@26|ACAM1" appended to the leaf ACAM1_1_PE135. The series of events is the following: a gene copy leaves the represented tree at time 27 above branch SYNP2 and the copy remaining in the represented tree is lost, the copy outside the represented tree produces a descendent as a result of transfer at time 26 in branch  ACAM1, which we subsequently observe in the genome of ACAM1.   
+
+Finally, a series of two transfers back to the represented tree can be seen in "T@23|SYNY3", "Tb@23|23", "@22|1.1". What happened here is that a gene copy left the represented tree at time 23 on branch SYNY3, a descendant was transferred back at time 23 to branch 23, and a second copy was transferred back at time 22 to branch 1.
+
+All code by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;
