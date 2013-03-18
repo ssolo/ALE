@@ -99,6 +99,17 @@ ALEcount:	libexODT.a ALEcount.cpp Makefile
 omp_test:	libexODT_omp.a omp_test.cpp Makefile
 	$(CC) omp_test.cpp -o omp_test $(FLAGS)  $(OMP_FLAGS) $(INCLUDE) $(STATIC_OMP) $(LINK)
 
+test:	libexODT.a test.cpp Makefile
+	$(CC) test.cpp -o test $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+ALE_tutorial:	libexODT.a ALE_tutorial.cpp Makefile
+	$(CC) ALE_tutorial.cpp -o ALE_tutorial $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+
+test_simpleML:	libexODT.a test_simpleML.cpp Makefile
+	$(CC) test_simpleML.cpp -o test_simpleML $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+
 bin:  ALEobserve ALEml ALEml_omp ALEsample ALEsample_omp
 	mv ALEobserve binaries/ALEobserve_$(OSSTRING)
 	mv ALEml binaries/ALEml_$(OSSTRING)
