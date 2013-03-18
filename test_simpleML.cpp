@@ -15,6 +15,14 @@ int main(int argc, char ** argv)
   string ale_name=argv[2];
   approx_posterior * ale=load_ALE_from_file(ale_name);
 
+
+  cout << "Read species tree from: " << argv[1] <<".."<<endl;
+  //we need an .ale file containing observed conditional clade probabilities
+  //cf. ALEobserve
+  cout << "Read summary of tree sample for "<<ale->observations<<" trees from: " << ale_name <<".. with :" << ale->count_trees() << " possible amalgamations .." << endl << endl ;
+
+  cout << "and the most liely tree is.."<< endl;
+
   // initilaize the exODT model using some initial DTL rates
   exODT_model* model=new exODT_model();
   int D=1; // this is the simplest parsimony like setting of one event node per slice.. 
