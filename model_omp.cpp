@@ -1439,7 +1439,7 @@ void exODT_model::calculate_EGb()
 		Ee_y[e] =y_E[e][ti]+1/2. * E_k1[e];
 		Ge_y[e] =y_G[e][ti]+1/2. * G_k1[e];
 
-		E_k2[e]=h_lambda*(1-Ee_y[e])-( h_delta*(1- Ee_y[e]) + ((N-ni)/(N)*h_Delta_bar+h_tau_avg)*(1-Ee_y[-1])) * Ee_y[e];
+		E_k2[e]=h_lambda*(1-Ee_y[e])-( h_delta*(1- Ee_y[e]) + (h_Delta_bar+h_tau_avg)*(1-Ee_y[-1])) * Ee_y[e];
 		G_k2[e]=-1*(h_lambda+h_delta*(1-2*Ee_y[e]) + (h_Delta_bar+h_tau_avg)*(1-Ee_y[-1]))* Ge_y[e];
 	      }
 
@@ -1499,7 +1499,7 @@ void exODT_model::calculate_EGb()
 		Ee_y[e] =y_E[e][ti]+1 * E_k3[e];
 		Ge_y[e] =y_G[e][ti]+1 * G_k3[e];
 
-		E_k4[e]=h_lambda*(1-Ee_y[e])-( h_delta*(1- Ee_y[e]) + ((N-ni)/(N)*h_Delta_bar+h_tau_avg)*(1-Ee_y[-1])) * Ee_y[e];
+		E_k4[e]=h_lambda*(1-Ee_y[e])-( h_delta*(1- Ee_y[e]) + (h_Delta_bar+h_tau_avg)*(1-Ee_y[-1])) * Ee_y[e];
 		G_k4[e]=-1*(h_lambda+h_delta*(1-2*Ee_y[e])  + (h_Delta_bar+h_tau_avg)*(1-Ee_y[-1]))* Ge_y[e];
 	      }	  
 	    // y[n+1] = y[n] + h/6 (k1 + 2 k2 + 2 k3 + k4) 
