@@ -23,7 +23,7 @@ approx_posterior * observe_ALE_from_file(vector<string> fnames, int burnin,int e
 	    {
 	      string line;
 	      getline (file_stream,line);
-	      if (line.find("(")!=line.npos)
+	      if (line.find("(")!=line.npos )
 		{
 		  tree_i++;
 		  if (tree_i>burnin and tree_i%every==0) trees.push_back(line);			     
@@ -71,7 +71,7 @@ approx_posterior * observe_ALE_from_file(string fname, int burnin,int every,int 
     until=trees.size();
   for (int i=0;i<min((int)trees.size(),until);i++)
     observe_trees.push_back(trees[i]);
-  ale->observation(observe_trees,true);
+  ale->observation(observe_trees);
   trees.clear();
   observe_trees.clear();
   return ale;     
