@@ -1,7 +1,7 @@
 //all code by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;
 #pragma once
 
-#define ALE_VERSION "0.1"
+#define ALE_VERSION "0.2"
 
 #include <iostream>
 #include <Bpp/Numeric/Random.all>
