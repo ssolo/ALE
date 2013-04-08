@@ -79,7 +79,13 @@ int main(int argc, char ** argv)
 
   //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();
-  model->set_model_parameter("D",1);
+
+  int D=2;
+  if (argc>3)
+    D=atoi(argv[3]);
+
+
+  model->set_model_parameter("D",D);
   model->construct(Sstring);
   model->set_model_parameter("event_node",1);
 
