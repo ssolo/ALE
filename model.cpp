@@ -245,7 +245,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		    {
 		      int e = time_slices[rank][branch_i];		
 		      scalar_type tau_e=vector_parameter["tau"][e];
-		      scalar_type p_Ntau_e=tau_e*Delta_t;1-exp(-tau_e*Delta_t );
+		      scalar_type p_Ntau_e=tau_e*Delta_t;//1-exp(-tau_e*Delta_t );
 
 		      //non-leaf directed partition
 		      if (not is_a_leaf)
@@ -284,7 +284,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		    {
 		      int e = time_slices[rank][branch_i];		
 		      scalar_type tau_e=vector_parameter["tau"][e];
-		      scalar_type p_Ntau_e=tau_e*Delta_t;1-exp(-tau_e*Delta_t);
+		      scalar_type p_Ntau_e=tau_e*Delta_t;//1-exp(-tau_e*Delta_t);
 		      scalar_type TLb=p_Ntau_e*Ebar*q[g_id][t][e];
 		      //TL_bar EVENT
 		      //q[g_id][tpdt][alpha]+=p_Ntau_e*Ebar*q[g_id][t][e];
@@ -309,7 +309,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      scalar_type Get=Ge[e][t];
 		      scalar_type Eet=Ee[e][t];	
 		      scalar_type delta_e=vector_parameter["delta"][e];
-		      scalar_type p_delta_e=delta_e*Delta_t;1-exp(-delta_e*Delta_t);
+		      scalar_type p_delta_e=delta_e*Delta_t;//1-exp(-delta_e*Delta_t);
 
 		      //events within slice rank at time t on branch e 
 		      q[g_id][tpdt][e]=0;
