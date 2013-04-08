@@ -153,7 +153,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	      //Delat_bar corresponds to sigma in ALEPAPER
 	      scalar_type Delta_bar=vector_parameter["Delta_bar"][rank];
 	      //scalar_type Lambda_bar=vector_parameter["Lambda_bar"][rank];
-	      scalar_type tmp=1-exp(-Delta_bar*abs(Delta_t));
+	      //scalar_type tmp=1-exp(-Delta_bar*abs(Delta_t));
 	      scalar_type p_Delta_bar=Delta_bar*Delta_t;			     
 	      scalar_type Ebar=Ee[-1][t];
 		    
