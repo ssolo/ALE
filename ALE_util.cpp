@@ -82,13 +82,13 @@ approx_posterior * observe_ALE_from_string(string tree)
   vector<string> trees;
   trees.push_back(tree);
   approx_posterior* ale=new approx_posterior(trees[0]);// NO del-loc  
-  ale->observation(trees,true);
+  ale->observation(trees,false);
   return ale;     
 }
 approx_posterior * observe_ALE_from_strings(vector<string> trees)
 {
   approx_posterior* ale=new approx_posterior(trees[0]);// NO del-loc  
-  ale->observation(trees,true);
+  ale->observation(trees,false);
   return ale;     
 }
 
@@ -184,7 +184,7 @@ string save_ALE_to_file(string fname)
 	}
     }
   approx_posterior* ale=new approx_posterior(trees[0]);// del-loc
-  ale->observation(trees,true);
+  ale->observation(trees,false);
   
   vector <string> tokens;
   boost::trim(fname);	    
@@ -200,4 +200,82 @@ string save_ALE_to_file(string fname)
   ale->save_state(fname+".ale");  
   delete ale;
   return fname+".ale";
+}
+
+string canonical_branch_lengths( string Sstring)
+{
+  tree_type * S =TreeTemplateTools::parenthesisToTree(Sstring);//del-loc
+  vector <Node *> nodes=S->getNodes();//del-loc
+  map <Node*,scalar_type> node2height;//del-loc
+  map <scalar_type,Node*> height2node;//del-loc
+  for (vector <Node *>::iterator it=nodes.begin();it!=nodes.end();it++)
+    {      
+      if ((*it)->isLeaf())
+	{
+	  node2height[(*it)]=0;	  
+	}
+      else
+	{	  
+	  vector<Node*> sons=(*it)->getSons();
+	  scalar_type h0 = sons[0]->getDistanceToFather() + node2height[sons[0]];
+	  scalar_type h1 = sons[1]->getDistanceToFather() + node2height[sons[1]];
+	  if (abs(h0-h1)>1e-3)
+	    {
+	      cout << " tree is not ultrametric! with diff " << abs(h0-h1)<< endl;
+	      h0=max(h0,h1);
+	    }
+	  node2height[(*it)]=h0;	  
+	  if (height2node.count(h0))
+	    {
+	      cout << " tree is degenerate! at height " << h0 <<endl;
+	      height2node[h0+1e-6]=(*it);	      
+	    }
+	  else
+	    height2node[h0]=(*it);	      	  
+	}
+    }
+  //map <Node*,int> node2rank;//del-loc
+  //map <int,Node*> rank2node;//del-loc
+  int rank=0;
+
+  map <Node*,scalar_type> new_height;//del-loc
+  int n=S->getNumberOfLeaves();
+  scalar_type rank_height=0;
+  
+  for (map <scalar_type,Node *>::iterator hit=height2node.begin();hit!=height2node.end();hit++)
+    {
+      rank_height+=1.0/(scalar_type)(n-rank);
+      rank+=1;
+      //rank2node[rank]=(*hit).second;
+      //node2rank[(*hit).second]=rank;
+      new_height[(*hit).second]=rank_height;
+    }
+  
+  for (vector <Node *>::iterator it=nodes.begin();it!=nodes.end();it++)
+    if ((*it)->hasFather())
+      {
+      if ((*it)->isLeaf())
+	{
+	  scalar_type fathers_height= new_height[ (*it)->getFather() ];
+	  (*it)->setDistanceToFather(fathers_height/rank_height);	  
+	}
+      else
+	{
+	  scalar_type fathers_height= new_height[ (*it)->getFather() ];
+	  (*it)->setDistanceToFather((fathers_height- new_height[ (*it)])/rank_height);	  
+	}
+      }
+  node2height.clear();
+  height2node.clear();
+
+  //node2rank.clear();
+  //rank2node.clear();
+
+  new_height.clear();
+
+  nodes.clear();
+  Sstring=TreeTemplateTools::treeToParenthesis(*S);
+  delete S;
+
+  return Sstring;
 }

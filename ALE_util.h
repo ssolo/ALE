@@ -11,3 +11,4 @@ approx_posterior * observe_ALE_from_string(std::string tree); // NO del-loc
 approx_posterior * load_ALE_from_file(std::string fname); // NO del-loc
 std::string save_ALE_to_file(std::string fname); 
 
+std::string canonical_branch_lengths(std::string Sstring);
