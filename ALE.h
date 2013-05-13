@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <Bpp/Numeric/Random.all>
+#include <Bpp/Numeric/NumConstants.h>
 #include <Bpp/Phyl/TreeTemplate.h>
 #include <Bpp/Phyl/TreeTemplateTools.h>
 #include <Bpp/Phyl/Io/Newick.h>
@@ -124,6 +125,8 @@ class approx_posterior
   scalar_type count_trees();
   scalar_type count_trees(long int g_id);
   scalar_type count_all_trees(std::set <int> gamma);
+	void setAlpha ( scalar_type a );
+	void setBeta ( scalar_type b );
 
  private:
   ;

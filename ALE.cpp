@@ -745,12 +745,15 @@ scalar_type approx_posterior::p(string tree_string)
   for (map <set<int>,scalar_type>::iterator it=rec_map.begin();it!=rec_map.end();it++) 
     {
       p=(*it).second;
+		//std::cout << "p: "<< p << std::endl;
       set <int> gamma=(*it).first;
       set <int> not_gamma;
       for (set<int>::iterator st=Gamma.begin();st!=Gamma.end();st++)
 	if (gamma.count(*st)==0)
 	  not_gamma.insert(*st);
       p*=rec_map[not_gamma]*p_bip(gamma);
+		if (isnan(p) ) p = NumConstants::VERY_TINY ();
+		//std::cout << "rec_map[not_gamma]: "<<rec_map[not_gamma] <<" p_bip(gamma) "<< p_bip(gamma) <<std::endl;
       break;
     }
   return p;
@@ -1145,4 +1148,18 @@ scalar_type approx_posterior::nbipp(string tree_string)
     }
   return n/c;
 }
+
+//Set the value for the alpha parameter
+void approx_posterior::setAlpha ( scalar_type a ) {
+	alpha = a;
+	return;
+}
+
+//Set the value for the beta parameter
+void approx_posterior::setBeta ( scalar_type b ) {
+	beta = b;
+	return;	
+}
+
+
 
