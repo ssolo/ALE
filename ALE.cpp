@@ -5,6 +5,7 @@ using namespace bpp;
 //## aux. functions ##
 
 //from: http://rosettacode.org/wiki/Power_set#Recursive_version (accessed 12/13/11)
+//"Given a set S, the power set (or powerset) of S, written P(S), or 2S, is the set of all subsets of S."
 template<typename Set> set<Set> powerset(const Set& s, size_t n)
 {
     typedef typename Set::const_iterator SetCIt;
@@ -29,6 +30,7 @@ template<typename Set> set<Set> powerset(const Set& s)
     return powerset(s, s.size());
 }
 
+
 //## approx_posterior class ##
 approx_posterior::approx_posterior()
 {
@@ -36,11 +38,13 @@ approx_posterior::approx_posterior()
   ;
 }
 
+
 approx_posterior::approx_posterior(string tree_string)
 {
   constructor_string = tree_string;
   construct(constructor_string);
 }
+
 
 void approx_posterior::construct(string tree_string)
 {
@@ -66,7 +70,7 @@ void approx_posterior::construct(string tree_string)
 
   Gamma_size=Gamma.size();
   //maybe should use boost pow
-  //number of partitions of Gamma
+  //number of bipartitions of Gamma
   K_Gamma=pow(2.,(int)Gamma_size-1)-1;
   //number of unrooted trees on Gamma_size leaves
   if (Gamma_size==2)
@@ -106,7 +110,7 @@ void approx_posterior::save_state(string fname)
       {
 	fout<<(*it).first<<"\t";
 	for (set<long int>::iterator kt=(*jt).first.begin();kt!=(*jt).first.end();kt++)    
-	  fout<<(*kt)<<"\t";
+	  fout<<(*kt)<<"\t"; //For binary trees, is this loop really necessary? Couldn't we just write the first set id, then the second one?
 	fout<<(*jt).second<<endl;
       }
 
@@ -260,6 +264,7 @@ long int approx_posterior::set2id(set<int> leaf_set)
     }
 }
 
+
 scalar_type approx_posterior::Bi(int n2)
 {
   int n1=Gamma_size-n2;
@@ -270,6 +275,7 @@ scalar_type approx_posterior::Bi(int n2)
   return boost::math::double_factorial<scalar_type>(2*n1-3)*boost::math::double_factorial<scalar_type>(2*n2-3);
 }
 
+
 scalar_type approx_posterior::Tri(int n2,int n3)
 {
   int n1=Gamma_size-n2-n3;
@@ -278,11 +284,14 @@ scalar_type approx_posterior::Tri(int n2,int n3)
   n3=max(2,n3);
   return boost::math::double_factorial<scalar_type>(2*n1-3)*boost::math::double_factorial<scalar_type>(2*n2-3)*boost::math::double_factorial<scalar_type>(2*n3-3);
 }
+
+
 scalar_type approx_posterior::binomial(int n,int m)
 {
   //maybe worth caching 
   return boost::math::binomial_coefficient<scalar_type>(n,m);
 }
+
 
 scalar_type approx_posterior::trinomial(int n1,int n2, int n3)
 {
@@ -292,6 +301,7 @@ scalar_type approx_posterior::trinomial(int n1,int n2, int n3)
   //cf. http://mathworld.wolfram.com/MultinomialCoefficient.html
   return binomial(n1+n2+n3,n3)*binomial(n1+n2,n2);
 }
+
 
 scalar_type approx_posterior::p_bip(set<int> gamma)
 {
@@ -311,6 +321,7 @@ scalar_type approx_posterior::p_dip(set<int> gamma,set<int> gammap,set<int> gamm
   long int gpp_id=set_ids[gammapp];
   return p_dip( g_id, gp_id, gpp_id);
 }
+
 
 scalar_type approx_posterior::p_bip(long int g_id)
 {
@@ -332,6 +343,8 @@ scalar_type approx_posterior::p_bip(long int g_id)
   //return Bip_count / (observations+alpha) + (alpha/N_Gamma*Bi(gamma.size())) / (observations+alpha);
   return Bip_count / (observations+alpha) + (alpha/N_Gamma*Bi(set_sizes[g_id])) / (observations+alpha);
 }
+
+
 scalar_type approx_posterior::p_dip(long int g_id,long int gp_id,long int gpp_id)
 {
   if (Gamma_size<4)
@@ -363,6 +376,7 @@ scalar_type approx_posterior::p_dip(long int g_id,long int gp_id,long int gpp_id
   return ( Dip_count + (alpha/N_Gamma*Tri(set_sizes[gp_id],set_sizes[gpp_id])) + beta_switch*beta/(pow(2.,set_sizes[g_id]-1)-1) ) / ( Bip_count + (alpha/N_Gamma*Bi(set_sizes[g_id])) + beta_switch*beta );
 
 }
+
 
 // an unrooted tree given by its Newick string (which can be rooted)
 map <set< int>,scalar_type > approx_posterior::recompose(string G_string)
@@ -436,7 +450,7 @@ map <set< int>,scalar_type > approx_posterior::recompose(string G_string)
     {
       dedge_type dedge=(*it).first;
       if (dedges[dedge]!=-1)
-	edges_left=true;	
+	edges_left=true;	//Couldn't we add a "break" here?
     }
   while (edges_left)
     {
@@ -510,6 +524,7 @@ map <set< int>,scalar_type > approx_posterior::recompose(string G_string)
   q.clear();
   return return_map;
 }
+
 
 // an unrooted tree given by its Newick string (which can be rooted)
 void approx_posterior::decompose(string G_string, set<int> * bip_ids )
@@ -742,48 +757,52 @@ scalar_type approx_posterior::p(string tree_string)
 {
   scalar_type p=0;
   map <set<int>,scalar_type> rec_map=recompose( tree_string);
-  for (map <set<int>,scalar_type>::iterator it=rec_map.begin();it!=rec_map.end();it++) 
+	for (map <set<int>,scalar_type>::iterator it=rec_map.begin();it!=rec_map.end();it++) 
     {
-      p=(*it).second;
+		p=(*it).second;
 		//std::cout << "p: "<< p << std::endl;
-      set <int> gamma=(*it).first;
-      set <int> not_gamma;
-      for (set<int>::iterator st=Gamma.begin();st!=Gamma.end();st++)
-	if (gamma.count(*st)==0)
-	  not_gamma.insert(*st);
-      p*=rec_map[not_gamma]*p_bip(gamma);
+		set <int> gamma=(*it).first;
+		set <int> not_gamma;
+		for (set<int>::iterator st=Gamma.begin();st!=Gamma.end();st++)
+			if (gamma.count(*st)==0)
+				not_gamma.insert(*st);
+		p*=rec_map[not_gamma]*p_bip(gamma);
 		if (isnan(p) ) p = NumConstants::VERY_TINY ();
 		//std::cout << "rec_map[not_gamma]: "<<rec_map[not_gamma] <<" p_bip(gamma) "<< p_bip(gamma) <<std::endl;
-      break;
+		break;
     }
   return p;
 }
 
+
 pair<string,scalar_type> approx_posterior::mpp_tree()
 {
-  map<long int, scalar_type > qmpp; //del-loc
-  for (map <int, vector <long int > > :: iterator it = size_ordered_bips.begin(); it != size_ordered_bips.end(); it++)
-    for (vector <long int >  :: iterator jt = (*it).second.begin(); jt != (*it).second.end(); jt++)
-      {
-	long int g_id=(*jt);
-	// leaves
-	if ((*it).first==1)
-	  qmpp[g_id]=1;
-	else
-	  {
-	    scalar_type max_cp=0;
-	    for (map< set<long int>,scalar_type> :: iterator kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
-	      {	  
-		vector <long int> parts;
-		for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
-		long int gp_id=parts[0];
-		long int gpp_id=parts[1];	    
-		scalar_type cp=p_dip(g_id,gp_id,gpp_id)*qmpp[gp_id]*qmpp[gpp_id];	
-		if (cp>max_cp) max_cp=cp;
-	      }
-	    qmpp[g_id]=max_cp;
-	  }
-      }
+	map<long int, scalar_type > qmpp; //del-loc. Map between a bipartition id and its maximum posterior probability.
+	for (map <int, vector <long int > > :: iterator it = size_ordered_bips.begin(); it != size_ordered_bips.end(); it++)
+		for (vector <long int >  :: iterator jt = (*it).second.begin(); jt != (*it).second.end(); jt++)
+		{
+			long int g_id=(*jt);
+			// leaves
+			if ((*it).first==1)
+				qmpp[g_id]=1;
+			else
+			{
+				scalar_type max_cp=0;
+				//Go through all resolutions of clade g_id
+				for (map< set<long int>,scalar_type> :: iterator kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
+				{	  
+					vector <long int> parts;
+					for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
+					long int gp_id=parts[0];
+					long int gpp_id=parts[1]; //Why not do directly gp_id=(*kt).first.begin() and gpp_id=(*kt).first.end()-1 because it's always for binary trees?
+					scalar_type cp=p_dip(g_id,gp_id,gpp_id)*qmpp[gp_id]*qmpp[gpp_id];	
+					if (cp>max_cp) max_cp=cp;
+				}
+				qmpp[g_id]=max_cp;
+			}
+		}
+	//Now we have maximum posterior probability estimates for all sets of leaves (=bipartitions)
+	//The second loop computes the maximum posterior probability estimate from all the trees that can be amalgamated (=all the trees that can be written as the junction of two leaf sets)
   scalar_type max_pp=0,sum_pp=0;
   long int max_bip=-1,max_not_bip=-1;
   //we look at everything twice..
@@ -813,13 +832,14 @@ pair<string,scalar_type> approx_posterior::mpp_tree()
   return return_pair;
 }
 
+
  string approx_posterior::mpp_backtrack(long int g_id, map<long int, scalar_type > * qmpp)
 {
   //leaf
   if (set_sizes[g_id]==1) 
     {
       stringstream bs;
-      bs<<Bip_bls[g_id]/observations;
+      bs<<Bip_bls[g_id]/observations; 
       return id_leaves[(*id_sets[g_id].begin())]+":"+bs.str(); 
     }
 
@@ -831,7 +851,7 @@ pair<string,scalar_type> approx_posterior::mpp_tree()
       vector <long int> parts;
       for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
       long int gp_id=parts[0];
-      long int gpp_id=parts[1];	    
+      long int gpp_id=parts[1];	//Same thing as above, not sure the for loop is useful?    
       scalar_type cp=p_dip(g_id,gp_id,gpp_id)*(*qmpp)[gp_id]*(*qmpp)[gpp_id];		
       sum_cp+=cp;
       if (cp>max_cp) {max_cp=cp; max_gp_id=gp_id; max_gpp_id=gpp_id;}
@@ -867,6 +887,7 @@ string approx_posterior::random_tree()
   for (int i=1;i<Gamma_size+1;i++) if (!gamma.count(i)) not_gamma.insert(i);
   return "("+random_split(gamma)+":1,"+random_split(not_gamma)+":1);\n";
 }
+
 
 string approx_posterior::random_split(set <int> gamma)
 {
