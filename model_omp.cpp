@@ -88,7 +88,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
   //oMP// 
 
 
-  std::map<int, vector<int> > size2i; //Map between clade size and vector of ids of the clades of that size.
+  std::map<int, vector<int> > size2i; //Map between clade size and vector of ids of the clades of that size. Seems to me this size2i could be built once and for all, and saved in the approx_posterior object, and not reconstructed every time?
     
   for (int i=0;i<(int)g_ids.size();i++) { //Filling up size2i
     if (size2i.count(g_id_sizes[i]) == 0)
@@ -496,18 +496,18 @@ scalar_type exODT_model::p(approx_posterior *ale)
              
 	      // directed partition (dip) gamma's id  
 	      bool is_a_leaf=false;
-	      long int g_id=g_ids[i];	
+	      long int g_id=g_ids[i];	//clade i has id g_id
 	      if (g_id_sizes[i]==1)
 		is_a_leaf=true;
              
-	      vector <long int> gp_ids;//del-loc
-	      vector <long int> gpp_ids;//del-loc
-	      vector <scalar_type> p_part;//del-loc
+	      vector <long int> gp_ids;//del-loc. All clades that are left daughters of clade g_id.
+	      vector <long int> gpp_ids;//del-loc. All clades that are rigt daughters of clade g_id.
+	      vector <scalar_type> p_part;//del-loc. Stores all probabilities of the observed resolutions of clade g_id.
 	      if (g_id!=-1) //Not at the root
 		{
 #pragma omp critical 
 		  {
-		    for (map< set<long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++)
+		    for (map< set<long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++) //Going through all resolutions of the clade g_id
 		      {	  
 			vector <long int> parts;
 			for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
@@ -525,23 +525,23 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		}
 	      else //at the root
 		{
-		  //root biprartition needs to be handled separately
-		  map<set<long int>,int> bip_parts;
-		  for (map <long int,scalar_type> :: iterator it = ale->Bip_counts.begin(); it != ale->Bip_counts.end(); it++)
-		    {
-		      long int gp_id=(*it).first;
-		      set <int> gamma=ale->id_sets[gp_id];
-		      set <int> not_gamma;
-		      for (set<int>::iterator st=ale->Gamma.begin();st!=ale->Gamma.end();st++)
-			if (gamma.count(*st)==0)
-			  not_gamma.insert(*st);
-		      long int gpp_id = ale->set_ids[not_gamma];
-		      set <long int> parts;
-		      parts.insert(gp_id);
-		      parts.insert(gpp_id);
-		      bip_parts[parts]=1;
-		      gamma.clear();
-		      not_gamma.clear();
+		  //root bipartition needs to be handled separately
+		  map<set<long int>,int> bip_parts; // the map is here just for ordering the sets of clade ids. Each set only has 2 elements.
+			for (map <long int,scalar_type> :: iterator it = ale->Bip_counts.begin(); it != ale->Bip_counts.end(); it++)
+		    { //Going through all possible roots
+				long int gp_id=(*it).first;
+				set <int> gamma=ale->id_sets[gp_id];
+				set <int> not_gamma;
+				for (set<int>::iterator st=ale->Gamma.begin();st!=ale->Gamma.end();st++)
+					if (gamma.count(*st)==0)
+						not_gamma.insert(*st); //Building a function for constructing not_gamma would be useful!
+				long int gpp_id = ale->set_ids[not_gamma];
+				set <long int> parts;
+				parts.insert(gp_id);
+				parts.insert(gpp_id);
+				bip_parts[parts]=1; //1 is a default value of no interest
+				gamma.clear();
+				not_gamma.clear();
 		    }
 		  for (map<set<long int>,int> :: iterator kt = bip_parts.begin();kt!=bip_parts.end();kt++)
 		    {
@@ -558,8 +558,9 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		    }
 		  bip_parts.clear();
 		}
-             
-	      int N_parts=gp_ids.size();
+             //Now we have filled the vectors gp_ids, gpp_ids and p_part: we know all resolutions of clade g_id with the associated probability.
+			
+	      int N_parts=gp_ids.size(); //Number of resolutions of clade g_id.
 	      if (!1) { //N_parts >= num_threads) { // It makes sense to do further parallelization but that slows things down!
 		//iterate over all postions along S
 		for (int rank=0;rank<last_rank;rank++)
@@ -837,18 +838,19 @@ scalar_type exODT_model::p(approx_posterior *ale)
                  
 	      }
 	      else { // It does not make sense to do further parallelization
-		//iterate over all postions along S
+		//iterate over all time slices along S, from the leaves to the top
 		for (int rank=0;rank<last_rank;rank++)
 		  {
-		    int n=time_slices[rank].size();
+		    int n=time_slices[rank].size(); //Number of branches going through n
 		    for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++)
-		      {
+		      { 
+				  //Going through all subslices, and for each subslice considering the set of possible SDTL events.
 			//######################################################################################################################
 			//#########################################INNNER LOOP##################################################################
 			//######################################################################################################################
                          
-			scalar_type t=time_slice_times[rank][t_i];
-			scalar_type tpdt,tpdt_nl;
+			scalar_type t=time_slice_times[rank][t_i]; //End time of the current subslice.
+			scalar_type tpdt,tpdt_nl; //tpdt: beginning time of the current subslice. tpdt_nl=tpdt is for the event node.
 			if ( t_i < scalar_parameter["D"]-1 )
 			  tpdt=time_slice_times[rank][t_i+1];
 			else if (rank<last_rank-1)
@@ -863,9 +865,9 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			  tpdt_nl=tpdt;
                          
 			//root
-			scalar_type Delta_t=tpdt-t;
+			scalar_type Delta_t=tpdt-t; //size of the subslice
 			//scalar_type N=vector_parameter["N"][rank];
-			scalar_type Delta_bar=vector_parameter["Delta_bar"][rank];
+			scalar_type Delta_bar=vector_parameter["Delta_bar"][rank]; //Parameter for the speciation rate in the Moran process
 			//scalar_type Lambda_bar=vector_parameter["Lambda_bar"][rank];
 			//OMG
 			//scalar_type p_Delta_bar=1-exp(-Delta_bar/N*Delta_t);			     

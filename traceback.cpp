@@ -53,7 +53,7 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 	{
 	  string gene_name=ale->id_leaves[(* (ale->id_sets[g_id].begin()) )];
 	  vector <string> tokens;
-	  boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_seperators"]),boost::token_compress_on);
+	  boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_separators"]),boost::token_compress_on);
 	  string species_name;
 	  if ((int)scalar_parameter["species_field"]==-1)
 	    species_name=tokens[tokens.size()-1];	  

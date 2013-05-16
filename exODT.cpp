@@ -12,7 +12,7 @@ exODT_model::exODT_model()
   scalar_parameter["min_branch_lenghts"]=0;  
   // length of "stem" branch above root
   scalar_parameter["stem_length"]=1;
-  //number of discretization slices per time slice
+  //number of discretization slices (subslices) per time slice
   scalar_parameter["D"]=3;
   //number of subdiscretizations for ODE calculations
   scalar_parameter["DD"]=10;

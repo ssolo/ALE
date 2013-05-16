@@ -63,8 +63,8 @@ class exODT_model
 	std::map<int,scalar_type > time_slice_begins;            //del-loc. Map between rank of time slice and begin time of this time slice.
 
   //Variables used for computing.
-  std::map<int,std::map <scalar_type,scalar_type> > Ee;                       //del-loc
-  std::map<int,std::map <scalar_type,scalar_type> > Ge;                       //del-loc
+  std::map<int,std::map <scalar_type,scalar_type> > Ee;                       //del-loc. Probability that a gene present at a given time slice is getting extinct before reaching extant species.
+  std::map<int,std::map <scalar_type,scalar_type> > Ge;                       //del-loc. Probability that a gene present at a given time slice actually reaches extant species.
   std::map<long int, std::map< scalar_type, std::map<int, scalar_type> > > q; //del-loc. Map between clade id (from the approx_posterior object) and a map between the time of a subslice and a map between branch id and 
   std::map<long int, std::map< scalar_type, std::map<int, step> > > q_step;   //del-loc
   std::map <long int,std::string> gid_sps;                                    //del-loc. Map between clade id (from the approx_posterior object) and species included in that clade.
