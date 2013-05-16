@@ -78,15 +78,14 @@ class approx_posterior
 
   void observation(std::vector<std::string> trees,bool count_topologies=false);     //Given a vector of trees, fills an approx_posterior object by recursively calling decompose, and then doing some more counts.
   scalar_type p(std::string tree);                                                  //Computes the probability of a string tree. Calls recompose on the tree, and then uses the map returned by recompose to compute the probability of the whole tree.
-  scalar_type nbipp(std::string tree);
-
+  scalar_type nbipp(std::string tree);                                              //Computes the proportion of bipartitions already in the approx_posterior object that are present in the tree
   scalar_type binomial(int n,int m);                                                //Computes the binomial coefficient.
   scalar_type trinomial(int n1,int n2,int n3);                                      //Computes the multinomial coefficient for 3 elements.
 
   std::pair<std::string,scalar_type> mpp_tree();                                    //Returns the maximum a posteriori tree that can be amalgamated from the approx_prior object. Uses a double-recursive traversal of all bipartitions.
   std::string mpp_backtrack(long int g_id, std::map<long int, scalar_type > * qmpp);//Recursive function that, given a bipartition id and a map associating bipartition ids to their maximum a posteriori value, builds the maximum a posteriori tree, complete with (average) branch lengths.
   std::string random_tree();                                                        //Function that returns a random tree with unit branch lengths. Calls random_split.
-	std::vector<std::string>  all_trees(){return all_trees(Gamma);};                //del-loc. 
+	std::vector<std::string>  all_trees(){return all_trees(Gamma);};                //del-loc. Builds all rooted trees that can be built based on the complete set of leaves.
 
 
   //no need to load
@@ -94,7 +93,7 @@ class approx_posterior
 	int Gamma_size;                                                                  //Number of leaves.
 	scalar_type K_Gamma;                                                             //number of bipartitions of Gamma.
   scalar_type N_Gamma;                                                               //number of unrooted trees on Gamma_size leaves
-  std::string name_seperator;                                                        //Character used between leaf names when writing the content of a leaf set.
+  std::string name_separator;                                                        //Character used between leaf names when writing the content of a leaf set.
   std::map <std::string,std::string> tree_bipstrings;                                //del-loc. Map between tree string and string containing all bipartitions in the tree.
   std::map <std::string,std::string> bipstring_trees;                                //del-loc. Dual from above. Map between string containing all bipartitions in the tree and tree string.
   std::map <long int,int> set_sizes;                                                 //del-loc. Map between a bipartition id and the sizes of the corresponding leaf set.
@@ -131,12 +130,13 @@ class approx_posterior
   //nuisance
   std::string set2name(std::set<int> leaf_set);                                      //Prints the leaf names of leaves contained in a leaf set
   std::string random_split(std::set<int> gamma);                                     //Recursive function that returns a random subtree given a leaf set as input and given the approx_posterior object. Can return clades never observed in the posterior sample.
-  std::vector<std::string>  all_trees(std::set <int > gamma);//del-loc
-  scalar_type count_trees();
-  scalar_type count_trees(long int g_id);
-  scalar_type count_all_trees(std::set <int> gamma);
-	void setAlpha ( scalar_type a );
-	void setBeta ( scalar_type b );
+  std::vector<std::string>  all_trees(std::set <int > gamma);                        //del-loc. Builds all rooted trees that can be built with leaf set gamma.
+  scalar_type count_trees();                                                         //Counts trees that can be amalgamated with the approx_posterior object with the complete leaf set, without actually building these trees.
+  scalar_type count_trees(long int g_id);                                            //Counts trees that can be amalgamated with the leaf set with id g_id, without actually building these trees.
+
+  scalar_type count_all_trees(std::set <int> gamma);                                 //Counts all trees that can be built with the leaf set gamma, without actually building these trees.
+	void setAlpha ( scalar_type a );                                                 //Set the value for the alpha parameter used for normalizing counts
+	void setBeta ( scalar_type b );                                                  //Set the value for the beta parameter used for normalizing counts
 
  private:
   ;

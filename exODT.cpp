@@ -5,7 +5,7 @@ using namespace bpp;
 exODT_model::exODT_model()
 {
   //some default parameters
-  string_parameter["gene_name_seperators"]="_@";
+  string_parameter["gene_name_separators"]="_@";
   scalar_parameter["species_field"]=0;
   scalar_parameter["event_node"]=0;
   scalar_parameter["min_bip_count"]=-1;
@@ -30,16 +30,16 @@ void exODT_model::construct(string Sstring,scalar_type N)
   S_root = S->getRootNode();//del-loc
   vector <Node*> leaves = TreeTemplateTools::getLeaves(*S_root);//del-loc
   //sort leaves according to name
-  map <string,Node *> leaf_sort;
+  map <string,Node *> leaf_sort; //map storing leaves according to their names
   for (vector <Node * >::iterator it=leaves.begin();it!=leaves.end();it++ )
     leaf_sort[(*it)->getName()]=(*it);
   leaves.clear();
   for (map <string,Node * >::iterator it=leaf_sort.begin();it!=leaf_sort.end();it++ )
     leaves.push_back((*it).second);
   leaf_sort.clear();
-
-  map <Node*,int> next_generation;
-  map <Node*,scalar_type> node_ts;
+	//leaves is now sorted by alphabetical order of the names
+  map <Node*,int> next_generation; //Map between node and slice id of descendant nodes.
+  map <Node*,scalar_type> node_ts; //Map between node and its time.
 
   // register extant species
   for (vector <Node * >::iterator it=leaves.begin();it!=leaves.end();it++ )
@@ -65,7 +65,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
       vector <Node*> tmp;
       bool stop=true;
       for (map <Node *,int >::iterator it=next_generation.begin();it!=next_generation.end();it++ )
-	if (next_generation[(*it).first]==-1)
+	if (next_generation[(*it).first]==-1) //father of leaves at first, then a node that needs to be examined
 	  {  
 	    Node * node = (*it).first;
 	    vector <Node *> sons=node->getSons();//del-loc
@@ -119,26 +119,26 @@ void exODT_model::construct(string Sstring,scalar_type N)
       //nonleaves
       if (t>0)
 	{
-	  //degenerate specation times .. should be avoided!
+	  //degenerate speciation times, where >1 nodes have same age .. should be avoided!
 	  while (t_nodes.count(t)!=0 )
 	    t+=1e-5;
 	  t_nodes[t]=node;   
 	}
     }
   for (map <scalar_type,Node * >::iterator it=t_nodes.begin();it!=t_nodes.end();it++ )
-    {
+    {//we update node_ts
       scalar_type t=(*it).first;
       Node * node=(*it).second;
       node_ts[node]=t;   
     }
 
-  last_rank=1;
+  last_rank=1; //the rank of the slice above the leaves
   for (map <scalar_type,Node *>::iterator it=t_nodes.begin();it!=t_nodes.end();it++ )
-    {
+    {//We go through the nodes, ordered according to their age.
       scalar_type t=(*it).first;
       Node * node=(*it).second;
-      branch_ts[last_branch]=t;
-      id_ranks[last_branch]=last_rank;
+      branch_ts[last_branch]=t; 
+	  id_ranks[last_branch]=last_rank;
       rank_ids[last_rank]=last_branch;
       node_ids[node]=last_branch;
       id_nodes[last_branch]=node;
@@ -180,7 +180,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
 	}
       else
 	{
-	  //time slice terminated by next speciaiton 	 
+	  //time slice terminated by next speciation 	 
 	  int terminating_branch = rank_ids[rank];
 	  for(vector <int> ::iterator it=time_slices[rank-1].begin();it!=time_slices[rank-1].end();it++)
 	    {
@@ -255,7 +255,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
   //the calculation of depends only very weakly on the value of N  
   //default value of N=1e6 is set in exODT.h 
   set_model_parameter("N",N);
-  //if we assume the that height of the species tree is equal to its expectec value under the colaescent
+  //if we assume the that height of the species tree is equal to its expected value under the colaescent
   // cf. http://arxiv.org/abs/1211.4606
   //Delta is sigma, i.e. the speciation rate of the Moran model in http://arxiv.org/abs/1211.4606 and ALEPAPER
   set_model_parameter("Delta_bar",N*2.);
@@ -285,10 +285,13 @@ void exODT_model::construct(string Sstring,scalar_type N)
   leaves.clear();
 }
 
+
 void exODT_model::set_model_parameter(string name,string value)
 {
   string_parameter[name]=value;
 }
+
+
 void exODT_model::set_model_parameter(string name,scalar_type value)
 {
 
@@ -316,6 +319,8 @@ void exODT_model::set_model_parameter(string name,scalar_type value)
   else
     scalar_parameter[name]=value;
 }
+
+
 void exODT_model::set_model_parameter(string name,vector<scalar_type> value_vector)
 {
   if (name=="delta" or name=="tau" or name=="lambda")

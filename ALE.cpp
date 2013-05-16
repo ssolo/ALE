@@ -52,7 +52,7 @@ void approx_posterior::construct(string tree_string)
 
   last_leafset_id=0;
   observations=0;
-  name_seperator="+";
+  name_separator="+";
   tree_type * tree = TreeTemplateTools::parenthesisToTree(tree_string);//del-loc  
   Node * root = tree->getRootNode();
   vector <Node * > leaves = TreeTemplateTools::getLeaves(*root);//del-loc
@@ -240,7 +240,7 @@ string approx_posterior::set2name(set<int> leaf_set)
 {
   string name=""; 
   for (set<int>::iterator it=leaf_set.begin();it!=leaf_set.end();it++)
-    name+=id_leaves[(*it)]+name_seperator; 
+    name+=id_leaves[(*it)]+name_separator; 
   return name.substr(0,name.size()-1);
 }
 
@@ -1061,6 +1061,7 @@ scalar_type approx_posterior::count_all_trees(set <int> gamma)
   return count_trees_g;
 }
 
+
 scalar_type approx_posterior::count_trees()
 {
   scalar_type count_trees_g=0;
@@ -1105,6 +1106,8 @@ scalar_type approx_posterior::count_trees()
   g_id_count.clear();
   return count_trees_g;
 }
+
+
 scalar_type approx_posterior::count_trees(long int g_id)
 {
   scalar_type count_trees_g=0;

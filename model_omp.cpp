@@ -4,17 +4,17 @@ using namespace std;
 using namespace bpp;
 
 //oMP// 
-//oMP// add openMP into this function
+//oMP// openMP added into this function
 //oMP// 
 
 scalar_type exODT_model::p(approx_posterior *ale)
 {
   ale_pointer=ale;
-  //directed partitions and thier sizes
-  vector <long int>  g_ids;//del-loc
-  vector <long int>  g_id_sizes;//del-loc  
+  //directed partitions and their sizes
+  vector <long int>  g_ids;       //del-loc. Vector of leaf set (=clade) ids, ordered by their size, small to large.
+  vector <long int>  g_id_sizes;  //del-loc. Numbers of leaves in the above sets. 
 
-    
+   //First, cleaning q. 
   for (std::map<long int, std::map< scalar_type, std::map<int, scalar_type> > >::iterator it=q.begin();it!=q.end();it++)
     {
       for ( std::map< scalar_type, std::map<int, scalar_type> >::iterator jt=(*it).second.begin();jt!=(*it).second.end();jt++)
@@ -24,7 +24,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
   q.clear();
 
   //cout << "start" << endl;  
-  //iterate over directed patitions (i.e. clades) ordered by the number of leaves
+  //iterate over directed partitions (i.e. clades) ordered by the number of leaves
   //cout << "start loop" << endl;
   //test  
   //long int tmp_g_id=-1;
@@ -32,7 +32,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
   //test  
 
   //oMP// 
-  //oMP// I sort the directed partitions by size (number of gene tree leaves) to insure that we calculate things in the propoer order
+  //oMP// I sort the directed partitions by size (number of gene tree leaves) to ensure that we calculate things in the proper order (smaller to larger)
   //oMP// 
 
   for (map <int, vector <long int > > :: iterator it = ale->size_ordered_bips.begin(); it != ale->size_ordered_bips.end(); it++)
@@ -41,34 +41,34 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	g_ids.push_back((*jt));
 	g_id_sizes.push_back((*it).first);
       }
-  //root biprartition needs to be handled seperatly
+  //root bipartition needs to be handled separately (and last, given it's the largest)
   g_ids.push_back(-1);
   g_id_sizes.push_back(ale->Gamma_size);
 
   // gene<->species mapping
-  for (int i=0;i<(int)g_ids.size();i++)
+  for (int i=0;i<(int)g_ids.size();i++) //Going through each clade of the approx_posterior
     {
       long int g_id=g_ids[i];		
-      for (int rank=0;rank<last_rank;rank++)
+      for (int rank=0;rank<last_rank;rank++) //Going through time slices, from leaves to root
 	{
-	  int n=time_slices[rank].size();
-	  for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++)
+	  int n=time_slices[rank].size(); //Number of branches in that time slice
+	  for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++) //Going through the subslices
 	    {
 	      scalar_type t=time_slice_times[rank][t_i];
 	      for (int branch_i=0;branch_i<n;branch_i++)
 		{	    
 		  int e = time_slices[rank][branch_i];
-		  q[g_id][t][e]=0;
+		  q[g_id][t][e]=0; //initializing q with 0s for each clade of the ale, each time subslice, each branch
 		}
-	      q[g_id][t][alpha]=0;
+	      q[g_id][t][alpha]=0; //I don't understand the purpose of that: alpha=-1, so it's already 0, right?
 	    }
 	}
        
-      if (g_id_sizes[i]==1)
+      if (g_id_sizes[i]==1) //a leaf, mapping is by name
 	{
 	  string gene_name=ale->id_leaves[(* (ale->id_sets[g_id].begin()) )];
 	  vector <string> tokens;
-	  boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_seperators"]),boost::token_compress_on);
+	  boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_separators"]),boost::token_compress_on);
 	  string species_name;
 	  if ((int)scalar_parameter["species_field"]==-1)
 	    species_name=tokens[tokens.size()-1];	  
@@ -80,27 +80,27 @@ scalar_type exODT_model::p(approx_posterior *ale)
    
   //oMP// 
   //oMP// below is the loop that iterates over the sorted g_ids, it is this one that should be amicable to openMP  
-  //oMP// the importatn thing is that we can only do the g_ids in parallel that have the same number of leaves
+  //oMP// the important thing is that we can only do the g_ids in parallel that have the same number of leaves
   //oMP// hence the sorting above..
   //oMP// 
-  //oMP// the calculation fills out the global q, cf. exODT.h, this is latter needed for sampling reconcilations! 
+  //oMP// the calculation fills out the global q, cf. exODT.h, this is latter needed for sampling reconciliations! 
   //oMP// 
   //oMP// 
 
 
-  std::map<int, vector<int> > size2i;
+  std::map<int, vector<int> > size2i; //Map between clade size and vector of ids of the clades of that size.
     
-  for (int i=0;i<(int)g_ids.size();i++) {
+  for (int i=0;i<(int)g_ids.size();i++) { //Filling up size2i
     if (size2i.count(g_id_sizes[i]) == 0)
       size2i[g_id_sizes[i]] = vector<int> ();                  
     size2i[g_id_sizes[i]].push_back(i);
   }
         
   for (map <int, vector < int > > :: iterator it2 = size2i.begin(); it2 != size2i.end(); it2++) 
-    {
+    { //
       int j=0;
-      int siz = (int)it2->second.size();
-      if (siz <= 4 )// num_threads ) //If few cases: inside loop parallelization
+      int siz = (int)it2->second.size(); //Number of clades with that size
+      if (siz <= 4 )// num_threads ) //If few clades: inside loop parallelization
         {
 	  for ( j=0 ; j < siz ;j++)
 	    {
@@ -135,7 +135,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		}
 	      else
 		{
-		  //root biprartition needs to be handled seperatly
+		  //root bipartition needs to be handled separately
 		  map<set<long int>,int> bip_parts;
 		  for (map <long int,scalar_type> :: iterator it = ale->Bip_counts.begin(); it != ale->Bip_counts.end(); it++)
 		    {
@@ -477,7 +477,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	      //tatom=tnow;
             }
 	}
-      else { ////If more cases than number of threads: outside loop parallelization
+      else { ////If more clades of a given size than number of threads: outside loop parallelization
 #pragma omp parallel //num_threads(8) //p6
 	{
 #pragma omp for schedule(dynamic,1) //p7
@@ -492,7 +492,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	      //  std::cout << " and it2->first: "<<it2->first << std::endl;
              
 	      // std::cout << " and : "<< it2->second.at(j) <<std::endl;
-	      int i = it2->second.at(j);
+	      int i = it2->second.at(j); //working on clade i
              
 	      // directed partition (dip) gamma's id  
 	      bool is_a_leaf=false;
@@ -503,7 +503,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	      vector <long int> gp_ids;//del-loc
 	      vector <long int> gpp_ids;//del-loc
 	      vector <scalar_type> p_part;//del-loc
-	      if (g_id!=-1)
+	      if (g_id!=-1) //Not at the root
 		{
 #pragma omp critical 
 		  {
@@ -523,9 +523,9 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      }
 		  }
 		}
-	      else
+	      else //at the root
 		{
-		  //root biprartition needs to be handled seperatly
+		  //root biprartition needs to be handled separately
 		  map<set<long int>,int> bip_parts;
 		  for (map <long int,scalar_type> :: iterator it = ale->Bip_counts.begin(); it != ale->Bip_counts.end(); it++)
 		    {
