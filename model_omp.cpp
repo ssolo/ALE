@@ -841,7 +841,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		//iterate over all time slices along S, from the leaves to the top
 		for (int rank=0;rank<last_rank;rank++)
 		  {
-		    int n=time_slices[rank].size(); //Number of branches going through n
+		    int n=time_slices[rank].size(); //Number of branches going through slice
 		    for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++)
 		      { 
 				  //Going through all subslices, and for each subslice considering the set of possible SDTL events.
@@ -885,12 +885,12 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			//boundary between slice rank and rank-1 slice is trivial	
 			;//q[g_id][t][alpha]=q[g_id][t][alpha];	  
                          //boundaries for branch alpha virtual branch.  
-			if(1)
+			if(1) //Only dealing with S and SL events
 			  {
-			    for (int branch_i=0;branch_i<n;branch_i++)
+			    for (int branch_i=0;branch_i<n;branch_i++) //For all branches going through the current slice
 			      {	  
 				{
-				  int e = time_slices[rank][branch_i];
+				  int e = time_slices[rank][branch_i]; //index of a particular edge
                                      
 				  //boundaries for branch e
 				  //boundary at present
@@ -954,7 +954,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			      }
 			  }
                          
-			if(1)
+			if(1) //Only dealing with T events, S_bar, TL_bar and naught events?
 			  {
 			    //events within slice rank at time t on alpha virtual branch
 			    scalar_type G_bar=Ge[-1][t];//exp(-(Delta_bar*(n-N)/N+Lambda_bar)*Delta_t );	
@@ -977,7 +977,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 				scalar_type p_Ntau_e=1-exp(-tau_e*Delta_t);
 				//non-leaf directed partition
 				if (not is_a_leaf)
-				  for (int i=0;i<N_parts;i++)
+				  for (int i=0;i<N_parts;i++) //For each partition
 				    {	
 				      long int gp_id=gp_ids[i];
 				      long int gpp_id=gpp_ids[i];	    
@@ -1000,7 +1000,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 				  long int gpp_id=gpp_ids[i];	    
 				  scalar_type pp=p_part[i];
 				  scalar_type Sb=p_Delta_bar*(2*q[gp_id][t][alpha]*q[gpp_id][t][alpha])*pp;
-				  //S_bar EVENT
+				  //S_bar EVENT Speciation in an unseen lineage?
 				  q_sum_nl+=Sb;
 				  //q[g_id][tpdt][alpha]+=p_Delta_bar*(2*q[gp_id][t][alpha]*q[gpp_id][t][alpha]);
 				  //S_bar.
@@ -1043,7 +1043,8 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			    }
 			    //events within slice rank at time t on alpha virtual branch.
 			  }
-			if(1)
+				  
+			if(1) //Only dealing with S_bar, D, naught events
 			  {
 			    for (int branch_i=0;branch_i<n;branch_i++)
 			      {	
@@ -1215,18 +1216,18 @@ void exODT_model::calculate_EGb()
   map<int,map <scalar_type,scalar_type> > y_E,y_G;//del-loc
   map<int,scalar_type> Ee_y;//del-loc
   map<int,scalar_type> Ge_y;//del-loc
-  map<int,scalar_type> E_k1,E_k2,E_k3,E_k4;//del-loc
-  map<int,scalar_type> G_k1,G_k2,G_k3,G_k4;//del-loc
+  map<int,scalar_type> E_k1,E_k2,E_k3,E_k4;//del-loc. Maps used for Runge-Kutta computations (4 stages).
+  map<int,scalar_type> G_k1,G_k2,G_k3,G_k4;//del-loc. Maps used for Runge-Kutta computations (4 stages).
 
-  for (int rank=0;rank<last_rank;rank++) 
-    for (int tsi=0;tsi<(int)time_slice_times[rank].size();tsi++)
+  for (int rank=0;rank<last_rank;rank++) //For each slice, starting from the leaves
+    for (int tsi=0;tsi<(int)time_slice_times[rank].size();tsi++) //For each subslice
       {
-	scalar_type t_b;
+	scalar_type t_b; //time of the beginning of the subslice
 	if (tsi==(int)time_slice_times[rank].size()-1)
 	  t_b = time_slice_begins[rank];
 	else
 	  t_b = time_slice_times[rank][tsi+1];
-	scalar_type t_e;
+	scalar_type t_e; //time of the end of the subslice
 	if (tsi==0)
 	  {
 	    if (rank>0 )
@@ -1238,24 +1239,24 @@ void exODT_model::calculate_EGb()
 	  {
 	    t_e=time_slice_times[rank][tsi];
 	  }
-	scalar_type N=vector_parameter["N"][rank];
+	scalar_type N=vector_parameter["N"][rank]; //population size of the Moran process
 
-	scalar_type ni=time_slices[rank].size();
-	scalar_type Delta_bar=vector_parameter["Delta_bar"][rank];//1
-	scalar_type Lambda_bar=vector_parameter["Lambda_bar"][rank]*N/(N-ni);;
+	scalar_type ni=time_slices[rank].size(); //Number of branches going through the time slice
+	scalar_type Delta_bar=vector_parameter["Delta_bar"][rank];//1. Speciation rate of the Moran model
+	scalar_type Lambda_bar=vector_parameter["Lambda_bar"][rank]*N/(N-ni); //Somewhat related to the Moran model?
       
-	scalar_type t=t_e;
-	scalar_type tpdt=t_b;
-	scalar_type h=(tpdt-t)/scalar_parameter["DD"];
+	scalar_type t=t_e; //end time of the subslice
+	scalar_type tpdt=t_b; //begin time of the subslice
+	scalar_type h=(tpdt-t)/scalar_parameter["DD"]; //number of subdiscretizations for ODE calculations
 	scalar_type ti=t;
-	scalar_type h_lambda_avg=h*scalar_parameter["lambda_avg"]; 
-	scalar_type h_delta_avg=h*scalar_parameter["delta_avg"];	      
-	scalar_type h_tau_avg=h*scalar_parameter["tau_avg"]*(N-ni)/(N-1)*N;	      
-	scalar_type h_Delta_bar=h*Delta_bar;
-	scalar_type h_Lambda_bar=h*Lambda_bar;
+	scalar_type h_lambda_avg=h*scalar_parameter["lambda_avg"]; //Value of lambda averaged over height h
+	scalar_type h_delta_avg=h*scalar_parameter["delta_avg"]; //Value of delta averaged over height h      
+	scalar_type h_tau_avg=h*scalar_parameter["tau_avg"]*(N-ni)/(N-1)*N; //Value of tau averaged over height h
+	scalar_type h_Delta_bar=h*Delta_bar; //Value of Delta averaged over height h
+	scalar_type h_Lambda_bar=h*Lambda_bar; //Value of Lambda averaged over height h
 
 
-	for (int ii=0;ii<scalar_parameter["DD"];ii++)
+	for (int ii=0;ii<scalar_parameter["DD"];ii++) //Going through subdiscretizations
 	  {
 
 	    //intial conditions
@@ -1272,9 +1273,9 @@ void exODT_model::calculate_EGb()
 		y_G[-1][t]=1;	   
 	      }
 	  
-	    for (int i=0;i<(int)time_slices[rank].size();i++)
+	    for (int i=0;i<(int)time_slices[rank].size();i++) //For each branch in the time slice
 	      {
-		int e=time_slices[rank][i];
+		int e=time_slices[rank][i]; //edge index
 		if (ii==0)
 		  {
 		    if ( t==0)

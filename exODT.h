@@ -63,9 +63,9 @@ class exODT_model
 	std::map<int,scalar_type > time_slice_begins;            //del-loc. Map between rank of time slice and begin time of this time slice.
 
   //Variables used for computing.
-  std::map<int,std::map <scalar_type,scalar_type> > Ee;                       //del-loc. Probability that a gene present at a given time slice is getting extinct before reaching extant species.
-  std::map<int,std::map <scalar_type,scalar_type> > Ge;                       //del-loc. Probability that a gene present at a given time slice actually reaches extant species.
-  std::map<long int, std::map< scalar_type, std::map<int, scalar_type> > > q; //del-loc. Map between clade id (from the approx_posterior object) and a map between the time of a subslice and a map between branch id and 
+  std::map<int,std::map <scalar_type,scalar_type> > Ee;                       //del-loc. Probability (scalar value) that a gene present at a given time slice (whose rank is the int key) at time the first scalar key is getting extinct before reaching extant species.
+  std::map<int,std::map <scalar_type,scalar_type> > Ge;                       //del-loc. Probability (scalar value) that a gene present at a given time slice (whose rank is the int key) actually reaches extant species.
+  std::map<long int, std::map< scalar_type, std::map<int, scalar_type> > > q; //del-loc. Map between clade id (from the approx_posterior object) and a map between the time of a subslice and a map between branch id and probability of the clade given the ODTL model.
   std::map<long int, std::map< scalar_type, std::map<int, step> > > q_step;   //del-loc
   std::map <long int,std::string> gid_sps;                                    //del-loc. Map between clade id (from the approx_posterior object) and species included in that clade.
  
@@ -142,7 +142,7 @@ class exODT_model
   //implemented in model.cpp
   scalar_type p(approx_posterior *ale);                            //Computes the probability of an approx_posterior according to the species tree and parameter values.
   void calculate_EG();
-  void calculate_EGb();
+  void calculate_EGb(); 										   //Fills Ee. Calculates extinction probabilities per branch and per time slice.
 
   //implemented in traceback.cpp
   std::pair<std::string,scalar_type> p_MLRec(approx_posterior *ale,bool lowmem=true);
