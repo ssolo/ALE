@@ -198,7 +198,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			    
 			      scalar_type SL_fLg=q[g_id][t][f]*Egt;
 			      scalar_type SL_Lfg=q[g_id][t][g]*Eft;
-			      //SL EVENT
+			      //SL EVENT, events #3 and #4 in part c of Fig.A1 in http://arxiv.org/abs/1211.4606
 			      //q[g_id][t][e]=q[g_id][t][f]*Egt + q[g_id][t][g]*Eft;
 			      q_sum+=SL_fLg+SL_Lfg;
 			      //SL.
@@ -212,7 +212,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 				    scalar_type pp=p_part[i];
 				    scalar_type S_pf_ppg=q[gp_id][t][f]*q[gpp_id][t][g]*pp;
 				    scalar_type S_ppf_pg=q[gpp_id][t][f]*q[gp_id][t][g]*pp;
-				    //S EVENT
+				    //S EVENT, events #1 and #2 in part c of Fig.A1 in http://arxiv.org/abs/1211.4606
 				    //q[g_id][t][e]+=q[gp_id][t][f]*q[gpp_id][t][g] +q[gpp_id][t][f]*q[gp_id][t][g];
 				    q_sum+= S_pf_ppg + S_ppf_pg;
 				    //S.
@@ -256,7 +256,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			    scalar_type pp=p_part[i];				    
 			    scalar_type T_ep_app=p_Ntau_e*q[gp_id][t][e]*q[gpp_id][t][alpha]*pp;
 			    scalar_type T_ap_epp=p_Ntau_e*q[gp_id][t][alpha]*q[gpp_id][t][e]*pp;
-			    //T EVENT
+			    //T EVENT, events #3 and #4 in part b of Fig.A1 in http://arxiv.org/abs/1211.4606 
 			    //q[g_id][tpdt][alpha]+=p_Ntau_e*(q[gp_id][t][e]*q[gpp_id][t][alpha]+q[gp_id][t][alpha]*q[gpp_id][t][e]);
 			    q_sum_nl+=T_ep_app+T_ap_epp;
 			    //T.
@@ -271,7 +271,9 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			long int gpp_id=gpp_ids[i];	    
 			scalar_type pp=p_part[i];
 			scalar_type Sb=p_Delta_bar*(2*q[gp_id][t][alpha]*q[gpp_id][t][alpha])*pp;
-			//S_bar EVENT
+			//S_bar EVENT, event #2 in part b of Fig.A1 in http://arxiv.org/abs/1211.4606
+			//(note that Delta_bar corresponds to sigma, the Delta_bar,Lambda_bar distinction keeps track of speciaiton (birth) vs extiction (death), 
+			// but for the Moran process Delta_bar=Lambda_bar=sigma )
 			//q[g_id][tpdt][alpha]+=p_Delta_bar*(2*q[gp_id][t][alpha]*q[gpp_id][t][alpha]);
 			q_sum_nl+=Sb;
 			//S_bar.
@@ -286,14 +288,17 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      scalar_type tau_e=vector_parameter["tau"][e];
 		      scalar_type p_Ntau_e=tau_e*Delta_t;//1-exp(-tau_e*Delta_t);
 		      scalar_type TLb=p_Ntau_e*Ebar*q[g_id][t][e];
-		      //TL_bar EVENT
+		      //TL_bar EVENT, event #5 in part a of Fig.A1 in http://arxiv.org/abs/1211.4606
+		      //(note that since Ebar ~ 1, most transfers are expected to involve the TL evenet not the T event,
+		      //this should not be confused with the TL event of the Tofigh/Doyon/ODTL models, which here corresponds   
+		      // to SL_bar + TL ..)
 		      //q[g_id][tpdt][alpha]+=p_Ntau_e*Ebar*q[g_id][t][e];
 		      q_sum+=TLb;
 		      //TL_bar.
 
 		    }
 		  scalar_type empty=G_bar*q[g_id][t][alpha]; 
-		  //0 EVENT
+		  //0 EVENT, event #1 in part b of Fig.A1 in http://arxiv.org/abs/1211.4606
 		  //q[g_id][tpdt][alpha]+=G_bar*q[g_id][t][alpha];
 		  q_sum+=empty;
 		  //0.
@@ -328,13 +333,14 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			    scalar_type Sb_pa_ppe= p_Delta_bar*q[gp_id][t][alpha]*qppe*pp;
 			    scalar_type Sb_pe_ppa= p_Delta_bar*qpe*q[gpp_id][t][alpha]*pp;
 
-			    //S_bar EVENT
+			    //S_bar EVENT, events #3 and #4 in part a of Fig.A1 in http://arxiv.org/abs/1211.4606
+			    //(The majority of transfer events involve this event.)
 			    //q[g_id][tpdt][e]+=p_Delta_bar*(q[gp_id][t][alpha]*q[gpp_id][t][e]+q[gp_id][t][e]*q[gpp_id][t][alpha]);			  
 			    q_sum_nl+= Sb_pa_ppe + Sb_pe_ppa;
 			    //S_bar.
 
 			    scalar_type D=p_delta_e*qpe*qppe*pp;
-			    //D EVENT
+			    //D EVENT, event #2 in part a of Fig.A1 in http://arxiv.org/abs/1211.4606
 			    //q[g_id][tpdt][e]+=p_delta_e*q[gp_id][t][e]*q[gpp_id][t][e];
 			    q_sum_nl+= D;
 			    //D.
@@ -342,7 +348,8 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			  }
 
 		      scalar_type SLb=p_Delta_bar*Eet*q[g_id][t][alpha];
-		      //SL_bar EVENT
+		      //SL_bar EVENT, event #5 in part a of Fig.A1 in http://arxiv.org/abs/1211.4606
+		      //(Transfer events where the donor copy is lost involve this event.)
 		      //q[g_id][tpdt][e]+=p_Delta_bar*Eet*q[g_id][t][alpha];
 		      q_sum_nl+=SLb;
 		      //SL_bar.
@@ -350,7 +357,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      q[g_id][tpdt_nl][e]+=q_sum_nl;
 
 		      scalar_type empty=Get*q[g_id][t][e];
-		      //0 EVENT
+		      //0 EVENT, event #1 in part a of Fig.A1 in http://arxiv.org/abs/1211.4606
 		      //q[g_id][tpdt][e]=Get*q[g_id][t][e];
 		      q_sum+=empty;
 		      //0.
