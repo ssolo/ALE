@@ -1186,4 +1186,33 @@ void approx_posterior::setBeta ( scalar_type b ) {
 }
 
 
+std::vector < std::string > approx_posterior::getLeafNames() 
+{
+	std::vector <std::string > leafNames (leaf_ids.size(), "");
+	for (map::iterator<std::string, int> it = leaf_ids.begin() ; it != leaf_ids.end() ; ++it ) 
+	{
+		leafNames.push_back ( (*it)->first ) ;
+	}
+	return leafNames;
+}
+
+
+void approx_posterior::computeOrderedVectorOfClades (vector <long int>&  ids, vector <long int>& id_sizes)
+{
+	//I sort the directed partitions by size (number of gene tree leaves) to ensure that we calculate things in the proper order (smaller to larger)
+	for (map <int, vector <long int > > :: iterator it = size_ordered_bips.begin(); it != size_ordered_bips.end(); it++)
+	{
+		for (vector <long int >  :: iterator jt = (*it).second.begin(); jt != (*it).second.end(); jt++)
+		{
+			g_ids.push_back((*jt));
+			g_id_sizes.push_back((*it).first);
+		}
+	}
+	//root bipartition needs to be handled separately (and last, given it's the largest)
+	g_ids.push_back(-1);
+	g_id_sizes.push_back(Gamma_size);
+	return;
+	
+	
+}
 

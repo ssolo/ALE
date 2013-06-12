@@ -169,7 +169,6 @@ class exODT_model
 
   void show_rates(std::string name);
 
-
  private:
   ;
   

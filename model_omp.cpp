@@ -83,7 +83,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
   //oMP// the important thing is that we can only do the g_ids in parallel that have the same number of leaves
   //oMP// hence the sorting above..
   //oMP// 
-  //oMP// the calculation fills out the global q, cf. exODT.h, this is latter needed for sampling reconciliations! 
+  //oMP// the calculation fills out the global q, cf. exODT.h, this is later needed for sampling reconciliations! 
   //oMP// 
   //oMP// 
 

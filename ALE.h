@@ -137,8 +137,10 @@ class approx_posterior
   scalar_type count_all_trees(std::set <int> gamma);                                 //Counts all trees that can be built with the leaf set gamma, without actually building these trees.
 	void setAlpha ( scalar_type a );                                                 //Set the value for the alpha parameter used for normalizing counts
 	void setBeta ( scalar_type b );                                                  //Set the value for the beta parameter used for normalizing counts
+	std::vector < std::string > getLeafNames();										 //get a vector containing all leaf names in the ale.
+	void computeOrderedVectorOfClades (vector <long int>&  ids, vector <long int>& id_sizes); //fills the ids and id_sizes maps, ids of clades ordered by their size.
 
- private:
+private:
   ;
 };
 
