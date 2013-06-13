@@ -20,7 +20,7 @@ scALE::scALE()
 	// length of "stem" branch above root
 	scalar_parameter["stem_length"]=1;
 	//number of subdiscretizations for ODE calculations
-	//Corresponds to maximum number of coalescences.
+	//Corresponds to maximum number of coalescences on a given branch of the species tree.
 	scalar_parameter["DD"]=10;
 }
 
@@ -203,7 +203,7 @@ scalar_type scALE::p(approx_posterior *gale) {
 
 
 void scALE::computeProbabilityOfCladeInSpeciesTreeBranch (int gCladeId, 
-															long int speciesTreeResolution,
+															std::set < long int >  speciesTreeResolution,
 															int numberOfSlicesPerBranch, 
 															std::vector < std::pair < long int, std::vector < scalar_type > > > q ) {
 	for (size_t slice=1; slice < numberOfSlicesPerBranch ; ++slice) {
@@ -215,9 +215,18 @@ void scALE::computeProbabilityOfCladeInSpeciesTreeBranch (int gCladeId,
 
 
 void scALE::computeProbabilityOfCladeAtBeginningOfSpeciesTreeBranch (int gCladeId, 
-																	 long int speciesTreeResolution,
+																	 std::set < long int > speciesTreeResolution,
 																	 int numberOfSlicesPerBranch, 
 																	 std::vector < std::pair < long int, std::vector < scalar_type > > > q ) {
-	//TODO !
+	q[ speciesTreeResolution ][gCladeId][0] = 0.0;
+	int lastSlice = numberOfSlicesPerBranch - 1;
+	for (std::set<long int>::iterator speciesTreeDaughterClade = speciesTreeResolution.begin() ; speciesTreeDaughterClade != speciesTreeResolution.end() ; ++speciesTreeDaughterClade) {
+		speciesTreeDaughterCladeResolutions = sale->Dip_counts[*(speciesTreeDaughterClade)];
+		//Second loop, over the resolutions of the species tree clade speciesTreeDaughterClade.
+		for (map< set<long int>,scalar_type> :: iterator spDaughterResolution = speciesTreeDaughterCladeResolutions.begin(); spDaughterResolution != speciesTreeDaughterCladeResolutions.end(); ++spDaughterResolution) //Going through all resolutions of the clade speciesTreeDaughterClade
+		{
+			q[ speciesTreeResolution ][gCladeId][0] += *(spDaughterResolution)->second * q[ *(spDaughterResolution)->first ][gCladeId][lastSlice];
+		}
+	}
 	return;
 }

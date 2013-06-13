@@ -41,19 +41,28 @@ private:
 	std::map < long int, std::string > geneCladeIdToSpecies;                                    //Map between clade id (from the gene approx_posterior object) and species included in that clade.
 	std::map < int, std::vector < map < pair <int, int  >, int > > > branch_counts;             //del-loc
 
-	//std::map < long int, std::pair< long int, std::pair < scalar_type > > > q; //del-loc. Map between resolved clade id (from the species tree approx_posterior object), and pair between clade id from the gene tree approx_posterior object and a vector containing the probability of observing the gene tree clade at each slice of the species tree branch according to the scALE model.
-	std::vector < std::pair < long int, std::vector < scalar_type > > > q; //del-loc. Same as above, but instead of a map we use a vector.	
+	//std::map < long int, std::pair< long int, std::pair < scalar_type > > > q; //del-loc. Map between resolution of a clade (from the species tree approx_posterior object), and pair between clade id from the gene tree approx_posterior object and a vector containing the probability of observing the gene tree clade at each slice of the species tree branch according to the scALE model.
+	std::map < std::set< long int >,  std::pair < long int, std::vector < scalar_type > > > q; //del-loc. Same as above, but instead of a map we use a vector.	
 	
-	
+	/******************************************************************************
+	 //Computes the probability of a given gene tree clade in a given species tree branch, at all time slices except 0.
+	 //Uses formula: \frac{d P(\gamma, s, t)}{dt} = -\theta_s \sum_{\bar g} \Pi_{\bar g} \sum_{s',s''} \Pi_{s'} \Pi_{s''} P(\bar \gamma, s', t) P(\bar \gamma, s'', t) \\ + \theta_s \sum_{ g} \Pi_{ g} \sum_{s',s''}\Pi_{s'}\Pi_{s''}P( \gamma', s', t)P(\gamma'', s'', t)
+	 //More clearly: the probability of seeing a gene tree clade gamma at time slice n+1 is equal to the probability at time slice n of seeing two daughter clades which then coalesce into gamma before time slice n minus the probability that gamma has coalesced with another clade, and thus disappeared.
+	 *******************************************************************************/
 	void computeProbabilityOfCladeInSpeciesTreeBranch (int gCladeId, 
-													   long int speciesTreeResolution, 
+													   std::set < long int > speciesTreeResolution, 
 													   int numberOfSlicesPerBranch,
-													   std::vector < std::pair < long int, scalar_type > > q ) ; //Computes the probability of a given gene tree clade in a given species tree branch, at all time slices except 0.
+													   std::vector < std::pair < long int, scalar_type > > q ) ; 
 	
+	/******************************************************************************
+	//Computes the probability of a given gene tree clade at the beginning of a given species tree non-leaf branch, at time slice 0.
+	//Uses formula: P(\gamma, s, t_{bottom}^s)=\sum_{s'} \Pi_{s'} P (\gamma, s', t_{top}^{s'})
+	*******************************************************************************/
 	void computeProbabilityOfCladeAtBeginningOfSpeciesTreeBranch (int gCladeId, 
-																		 long int speciesTreeResolution,
-																		 int numberOfSlicesPerBranch, 
-																  std::vector < std::pair < long int, std::vector < scalar_type > > > q ) ; //Computes the probability of a given gene tree clade at the beginning of a given species tree non-leaf branch, at time slice 0.
+																  std::set < long int > speciesTreeResolution,
+																  int numberOfSlicesPerBranch, 
+																  std::vector < std::pair < long int, std::vector < scalar_type > > > q ) ; 
+
 
 
 	
