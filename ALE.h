@@ -106,7 +106,7 @@ class approx_posterior
   std::map <long int,scalar_type> Bip_counts;                                        //del-loc. For each bipartition, gives the number of times it was observed.
   std::map <long int,scalar_type> Bip_bls;                                           //del-loc. Sum of the branch lengths associated to the bipartitions.
 
-  std::map <long int,std::map< std::set<long int>,scalar_type> > Dip_counts;         //del-loc. Contains the frequency of triplets: mother clade and its two daughter clades. Map between the bipartition id of the mother clade and another map containing a set of bipartition ids (couldn't it be just a pair, in the case of bifurcating trees?) and the frequency of the associated triplet of bipartitions. 
+  std::map <long int, std::map< std::set<long int>,scalar_type> > Dip_counts;        //del-loc. Contains the frequency of triplets: mother clade and its two daughter clades. Map between the bipartition id of the mother clade and another map containing a set of bipartition ids (couldn't it be just a pair, in the case of bifurcating trees?) and the frequency of the associated triplet of bipartitions. 
   std::map <std::set <int>,long int>  set_ids;                                       //del-loc. Map between a set of leaf ids and the corresponding bipartition index. 
   std::map< long int, std::set <int> > id_sets;                                      //del-loc. Dual from above. Map between a bipartition index and the corresponding leaf ids.
   //nuisance vars

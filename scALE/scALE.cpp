@@ -204,11 +204,67 @@ scalar_type scALE::p(approx_posterior *gale) {
 
 void scALE::computeProbabilityOfCladeInSpeciesTreeBranch (int gCladeId, 
 															std::set < long int >  speciesTreeResolution,
-															int numberOfSlicesPerBranch, 
-															std::vector < std::pair < long int, std::vector < scalar_type > > > q ) {
-	for (size_t slice=1; slice < numberOfSlicesPerBranch ; ++slice) {
+															int numberOfSlicesPerBranch) {
+	//Length of a time slice
+	double timeSliceWidth = 1.0 / numberOfSlicesPerBranch;
+	map< set<long int>,scalar_type> geneTreeCladeResolutions;
+	geneTreeCladeResolutions = gale_pointer->Dip_counts[gCladeId];
+	double thetaS = timeSliceWidth * NeTs[speciesTreeResolution];
+	long int speciesClade1 = *(speciesTreeResolution.begin());
+	long int speciesClade2 = *(speciesTreeResolution.end()); //Assuming there are only two clades (binary tree)
+	long int geneTreeCladeDaughter1;
+	long int geneTreeCladeDaughter2;
+	speciesClade1Resolutions = sale_pointer->Dip_counts[speciesClade1];
+	speciesClade2Resolutions = sale_pointer->Dip_counts[speciesClade2];
+	
+	double speciesClade1ResolutionProbability ;
+	double speciesClade2ResolutionProbability ;
+	
+	for (size_t slice=1; slice < numberOfSlicesPerBranch ; ++slice) 
+	{ //Going through all slices
 		//TODO !
-	}
+		q[ speciesTreeResolution ][gCladeId][slice] = q[ speciesTreeResolution ][gCladeId][slice - 1];
+		//First, we substract the probability of the current gene tree clade coalescing with another sister clade
+		//Here we assume that we have in gale a map cladeToSisterClades between gCladeId and a vector of sister clades.
+		std::vector < int > sisterClades = gale_pointer->cladeToSisterClades[gCladeId];
+		for (std::vector < int >::iterator sisterClade = sisterClades.begin() ; sisterClade != sisterClades.end() ; ++sisterClade) 
+		{ //Going through all sister clades
+			sisterCladeResolutions = gale->Dip_counts[*(sisterClade)];
+			for (map< set<long int>,scalar_type> :: iterator sisterCladeResolution = sisterCladeResolutions.begin(); sisterCladeResolution != sisterCladeResolutions.end(); ++sisterCladeResolution) //Going through all resolutions of the clade sisterClade
+			{
+				for (map< set<long int>,scalar_type> :: iterator speciesClade1Resolution = speciesClade1Resolutions.begin(); speciesClade1Resolution != speciesClade1Resolutions.end(); ++speciesClade1Resolution) //Going through all resolutions of the clade speciesClade1
+				{
+					speciesClade1ResolutionProbability = *(speciesClade1Resolution)->second ;
+					for (map< set<long int>,scalar_type> :: iterator speciesClade2Resolution = speciesClade2Resolutions.begin(); speciesClade2Resolution != speciesClade2Resolutions.end(); ++speciesClade2Resolution) //Going through all resolutions of the clade speciesClade2
+					{
+						speciesClade2ResolutionProbability = *(speciesClade2Resolution)->second ;
+						//Version written on the board in Lyon: q[ speciesTreeResolution ][gCladeId][slice] -= thetaS * *(sisterCladeResolution)->second * speciesClade1ResolutionProbability * speciesClade2ResolutionProbability * q[ speciesClade1Resolution ][sisterClade][slice-1] * q[ speciesClade2Resolution ][sisterClade][slice-1];
+						//Corrected version:
+						q[ speciesTreeResolution ][gCladeId][slice] -= thetaS * *(sisterCladeResolution)->second * ( speciesClade1ResolutionProbability * q[ speciesClade1Resolution ][sisterClade][slice-1] +speciesClade2ResolutionProbability * q[ speciesClade2Resolution ][sisterClade][slice-1] );
+
+					} //End loop over resolutions of speciesClade2
+				} //End loop over resolutions of speciesClade1
+			} //End loop over resolutions of sisterClade
+		} //End loop over all sister clades
+		
+		//Second, we add the probability that daughter clades of the current gene tree clade coalesce into it.
+		//First, we sum over all resolution of gCladeId
+		for (map< set<long int>,scalar_type> :: iterator geneTreeCladeResolution = geneTreeCladeResolutions.begin(); geneTreeCladeResolution != geneTreeCladeResolutions.end(); ++geneTreeCladeResolution) //Going through all resolutions of the clade gCladeId
+		{
+			geneTreeCladeDaughter1 = *(geneTreeCladeResolutions).begin();
+			geneTreeCladeDaughter2 = *(geneTreeCladeResolutions).end();
+			for (map< set<long int>,scalar_type> :: iterator speciesClade1Resolution = speciesClade1Resolutions.begin(); speciesClade1Resolution != speciesClade1Resolutions.end(); ++speciesClade1Resolution) //Going through all resolutions of the clade speciesClade1
+			{
+				speciesClade1ResolutionProbability = *(speciesClade1Resolution)->second ;
+				for (map< set<long int>,scalar_type> :: iterator speciesClade2Resolution = speciesClade2Resolutions.begin(); speciesClade2Resolution != speciesClade2Resolutions.end(); ++speciesClade2Resolution) //Going through all resolutions of the clade speciesClade2
+				{
+					speciesClade2ResolutionProbability = *(speciesClade2Resolution)->second ;
+					q[ speciesTreeResolution ][gCladeId][slice] += *(geneTreeCladeResolution)->second * speciesClade1ResolutionProbability * speciesClade2ResolutionProbability * ( q[ speciesClade1Resolution ][geneTreeCladeDaughter1][slice-1] * q[ speciesClade2Resolution ][geneTreeCladeDaughter2][slice-1] + q[ speciesClade1Resolution ][geneTreeCladeDaughter2][slice-1] * q[ speciesClade2Resolution ][geneTreeCladeDaughter1][slice-1]  )
+					
+				} //End loop over resolutions of speciesClade2
+			} //End loop over resolutions of speciesClade1	
+		} //End loop over resolutions of gCladeId	
+	} //End loop over time slices
 	return;
 }
 
@@ -216,12 +272,12 @@ void scALE::computeProbabilityOfCladeInSpeciesTreeBranch (int gCladeId,
 
 void scALE::computeProbabilityOfCladeAtBeginningOfSpeciesTreeBranch (int gCladeId, 
 																	 std::set < long int > speciesTreeResolution,
-																	 int numberOfSlicesPerBranch, 
-																	 std::vector < std::pair < long int, std::vector < scalar_type > > > q ) {
+																	 int numberOfSlicesPerBranch ) {
 	q[ speciesTreeResolution ][gCladeId][0] = 0.0;
 	int lastSlice = numberOfSlicesPerBranch - 1;
+	map< set<long int>,scalar_type> speciesTreeDaughterCladeResolutions;
 	for (std::set<long int>::iterator speciesTreeDaughterClade = speciesTreeResolution.begin() ; speciesTreeDaughterClade != speciesTreeResolution.end() ; ++speciesTreeDaughterClade) {
-		speciesTreeDaughterCladeResolutions = sale->Dip_counts[*(speciesTreeDaughterClade)];
+		speciesTreeDaughterCladeResolutions = sale_pointer->Dip_counts[*(speciesTreeDaughterClade)];
 		//Second loop, over the resolutions of the species tree clade speciesTreeDaughterClade.
 		for (map< set<long int>,scalar_type> :: iterator spDaughterResolution = speciesTreeDaughterCladeResolutions.begin(); spDaughterResolution != speciesTreeDaughterCladeResolutions.end(); ++spDaughterResolution) //Going through all resolutions of the clade speciesTreeDaughterClade
 		{

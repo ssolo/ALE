@@ -36,7 +36,7 @@ private:
 	
 	approx_posterior * sale_pointer;                            //Pointer to an approx_posterior object used to describe a species tree distribution. Used for dynamic programming in p for instance.	
 	approx_posterior * gale_pointer;                            //Pointer to an approx_posterior object used to describe a gene tree distribution. Used for dynamic programming in p for instance.
-	std::vector<double> NeTs; 									//branch-wise parameters of the coalescent process, one per branch.
+	std::map < std::set < long int >, double> NeTs; 									//branch-wise parameters of the coalescent process, one per resolved clade of the species tree.
 	
 	std::map < long int, std::string > geneCladeIdToSpecies;                                    //Map between clade id (from the gene approx_posterior object) and species included in that clade.
 	std::map < int, std::vector < map < pair <int, int  >, int > > > branch_counts;             //del-loc
@@ -51,8 +51,7 @@ private:
 	 *******************************************************************************/
 	void computeProbabilityOfCladeInSpeciesTreeBranch (int gCladeId, 
 													   std::set < long int > speciesTreeResolution, 
-													   int numberOfSlicesPerBranch,
-													   std::vector < std::pair < long int, scalar_type > > q ) ; 
+													   int numberOfSlicesPerBranch) ; 
 	
 	/******************************************************************************
 	//Computes the probability of a given gene tree clade at the beginning of a given species tree non-leaf branch, at time slice 0.
@@ -60,8 +59,7 @@ private:
 	*******************************************************************************/
 	void computeProbabilityOfCladeAtBeginningOfSpeciesTreeBranch (int gCladeId, 
 																  std::set < long int > speciesTreeResolution,
-																  int numberOfSlicesPerBranch, 
-																  std::vector < std::pair < long int, std::vector < scalar_type > > > q ) ; 
+																  int numberOfSlicesPerBranch) ; 
 
 
 
