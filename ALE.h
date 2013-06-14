@@ -138,7 +138,7 @@ class approx_posterior
 	void setAlpha ( scalar_type a );                                                 //Set the value for the alpha parameter used for normalizing counts
 	void setBeta ( scalar_type b );                                                  //Set the value for the beta parameter used for normalizing counts
 	std::vector < std::string > getLeafNames();										 //get a vector containing all leaf names in the ale.
-	void computeOrderedVectorOfClades (vector <long int>&  ids, vector <long int>& id_sizes); //fills the ids and id_sizes maps, ids of clades ordered by their size.
+	void computeOrderedVectorOfClades (std::vector <long int>&  ids, std::vector <long int>& id_sizes); //fills the ids and id_sizes maps, ids of clades ordered by their size.
 
 private:
   ;
