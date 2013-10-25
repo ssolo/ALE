@@ -11,9 +11,11 @@ exODT_model::exODT_model()
   scalar_parameter["min_bip_count"]=-1;
   scalar_parameter["min_branch_lenghts"]=0;  
   // length of "stem" branch above root
-  scalar_parameter["stem_length"]=1;
+  scalar_parameter["stem_length"]=0.1;
   //number of discretization slices (subslices) per time slice
   scalar_parameter["D"]=3;
+  scalar_parameter["grid_delta_t"]=0.005;
+  scalar_parameter["min_D"]=3;
   //number of subdiscretizations for ODE calculations
   scalar_parameter["DD"]=10;
 }
@@ -222,11 +224,24 @@ void exODT_model::construct(string Sstring,scalar_type N)
       scalar_type slice_height=slice_begin-slice_end;
 
       time_slice_times[rank].push_back(slice_end);
-      for (scalar_type internal_interval=1;internal_interval<scalar_parameter["D"];internal_interval++)
+      //we calculate the local D 
+      scalar_type delta_t=scalar_parameter["grid_delta_t"];
+      int min_D=scalar_parameter["min_D"];
+
+      int local_D=max((int)ceil(slice_height/delta_t),min_D);
+      //cout << rank << " " << local_D << " " << slice_height<< " " <<slice_height/delta_t << endl;
+      //we calculate the local D 
+      for (scalar_type internal_interval=1;internal_interval<local_D;internal_interval++)
 	{
-	  time_slice_times[rank].push_back(slice_end+internal_interval*slice_height/scalar_parameter["D"]);
+	  time_slice_times[rank].push_back(slice_end+internal_interval*slice_height/local_D);
 	}
       time_slice_begins[rank]=slice_begin;
+      
+      //for (scalar_type internal_interval=1;internal_interval<scalar_parameter["D"];internal_interval++)
+      //{
+      //  time_slice_times[rank].push_back(slice_end+internal_interval*slice_height/scalar_parameter["D"]);
+      // }
+      //time_slice_begins[rank]=slice_begin;
     }
 
   //annotate time orders in bootstrap values
@@ -244,6 +259,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
       node->setBranchProperty("ID",BppString(out.str()));
     }  
   string_parameter["S_with_ranks"]=TreeTemplateTools::treeToParenthesis(*S,false,"ID");
+  //cout << string_parameter["S_with_ranks"] << endl;
   for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
     (*it).first->setBranchProperty("ID",BppString(""));
 

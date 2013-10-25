@@ -135,7 +135,8 @@ scalar_type exODT_model::p(approx_posterior *ale)
 
 	      scalar_type t=time_slice_times[rank][t_i];
 	      scalar_type tpdt,tpdt_nl;
-	      if ( t_i < scalar_parameter["D"]-1 )
+	      //if ( t_i < scalar_parameter["D"]-1 )
+	      if ( t_i < time_slice_times[rank].size()-1 )
 		tpdt=time_slice_times[rank][t_i+1];
 	      else if (rank<last_rank-1)
 		tpdt=time_slice_times[rank+1][0];
@@ -143,17 +144,18 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		//top of root stem
 		tpdt=t_begin[time_slices[rank][0]];
 
-	      if (scalar_parameter["event_node"]==1 and true)
+	      if (scalar_parameter["event_node"]==1)
 		tpdt_nl=t;
 	      else
 		tpdt_nl=tpdt;
 
 	      //root
 	      scalar_type Delta_t=(tpdt-t)*1;
+
 	      //Delat_bar corresponds to sigma in ALEPAPER
 	      scalar_type Delta_bar=vector_parameter["Delta_bar"][rank];
 	      //scalar_type Lambda_bar=vector_parameter["Lambda_bar"][rank];
-	      //scalar_type tmp=1-exp(-Delta_bar*abs(Delta_t));
+	      //scalar_type tmp
 	      scalar_type p_Delta_bar=Delta_bar*Delta_t;			     
 	      scalar_type Ebar=Ee[-1][t];
 		    
@@ -218,6 +220,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 				    //S.
 				  }
 			      q[g_id][t][e]=q_sum; 
+			      //if (q[g_id][t][e]>1) q[g_id][t][e]=1;//XX
 			    }
 
 			  //branches that cross to next time slice  
@@ -245,7 +248,9 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		    {
 		      int e = time_slices[rank][branch_i];		
 		      scalar_type tau_e=vector_parameter["tau"][e];
-		      scalar_type p_Ntau_e=tau_e*Delta_t;//1-exp(-tau_e*Delta_t );
+		      scalar_type p_Ntau_e=tau_e*Delta_t;
+			  
+
 
 		      //non-leaf directed partition
 		      if (not is_a_leaf)
@@ -270,6 +275,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			long int gp_id=gp_ids[i];
 			long int gpp_id=gpp_ids[i];	    
 			scalar_type pp=p_part[i];
+			
 			scalar_type Sb=p_Delta_bar*(2*q[gp_id][t][alpha]*q[gpp_id][t][alpha])*pp;
 			//S_bar EVENT, event #2 in part b of Fig.A1 in http://arxiv.org/abs/1211.4606
 			//(note that Delta_bar corresponds to sigma, the Delta_bar,Lambda_bar distinction keeps track of speciaiton (birth) vs extiction (death), 
@@ -282,11 +288,14 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		
 		  q[g_id][tpdt_nl][alpha]+=q_sum_nl;
 
+		  //if (q[g_id][tpdt_nl][alpha]>1) q[g_id][tpdt_nl][alpha]=1;//XX
+
 		  for (int branch_i=0;branch_i<n;branch_i++)			  
 		    {
 		      int e = time_slices[rank][branch_i];		
 		      scalar_type tau_e=vector_parameter["tau"][e];
-		      scalar_type p_Ntau_e=tau_e*Delta_t;//1-exp(-tau_e*Delta_t);
+		      scalar_type p_Ntau_e=tau_e*Delta_t;
+
 		      scalar_type TLb=p_Ntau_e*Ebar*q[g_id][t][e];
 		      //TL_bar EVENT, event #5 in part a of Fig.A1 in http://arxiv.org/abs/1211.4606
 		      //(note that since Ebar ~ 1, most transfers are expected to involve the TL evenet not the T event,
@@ -304,6 +313,8 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		  //0.
 
 		  q[g_id][tpdt][alpha]+=q_sum;
+		  //if (q[g_id][tpdt][alpha]>1) q[g_id][tpdt][alpha]=1;//XX
+
 		  //events within slice rank at time t on alpha virtual branch.
 		}
 	      if(1)
@@ -314,7 +325,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      scalar_type Get=Ge[e][t];
 		      scalar_type Eet=Ee[e][t];	
 		      scalar_type delta_e=vector_parameter["delta"][e];
-		      scalar_type p_delta_e=delta_e*Delta_t;//1-exp(-delta_e*Delta_t);
+		      scalar_type p_delta_e=delta_e*Delta_t;
 
 		      //events within slice rank at time t on branch e 
 		      q[g_id][tpdt][e]=0;
@@ -355,6 +366,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      //SL_bar.
 
 		      q[g_id][tpdt_nl][e]+=q_sum_nl;
+		      //if (q[g_id][tpdt_nl][e]>1) q[g_id][tpdt_nl][e]=1;//XX
 
 		      scalar_type empty=Get*q[g_id][t][e];
 		      //0 EVENT, event #1 in part a of Fig.A1 in http://arxiv.org/abs/1211.4606
@@ -363,6 +375,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      //0.
 		   
 		      q[g_id][tpdt][e]+=q_sum;
+		      //if (q[g_id][tpdt][e]>1) q[g_id][tpdt][e]=1;
 		      //events within slice rank at time t on branch e. 
 		    }
 		}

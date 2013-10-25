@@ -80,14 +80,16 @@ int main(int argc, char ** argv)
   //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();
 
-  int D=2;
+  int D=3;
   if (argc>3)
     D=atoi(argv[3]);
 
 
-  model->set_model_parameter("D",D);
+  model->set_model_parameter("min_D",D);
+  model->set_model_parameter("grid_delta_t",0.005);
+
   model->construct(Sstring);
-  model->set_model_parameter("event_node",1);
+  model->set_model_parameter("event_node",0);
 
   //a set of inital rates
   scalar_type delta=0.01,tau=0.01,lambda=0.1;  

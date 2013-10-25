@@ -184,7 +184,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
                      
 		      scalar_type t=time_slice_times[rank][t_i];
 		      scalar_type tpdt,tpdt_nl;
-		      if ( t_i < scalar_parameter["D"]-1 )
+		      if ( t_i < time_slice_times[rank].size()-1 )
 			tpdt=time_slice_times[rank][t_i+1];
 		      else if (rank<last_rank-1)
 			tpdt=time_slice_times[rank+1][0];
@@ -574,7 +574,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
                          
 			scalar_type t=time_slice_times[rank][t_i];
 			scalar_type tpdt,tpdt_nl;
-			if ( t_i < scalar_parameter["D"]-1 )
+			if ( t_i < time_slice_times[rank].size()-1 )
 			  tpdt=time_slice_times[rank][t_i+1];
 			else if (rank<last_rank-1)
 			  tpdt=time_slice_times[rank+1][0];
@@ -851,7 +851,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
                          
 			scalar_type t=time_slice_times[rank][t_i]; //End time of the current subslice.
 			scalar_type tpdt,tpdt_nl; //tpdt: beginning time of the current subslice. tpdt_nl=tpdt is for the event node.
-			if ( t_i < scalar_parameter["D"]-1 )
+			if ( t_i < time_slice_times[rank].size()-1 )
 			  tpdt=time_slice_times[rank][t_i+1];
 			else if (rank<last_rank-1)
 			  tpdt=time_slice_times[rank+1][0];
