@@ -72,13 +72,12 @@ scalar_type exODT_model::p(approx_posterior *ale)
       vector <long int> gp_ids;//del-loc
       vector <long int> gpp_ids;//del-loc
       vector <scalar_type> p_part;//del-loc
-      if (g_id!=-1)
-	for (map< set<long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++)
+      if (g_id!=-1)       
+	for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++)
 	  {	  
-	    vector <long int> parts;
-	    for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
-	    long int gp_id=parts[0];
-	    long int gpp_id=parts[1];	    
+	    pair<long int, long int> parts = (*kt).first;
+	    long int gp_id=parts.first;
+	    long int gpp_id=parts.second;
 	    gp_ids.push_back(gp_id);
 	    gpp_ids.push_back(gpp_id);
 	    if (ale->Bip_counts[g_id]<=scalar_parameter["min_bip_count"])
@@ -132,11 +131,10 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	      //######################################################################################################################
 	      //#########################################INNNER LOOP##################################################################
 	      //######################################################################################################################
-
+	      
 	      scalar_type t=time_slice_times[rank][t_i];
 	      scalar_type tpdt,tpdt_nl;
-	      //if ( t_i < scalar_parameter["D"]-1 )
-	      if ( t_i < time_slice_times[rank].size()-1 )
+	      if ( t_i < (int)time_slice_times[rank].size()-1 )
 		tpdt=time_slice_times[rank][t_i+1];
 	      else if (rank<last_rank-1)
 		tpdt=time_slice_times[rank+1][0];
@@ -220,7 +218,6 @@ scalar_type exODT_model::p(approx_posterior *ale)
 				    //S.
 				  }
 			      q[g_id][t][e]=q_sum; 
-			      //if (q[g_id][t][e]>1) q[g_id][t][e]=1;//XX
 			    }
 
 			  //branches that cross to next time slice  
@@ -287,9 +284,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      }	    
 		
 		  q[g_id][tpdt_nl][alpha]+=q_sum_nl;
-
-		  //if (q[g_id][tpdt_nl][alpha]>1) q[g_id][tpdt_nl][alpha]=1;//XX
-
+		  
 		  for (int branch_i=0;branch_i<n;branch_i++)			  
 		    {
 		      int e = time_slices[rank][branch_i];		
@@ -313,7 +308,6 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		  //0.
 
 		  q[g_id][tpdt][alpha]+=q_sum;
-		  //if (q[g_id][tpdt][alpha]>1) q[g_id][tpdt][alpha]=1;//XX
 
 		  //events within slice rank at time t on alpha virtual branch.
 		}

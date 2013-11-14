@@ -8,26 +8,26 @@ using namespace bpp;
 //"Given a set S, the power set (or powerset) of S, written P(S), or 2S, is the set of all subsets of S."
 template<typename Set> set<Set> powerset(const Set& s, size_t n)
 {
-    typedef typename Set::const_iterator SetCIt;
-    typedef typename set<Set>::const_iterator PowerSetCIt;
-    set<Set> res;
-    if(n > 0) {
-        set<Set> ps = powerset(s, n-1);
-        for(PowerSetCIt ss = ps.begin(); ss != ps.end(); ss++)
-            for(SetCIt el = s.begin(); el != s.end(); el++) {
-                Set subset(*ss);
-                subset.insert(*el);
-                res.insert(subset);
-            }
-        res.insert(ps.begin(), ps.end());
-    } else
-        res.insert(Set());
-    return res;
+  typedef typename Set::const_iterator SetCIt;
+  typedef typename set<Set>::const_iterator PowerSetCIt;
+  set<Set> res;
+  if(n > 0) {
+    set<Set> ps = powerset(s, n-1);
+    for(PowerSetCIt ss = ps.begin(); ss != ps.end(); ss++)
+      for(SetCIt el = s.begin(); el != s.end(); el++) {
+	Set subset(*ss);
+	subset.insert(*el);
+	res.insert(subset);
+      }
+    res.insert(ps.begin(), ps.end());
+  } else
+    res.insert(Set());
+  return res;
 }
 //from: http://rosettacode.org/wiki/Power_set#Recursive_version (accessed 12/13/11)
 template<typename Set> set<Set> powerset(const Set& s)
 {
-    return powerset(s, s.size());
+  return powerset(s, s.size());
 }
 
 
@@ -105,15 +105,20 @@ void approx_posterior::save_state(string fname)
     fout<<(*it).first<<"\t"<<(*it).second<< endl;
 
   fout<< "#Dip_counts" << endl;
-  for (map <long int,map< set<long int>,scalar_type> >::iterator it=Dip_counts.begin();it!=Dip_counts.end();it++)    
-    for (map< set<long int>,scalar_type>::iterator  jt=(*it).second.begin();jt!=(*it).second.end();jt++)    
-      {
-	fout<<(*it).first<<"\t";
-	for (set<long int>::iterator kt=(*jt).first.begin();kt!=(*jt).first.end();kt++)    
-	  fout<<(*kt)<<"\t"; //For binary trees, is this loop really necessary? Couldn't we just write the first set id, then the second one?
-	fout<<(*jt).second<<endl;
-      }
 
+  size_t index=0;
+  for (vector < unordered_map< pair<long int, long int>,scalar_type> >::iterator it=Dip_counts.begin();it!=Dip_counts.end();it++)    
+    {
+      for (unordered_map< pair<long int, long int>,scalar_type>::iterator  jt=(*it).begin();jt!=(*it).end();jt++)    
+	{
+	  fout<< index <<"\t";
+	  fout<<(*jt).first.first<<"\t";
+	  fout<<(*jt).first.second<<"\t";
+	  fout<<(*jt).second<<endl;
+	}
+      ++index;
+    }
+  
   fout<< "#last_leafset_id" <<endl;
   fout<< last_leafset_id << endl;
 
@@ -144,89 +149,109 @@ void approx_posterior::load_state(string fname)
     {
       while (! file_stream.eof())
 	{
-	 string line;
-	 getline (file_stream,line);
+	  string line;
+	  getline (file_stream,line);
 
-	 if (boost::find_first(line, "#"))
-	   {
-	     boost::trim(line);
-	     reading=line;
-	   }
-	 else if (reading=="#constructor_string")
-	   {
-	     //cout << reading << endl;
-	     boost::trim(line);
-	     tree_string=line;
-	     constructor_string = tree_string;
-	     construct(constructor_string);
-	     reading="#nothing";
-	   }	 
-	 else if (reading=="#observations")
-	   {
-	     boost::trim(line);	    
-	     observations=atof(line.c_str());
-	   }
-	 else if (reading=="#Bip_counts")
-	   {
-	     //cout << reading << endl;
-	     vector<string> tokens;
-	     boost::trim(line);	    
-	     boost::split(tokens,line,boost::is_any_of("\t "),boost::token_compress_on);
-	     Bip_counts[atol(tokens[0].c_str())]=atof(tokens[1].c_str());	     
-	   }
-	 else if (reading=="#Bip_bls")
-	   {
-	     //cout << reading << endl;
-	     vector<string> tokens;
-	     boost::trim(line);	    
-	     boost::split(tokens,line,boost::is_any_of("\t "),boost::token_compress_on);
-	     Bip_bls[atol(tokens[0].c_str())]=atof(tokens[1].c_str());	     
-	   }
-	 else if (reading=="#Dip_counts")
-	   {
-	     //cout << reading << endl;
-	     vector<string> tokens;
-	     boost::trim(line);	    
-	     boost::split(tokens,line,boost::is_any_of("\t "),boost::token_compress_on);
-	     set<long int> parts;
-	     parts.insert(atoi(tokens[1].c_str()));
-	     parts.insert(atoi(tokens[2].c_str()));
-	     Dip_counts[atol(tokens[0].c_str())][parts]=atof(tokens[3].c_str());
-	   }
-	 else if (reading=="#last_leafset_id")
-	   {
-	     //cout << reading << endl;
-	     boost::trim(line);	    
-	     last_leafset_id=atol(line.c_str());	     
-	   }
-	 else if (reading=="#leaf-id")
-	   {
-	     //cout << reading << endl;
-	     vector<string> tokens;
-	     boost::trim(line);	    
-	     boost::split(tokens,line,boost::is_any_of("\t "),boost::token_compress_on);
-	     int id=atoi(tokens[1].c_str());
-	     string leaf_name=tokens[0];
-	     leaf_ids[leaf_name]=id;
-	     id_leaves[id]=leaf_name;
-	   }
-	 else if (reading=="#set-id")
-	   {
-	     //cout << reading << endl;
-	     vector<string> fields;
-	     boost::trim(line);	    
-	     boost::split(fields,line,boost::is_any_of(":"),boost::token_compress_on);
-	     boost::trim(fields[0]);	    
-	     long int set_id=atol(fields[0].c_str()); 
-	     vector<string> tokens;
-	     boost::trim(fields[1]);	    
-	     boost::split(tokens,fields[1],boost::is_any_of("\t "),boost::token_compress_on);
-	     set <int> id_set;
-	     for (vector<string>::iterator it=tokens.begin();it!=tokens.end();it++)
-		 id_set.insert(atoi((*it).c_str()));
-	     set_ids[id_set]=set_id;
-	     id_sets[set_id]=id_set;
-	   }
+	  if (boost::find_first(line, "#"))
+	    {
+	      boost::trim(line);
+	      reading=line;
+	    }
+	  else if (reading=="#constructor_string")
+	    {
+	      //cout << reading << endl;
+	      boost::trim(line);
+	      tree_string=line;
+	      constructor_string = tree_string;
+	      construct(constructor_string);
+	      reading="#nothing";
+	    }	 
+	  else if (reading=="#observations")
+	    {
+	      boost::trim(line);	    
+	      observations=atof(line.c_str());
+	    }
+	  else if (reading=="#Bip_counts")
+	    {
+	      //cout << reading << endl;
+	      vector<string> tokens;
+	      boost::trim(line);	    
+	      boost::split(tokens,line,boost::is_any_of("\t "),boost::token_compress_on);
+	      Bip_counts[atol(tokens[0].c_str())]=atof(tokens[1].c_str());	     
+	    }
+	  else if (reading=="#Bip_bls")
+	    {
+	      //cout << reading << endl;
+	      vector<string> tokens;
+	      boost::trim(line);	    
+	      boost::split(tokens,line,boost::is_any_of("\t "),boost::token_compress_on);
+	      Bip_bls[atol(tokens[0].c_str())]=atof(tokens[1].c_str());	     
+	    }
+	  else if (reading=="#Dip_counts")
+	    {
+	      //cout << reading << endl;
+	      vector<string> tokens;
+	      boost::trim(line);	    
+	      boost::split(tokens,line,boost::is_any_of("\t "),boost::token_compress_on);
+	      pair<long int, long int> parts;
+	      /*PREVECTORIZATION CODE
+		set<long int> parts;
+		parts.insert(atoi(tokens[1].c_str()));
+		parts.insert(atoi(tokens[2].c_str()));
+		Dip_counts[atol(tokens[0].c_str())][parts]=atof(tokens[3].c_str());
+	      */
+	      
+	      parts.first = atoi(tokens[1].c_str());
+	      parts.second = atoi(tokens[2].c_str());
+	      if ( atol(tokens[0].c_str()) >= (long int) ( Dip_counts.size() ) )
+		{
+		  std::unordered_map< pair<long int, long int>,scalar_type> temp ;
+		  while (atol(tokens[0].c_str()) >  (long int) Dip_counts.size() ) {
+		    Dip_counts.push_back(temp);
+		  }
+		 
+		  temp[parts]=atof(tokens[3].c_str());
+		  Dip_counts.push_back(temp);
+		}
+	      else 
+		{
+		  Dip_counts[atol(tokens[0].c_str())][parts]=atof(tokens[3].c_str());
+		}
+	    }
+	  else if (reading=="#last_leafset_id")
+	    {
+	      //cout << reading << endl;
+	      boost::trim(line);	    
+	      last_leafset_id=atol(line.c_str());	     
+	    }
+	  else if (reading=="#leaf-id")
+	    {
+	      //cout << reading << endl;
+	      vector<string> tokens;
+	      boost::trim(line);	    
+	      boost::split(tokens,line,boost::is_any_of("\t "),boost::token_compress_on);
+	      int id=atoi(tokens[1].c_str());
+	      string leaf_name=tokens[0];
+	      leaf_ids[leaf_name]=id;
+	      id_leaves[id]=leaf_name;
+	    }
+	  else if (reading=="#set-id")
+	    {
+	      //cout << reading << endl;
+	      vector<string> fields;
+	      boost::trim(line);	    
+	      boost::split(fields,line,boost::is_any_of(":"),boost::token_compress_on);
+	      boost::trim(fields[0]);	    
+	      long int set_id=atol(fields[0].c_str()); 
+	      vector<string> tokens;
+	      boost::trim(fields[1]);	    
+	      boost::split(tokens,fields[1],boost::is_any_of("\t "),boost::token_compress_on);
+	      set <int> id_set;
+	      for (vector<string>::iterator it=tokens.begin();it!=tokens.end();it++)
+		id_set.insert(atoi((*it).c_str()));
+	      set_ids[id_set]=set_id;
+	      id_sets[set_id]=id_set;
+	    }
 	}
     }
   for (map <long int,set <int> >:: iterator it = id_sets.begin(); it != id_sets.end(); it++)
@@ -254,6 +279,10 @@ long int approx_posterior::set2id(set<int> leaf_set)
       // TMP for debug
       //Dip_levels[leaf_set.size()].push_back(last_leafset_id);
       //id2name[last_leafset_id]=set2name(leaf_set);
+      //VEC
+      std::unordered_map< pair<long int, long int>,scalar_type> tmp ;
+      Dip_counts.push_back(tmp);
+      //VEC
       id_sets[last_leafset_id]=leaf_set;
       Bip_bls[last_leafset_id]=0;
       return last_leafset_id;
@@ -360,9 +389,12 @@ scalar_type approx_posterior::p_dip(long int g_id,long int gp_id,long int gpp_id
     }
   else
     {
-      set <long int> parts;
-      parts.insert(gp_id);
-      parts.insert(gpp_id);
+      //set <long int> parts;
+      //parts.insert(gp_id);
+      //parts.insert(gpp_id);
+      pair <long int, long int> parts;
+      parts.first = gp_id;
+      parts.second = gpp_id;
       Bip_count=Bip_counts[g_id];
       Dip_count=Dip_counts[g_id][parts];      
       if (!gp_id or !gpp_id or Dip_count==0)
@@ -529,6 +561,10 @@ map <set< int>,scalar_type > approx_posterior::recompose(string G_string)
 // an unrooted tree given by its Newick string (which can be rooted)
 void approx_posterior::decompose(string G_string, set<int> * bip_ids )
 {
+  //VEC
+  std::unordered_map< pair<long int, long int>,scalar_type> tmp ;
+  Dip_counts.push_back(tmp);
+  //VEC
 
   //vector <dip_type > return_dips;
   map <dedge_type, int> dedges;//del-loc
@@ -565,6 +601,7 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids )
     }
   nodes.clear();
 
+
   map<dedge_type, set<int> > flat_names; //del-loc
   // Name all leaves
   for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
@@ -597,6 +634,7 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids )
 	}
     }
 
+
   bool edges_left=false;	
   for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
     {
@@ -605,101 +643,120 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids )
 	edges_left=true;	
     }
 
+
   if (G -> getLeaves().size()==2)
     {
       Bip_counts[(long int) 1]+=1;
+  
     }
   else
-  while (edges_left)
-    {
-      for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
-	{
+    while (edges_left)
+      {
+	for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
+	  {
+      
+	    dedge_type dedge=(*it).first;			
+	    //Process edges that can be named
+	    if (dedges[dedge]==2)	
+	      {
+		Node * from = dedge.first;
+		Node * to = dedge.second;
+		vector <dedge_type> dedges_in; //del-loc	      
+		for( vector<Node*>::iterator it_tos=neighbor[from].begin(); it_tos!=neighbor[from].end(); it_tos++)
+		  if (*it_tos!=to)
+		    {
+		      dedge_type dedge_in;
+		      dedge_in.first = *it_tos;
+		      dedge_in.second = from;
+		      dedges_in.push_back(dedge_in);
+		    }
 
-	  dedge_type dedge=(*it).first;			
-	  //Process edges that can be named
-	  if (dedges[dedge]==2)	
-	    {
-	      Node * from = dedge.first;
-	      Node * to = dedge.second;
-	      vector <dedge_type> dedges_in; //del-loc	      
-	      for( vector<Node*>::iterator it_tos=neighbor[from].begin(); it_tos!=neighbor[from].end(); it_tos++)
-		if (*it_tos!=to)
+		set <int> leaf_set_in_1=flat_names[dedges_in[0]];
+		set <int> leaf_set_in_2=flat_names[dedges_in[1]];
+		//flat naming
+		for (set<int>::iterator sit=leaf_set_in_1.begin();sit!=leaf_set_in_1.end();sit++)
+		  flat_names[dedge].insert((*sit));	
+		for (set<int>::iterator sit=leaf_set_in_2.begin();sit!=leaf_set_in_2.end();sit++)
+		  flat_names[dedge].insert((*sit));		      	       
+		//flat naming
+	      
+		long int g_id=set2id(flat_names[dedge]);
+	      
+		//set <long int> parts;
+		//parts.insert(set2id(leaf_set_in_1));
+		//parts.insert(set2id(leaf_set_in_2));
+
+		pair <long int, long int> parts;      
+		long int tmp_id1=set2id(leaf_set_in_1);
+		long int tmp_id2=set2id(leaf_set_in_2);
+		if (tmp_id1<tmp_id2)
 		  {
-		    dedge_type dedge_in;
-		    dedge_in.first = *it_tos;
-		    dedge_in.second = from;
-		    dedges_in.push_back(dedge_in);
+		    parts.first=tmp_id1;
+		    parts.second= tmp_id2;
 		  }
-	      
-	      set <int> leaf_set_in_1=flat_names[dedges_in[0]];
-	      set <int> leaf_set_in_2=flat_names[dedges_in[1]];
-	      //flat naming
-	      for (set<int>::iterator sit=leaf_set_in_1.begin();sit!=leaf_set_in_1.end();sit++)
-		flat_names[dedge].insert((*sit));	
-	      for (set<int>::iterator sit=leaf_set_in_2.begin();sit!=leaf_set_in_2.end();sit++)
-		flat_names[dedge].insert((*sit));		      	       
-	      //flat naming
-	      
-	      long int g_id=set2id(flat_names[dedge]);
-	      set <long int> parts;
-	      parts.insert(set2id(leaf_set_in_1));
-	      parts.insert(set2id(leaf_set_in_2));
-
-	      //bl - hack
-	      if (from->hasFather() and from->getFather()==to)
-		{
-		  if (from->hasDistanceToFather())
-		    Bip_bls[g_id]+=from->getDistanceToFather();		  
-		  else
-		    Bip_bls[g_id]+=0;		  
-		}
-	      else if (to->hasFather() and to->getFather()==from)
-		{
-		  if (to->hasDistanceToFather())
-		    Bip_bls[g_id]+=to->getDistanceToFather();
-		  else
-		    Bip_bls[g_id]+=0;
-		}
-	      else
-		{
-		  cout << "impossible" <<endl;
-		}
-	      //bl - hack
-
-	      //INTEGRATED COUNTING 
-	      Dip_counts[g_id][parts]+=1;
-	      Bip_counts[g_id]+=1;
-	      //bipartion naming
-	      if (bip_ids!=NULL) bip_ids->insert(g_id);
-	      
-	      //dip.first=g_id;
-	      //dip.second=parts;
-	      //return_dips.push_back(dip);
-
-	      //mark named
-	      dedges[dedge]=-1;
-	      //proceed to dedges in next level -  new dedges can now be named 
-	      for( vector<Node*>::iterator it_tos=neighbor[to].begin(); it_tos!=neighbor[to].end(); it_tos++)
-		if ((*it_tos)!=from)
+		else
 		  {
-		    dedge_type dedge_out;
-		    dedge_out.first = to;
-		    dedge_out.second = *it_tos;
-		    dedges[dedge_out]+=1;
+		    parts.first=tmp_id2;
+		    parts.second= tmp_id1;
 		  }
-	      dedges_in.clear();
+		//bl - hack
 
-	    }
+		if (from->hasFather() and from->getFather()==to)
+		  {
+		    if (from->hasDistanceToFather())
+		      Bip_bls[g_id]+=from->getDistanceToFather();		  
+		    else
+		      Bip_bls[g_id]+=0;		  
+		  }
+		else if (to->hasFather() and to->getFather()==from)
+		  {
+		    if (to->hasDistanceToFather())
+		      Bip_bls[g_id]+=to->getDistanceToFather();
+		    else
+		      Bip_bls[g_id]+=0;
+		  }
+		else
+		  {
+		    cout << "impossible" <<endl;
+		  }
 
-	}
-      edges_left=false;	
-      for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
-	{
-	  dedge_type dedge=(*it).first;
-	  if (dedges[dedge]!=-1)
-	    edges_left=true;
-	}	
-    }
+		//bl - hack
+		//INTEGRATED COUNTING 
+		Dip_counts[g_id][parts]+=1;
+
+		Bip_counts[g_id]+=1;
+
+		//bipartion naming
+		if (bip_ids!=NULL) bip_ids->insert(g_id);
+	      
+		//dip.first=g_id;
+		//dip.second=parts;
+		//return_dips.push_back(dip);
+
+		//mark named
+		dedges[dedge]=-1;
+		//proceed to dedges in next level -  new dedges can now be named 
+		for( vector<Node*>::iterator it_tos=neighbor[to].begin(); it_tos!=neighbor[to].end(); it_tos++)
+		  if ((*it_tos)!=from)
+		    {
+		      dedge_type dedge_out;
+		      dedge_out.first = to;
+		      dedge_out.second = *it_tos;
+		      dedges[dedge_out]+=1;
+		    }
+		dedges_in.clear();
+
+	      }
+
+	  }
+	edges_left=false;	
+	for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
+	  {
+	    dedge_type dedge=(*it).first;
+	    if (dedges[dedge]!=-1)
+	      edges_left=true;
+	  }	
+      }
 
   //del-locs
   dedges.clear();
@@ -715,6 +772,7 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids )
 
 void approx_posterior::observation(vector<string> trees, bool count_topologies)
 {
+  
   for (vector<string>::iterator it=trees.begin();it!=trees.end();it++)
     {
       //cout << (*it) << endl;
@@ -738,7 +796,6 @@ void approx_posterior::observation(vector<string> trees, bool count_topologies)
     }
   //cout << "obsdone." << endl;
 
-  
   set_sizes.clear();
   for (map <int, vector <long int > > :: iterator it = size_ordered_bips.begin(); it != size_ordered_bips.end(); it++)
     (*it).second.clear();
@@ -751,25 +808,24 @@ void approx_posterior::observation(vector<string> trees, bool count_topologies)
     }
 }
 
-
 // of an unrooted tree given by its Newick string (which can be rooted)
 scalar_type approx_posterior::p(string tree_string)
 {
   scalar_type p=0;
   map <set<int>,scalar_type> rec_map=recompose( tree_string);
-	for (map <set<int>,scalar_type>::iterator it=rec_map.begin();it!=rec_map.end();it++) 
+  for (map <set<int>,scalar_type>::iterator it=rec_map.begin();it!=rec_map.end();it++) 
     {
-		p=(*it).second;
-		//std::cout << "p: "<< p << std::endl;
-		set <int> gamma=(*it).first;
-		set <int> not_gamma;
-		for (set<int>::iterator st=Gamma.begin();st!=Gamma.end();st++)
-			if (gamma.count(*st)==0)
-				not_gamma.insert(*st);
-		p*=rec_map[not_gamma]*p_bip(gamma);
-		if (isnan(p) ) p = 0;//NumConstants::VERY_TINY ();
-		//std::cout << "rec_map[not_gamma]: "<<rec_map[not_gamma] <<" p_bip(gamma) "<< p_bip(gamma) <<std::endl;
-		break;
+      p=(*it).second;
+      //std::cout << "p: "<< p << std::endl;
+      set <int> gamma=(*it).first;
+      set <int> not_gamma;
+      for (set<int>::iterator st=Gamma.begin();st!=Gamma.end();st++)
+	if (gamma.count(*st)==0)
+	  not_gamma.insert(*st);
+      p*=rec_map[not_gamma]*p_bip(gamma);
+      if (isnan(p) ) p = 0;//NumConstants::VERY_TINY ();
+      //std::cout << "rec_map[not_gamma]: "<<rec_map[not_gamma] <<" p_bip(gamma) "<< p_bip(gamma) <<std::endl;
+      break;
     }
   return p;
 }
@@ -777,32 +833,30 @@ scalar_type approx_posterior::p(string tree_string)
 
 pair<string,scalar_type> approx_posterior::mpp_tree()
 {
-	map<long int, scalar_type > qmpp; //del-loc. Map between a bipartition id and its maximum posterior probability.
-	for (map <int, vector <long int > > :: iterator it = size_ordered_bips.begin(); it != size_ordered_bips.end(); it++)
-		for (vector <long int >  :: iterator jt = (*it).second.begin(); jt != (*it).second.end(); jt++)
-		{
-			long int g_id=(*jt);
-			// leaves
-			if ((*it).first==1)
-				qmpp[g_id]=1;
-			else
-			{
-				scalar_type max_cp=0;
-				//Go through all resolutions of clade g_id
-				for (map< set<long int>,scalar_type> :: iterator kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
-				{	  
-					vector <long int> parts;
-					for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
-					long int gp_id=parts[0];
-					long int gpp_id=parts[1]; //Why not do directly gp_id=(*kt).first.begin() and gpp_id=(*kt).first.end()-1 because it's always for binary trees?
-					scalar_type cp=p_dip(g_id,gp_id,gpp_id)*qmpp[gp_id]*qmpp[gpp_id];	
-					if (cp>max_cp) max_cp=cp;
-				}
-				qmpp[g_id]=max_cp;
-			}
-		}
-	//Now we have maximum posterior probability estimates for all sets of leaves (=bipartitions)
-	//The second loop computes the maximum posterior probability estimate from all the trees that can be amalgamated (=all the trees that can be written as the junction of two leaf sets)
+  map<long int, scalar_type > qmpp; //del-loc. Map between a bipartition id and its maximum posterior probability.
+  for (map <int, vector <long int > > :: iterator it = size_ordered_bips.begin(); it != size_ordered_bips.end(); it++)
+    for (vector <long int >  :: iterator jt = (*it).second.begin(); jt != (*it).second.end(); jt++)
+      {
+	long int g_id=(*jt);
+	// leaves
+	if ((*it).first==1)
+	  qmpp[g_id]=1;
+	else
+	  {
+	    scalar_type max_cp=0;
+	    //Go through all resolutions of clade g_id
+	    for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
+	      {	  
+		long int gp_id=(*kt).first.first;
+		long int gpp_id=(*kt).first.second;
+		scalar_type cp=p_dip(g_id,gp_id,gpp_id)*qmpp[gp_id]*qmpp[gpp_id];	
+		if (cp>max_cp) max_cp=cp;
+	      }
+	    qmpp[g_id]=max_cp;
+	  }
+      }
+  //Now we have maximum posterior probability estimates for all sets of leaves (=bipartitions)
+  //The second loop computes the maximum posterior probability estimate from all the trees that can be amalgamated (=all the trees that can be written as the junction of two leaf sets)
   scalar_type max_pp=0,sum_pp=0;
   long int max_bip=-1,max_not_bip=-1;
   //we look at everything twice..
@@ -833,7 +887,7 @@ pair<string,scalar_type> approx_posterior::mpp_tree()
 }
 
 
- string approx_posterior::mpp_backtrack(long int g_id, map<long int, scalar_type > * qmpp)
+string approx_posterior::mpp_backtrack(long int g_id, map<long int, scalar_type > * qmpp)
 {
   //leaf
   if (set_sizes[g_id]==1) 
@@ -846,12 +900,10 @@ pair<string,scalar_type> approx_posterior::mpp_tree()
   scalar_type max_cp=0,sum_cp=0;
   long int max_gp_id=-1;
   long int max_gpp_id=-1;
-  for (map< set<long int>,scalar_type> :: iterator kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
+  for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
     {	  
-      vector <long int> parts;
-      for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
-      long int gp_id=parts[0];
-      long int gpp_id=parts[1];	//Same thing as above, not sure the for loop is useful?    
+      long int gp_id= (*kt).first.first;
+      long int gpp_id=(*kt).first.second;
       scalar_type cp=p_dip(g_id,gp_id,gpp_id)*(*qmpp)[gp_id]*(*qmpp)[gpp_id];		
       sum_cp+=cp;
       if (cp>max_cp) {max_cp=cp; max_gp_id=gp_id; max_gpp_id=gpp_id;}
@@ -916,14 +968,12 @@ string approx_posterior::random_split(set <int> gamma)
       int saw=0;
       //see if a directed partition is the one we choose
       if (g_id) 
-	for (map< set<long int> ,scalar_type> ::iterator dit=Dip_counts[g_id].begin();dit!=Dip_counts[g_id].end();dit++)    
+	for (unordered_map< pair<long int, long int> ,scalar_type> ::iterator dit=Dip_counts[g_id].begin();dit!=Dip_counts[g_id].end();dit++)    
 	  { 
 	    vector<long int> parts_v;
-	    // std::set-s are ordered and SHOULD have random acces, but don't hence this 
-	    for (set<long int>::iterator sit=(*dit).first.begin();sit!=(*dit).first.end();sit++) parts_v.push_back((*sit));
-	    gp_id=parts_v[0];
-	    gpp_id=parts_v[1];
-	    parts_v.clear();
+	    gp_id=(*dit).first.first;
+	    gpp_id=(*dit).first.second;
+
 	    int this_size=min((int)id_sets[gp_id].size(),(int)id_sets[gpp_id].size());
 	    if ( this_size==gp_size )
 	      {
@@ -965,9 +1015,11 @@ string approx_posterior::random_split(set <int> gamma)
 	      for (int i=0;i<(int)gamma.size();i++)  if (!gammap.count(gamma_v[i])) gammapp.insert(gamma_v[i]);	    
 	      gp_id=set_ids[gammap];
 	      gpp_id=set_ids[gammapp];
-	      set <long int> parts;
-	      parts.insert(gp_id);
-	      parts.insert(gpp_id);
+
+	      pair <long int, long int> parts;
+	      parts.first=gp_id;
+	      parts.second = gpp_id;
+
 	      if (Dip_counts[g_id][parts]==0) stop=true;
 	    }
 	  break;
@@ -1074,16 +1126,16 @@ scalar_type approx_posterior::count_trees()
 	long int g_id=(*jt);
 	// leaves
 	if ((*it).first==1)
-	   g_id_count[g_id]=1;
+	  g_id_count[g_id]=1;
 	else
 	  {
 	    g_id_count[g_id]=0;
-	    for (map< set<long int>,scalar_type> :: iterator kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
+	    for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
 	      {	  
-		vector <long int> parts;
-		for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
-		long int gp_id=parts[0];
-		long int gpp_id=parts[1];	    
+		pair<long int, long int> parts = (*kt).first;
+		long int gp_id= parts.first;
+		long int gpp_id= parts.second;
+
 		g_id_count[g_id]+=g_id_count[gp_id]*g_id_count[gpp_id];
 	      }
 	  }
@@ -1123,12 +1175,11 @@ scalar_type approx_posterior::count_trees(long int g_id)
   else
     {
       set< long int > P_gamma;//=powerset< set<int> >(gamma);//del-loc  
-      for (map< set<long int>,scalar_type> :: iterator kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
+      for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
 	{
-	  vector <long int> parts;
-	  for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
-	  long int gp_id=parts[0];
-	  long int gpp_id=parts[1];	    
+	  pair <long int, long int> parts = (*kt).first;
+	  long int gp_id = parts.first;
+	  long int gpp_id = parts.second;
 	  P_gamma.insert(gp_id);
 	  P_gamma.insert(gpp_id);
 	}
@@ -1175,43 +1226,43 @@ scalar_type approx_posterior::nbipp(string tree_string)
 
 //Set the value for the alpha parameter
 void approx_posterior::setAlpha ( scalar_type a ) {
-	alpha = a;
-	return;
+  alpha = a;
+  return;
 }
 
 //Set the value for the beta parameter
 void approx_posterior::setBeta ( scalar_type b ) {
-	beta = b;
-	return;	
+  beta = b;
+  return;	
 }
 
 
 std::vector < std::string > approx_posterior::getLeafNames() 
 {
-	std::vector <std::string > leafNames (leaf_ids.size(), "");
-	for (map<std::string, int>::iterator it = leaf_ids.begin() ; it != leaf_ids.end() ; ++it ) 
-	{
-		leafNames.push_back ( (*it).first ) ;
-	}
-	return leafNames;
+  std::vector <std::string > leafNames (leaf_ids.size(), "");
+  for (map<std::string, int>::iterator it = leaf_ids.begin() ; it != leaf_ids.end() ; ++it ) 
+    {
+      leafNames.push_back ( (*it).first ) ;
+    }
+  return leafNames;
 }
 
 
 void approx_posterior::computeOrderedVectorOfClades (vector <long int>&  ids, vector <long int>& id_sizes)
 {
-	//I sort the directed partitions by size (number of gene tree leaves) to ensure that we calculate things in the proper order (smaller to larger)
-	for (map <int, vector <long int > > :: iterator it = size_ordered_bips.begin(); it != size_ordered_bips.end(); it++)
+  //I sort the directed partitions by size (number of gene tree leaves) to ensure that we calculate things in the proper order (smaller to larger)
+  for (map <int, vector <long int > > :: iterator it = size_ordered_bips.begin(); it != size_ordered_bips.end(); it++)
+    {
+      for (vector <long int >  :: iterator jt = (*it).second.begin(); jt != (*it).second.end(); jt++)
 	{
-		for (vector <long int >  :: iterator jt = (*it).second.begin(); jt != (*it).second.end(); jt++)
-		{
-			ids.push_back((*jt));
-			id_sizes.push_back((*it).first);
-		}
+	  ids.push_back((*jt));
+	  id_sizes.push_back((*it).first);
 	}
-	//root bipartition needs to be handled separately (and last, given it's the largest)
-	ids.push_back(-1);
-	id_sizes.push_back(Gamma_size);
-	return;
+    }
+  //root bipartition needs to be handled separately (and last, given it's the largest)
+  ids.push_back(-1);
+  id_sizes.push_back(Gamma_size);
+  return;
 	
 	
 }

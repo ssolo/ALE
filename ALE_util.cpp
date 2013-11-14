@@ -11,6 +11,7 @@ bool fexists(const char *filename)
 approx_posterior * observe_ALE_from_file(vector<string> fnames, int burnin,int every,int until)
 {
 
+
   vector<string> trees;
   for (vector<string>::iterator it=fnames.begin();it!=fnames.end();it++)
     {
@@ -33,14 +34,18 @@ approx_posterior * observe_ALE_from_file(vector<string> fnames, int burnin,int e
     }
   if (trees.size()<1)
     return NULL;
+
   vector<string> observe_trees;
   if (until==-1)
     until=trees.size();
   for (int i=0;i<min((int)trees.size(),until);i++)
     observe_trees.push_back(trees[i]);
   cout << observe_trees.size() << endl;
+
   approx_posterior* ale=new approx_posterior(trees[0]);// NO del-loc
+
   ale->observation(observe_trees);
+
   trees.clear();
   observe_trees.clear();
   
@@ -49,6 +54,7 @@ approx_posterior * observe_ALE_from_file(vector<string> fnames, int burnin,int e
  
 approx_posterior * observe_ALE_from_file(string fname, int burnin,int every,int until)
 {
+
   vector<string> trees;
   ifstream file_stream (fname.c_str());
   int tree_i=0;  
@@ -65,15 +71,20 @@ approx_posterior * observe_ALE_from_file(string fname, int burnin,int every,int 
 	    }
 	}
     }
+
   approx_posterior* ale=new approx_posterior(trees[0]);// NO del-loc
+
   vector<string> observe_trees;
   if (until==-1)
     until=trees.size();
   for (int i=0;i<min((int)trees.size(),until);i++)
     observe_trees.push_back(trees[i]);
+
   ale->observation(observe_trees);
+
   trees.clear();
   observe_trees.clear();
+
   return ale;     
 }
 

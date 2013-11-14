@@ -18,6 +18,34 @@ exODT_model::exODT_model()
   scalar_parameter["min_D"]=3;
   //number of subdiscretizations for ODE calculations
   scalar_parameter["DD"]=10;
+   Ee_y = vector<scalar_type> (100,0.0);//del-loc                                                                                                                                    
+
+   Ee_y_1=0.0;
+  //  map<int,scalar_type> Ge_y;//del-loc                                                                                                                                                                                                                                                                                                            
+   Ge_y = vector<scalar_type> (100,0.0);//del-loc                                                                                                                                   
+   Ge_y_1=0.0;
+
+   E_k1 = vector<scalar_type> (100,0.0);
+   E_k2 = vector<scalar_type> (100,0.0);
+   E_k3 = vector<scalar_type> (100,0.0);
+   E_k4 = vector<scalar_type> (100,0.0);//del-loc. Maps used for Runge-Kutta computations (4 stages).                 
+                                                                                                                                                                                                         
+   E_k1_1= 0.0;
+   E_k2_1 = 0.0; 
+   E_k3_1 = 0.0; 
+   E_k4_1=0.0;
+
+  G_k1= vector<scalar_type> (100,0.0);
+  G_k2= vector<scalar_type> (100,0.0);
+  G_k3= vector<scalar_type> (100,0.0);
+  G_k4 = vector<scalar_type> (100,0.0);//del-loc. Maps used for Runge-Kutta computations (4 stages).                                                                            
+                                                                                                                                                                                                         
+  G_k1_1 = 0.0;
+  G_k2_1= 0.0;
+  G_k3_1 = 0.0;
+  G_k4_1 = 0.0;
+
+
 }
 
 

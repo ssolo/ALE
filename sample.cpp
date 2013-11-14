@@ -118,12 +118,11 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   vector <long int> gpp_ids;//del-loc
   vector <scalar_type> p_part;//del-loc
   if (g_id!=-1)
-    for (map< set<long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++)
+    for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++)
       {	  
-	vector <long int> parts;
-	for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
-	long int gp_id=parts[0];
-	long int gpp_id=parts[1];	    
+	pair<long int, long int> parts = (*kt).first;
+	long int gp_id=parts.first;
+	long int gpp_id=parts.second;
 	gp_ids.push_back(gp_id);
 	gpp_ids.push_back(gpp_id);
 	if (ale->Bip_counts[g_id]<=scalar_parameter["min_bip_count"])
@@ -205,7 +204,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
       else
 	{
 	  rank-=1;
-	  t_i=scalar_parameter["D"]-1;
+	  t_i=time_slice_times[rank].size()-1;
 	}
     }
   else

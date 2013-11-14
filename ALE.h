@@ -1,7 +1,7 @@
 //all code by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;
 #pragma once
 
-#define ALE_VERSION "0.2"
+#define ALE_VERSION "0.3"
 
 #include <iostream>
 #include <Bpp/Numeric/Random.all>
@@ -12,10 +12,14 @@
 #include <Bpp/Phyl/Node.h>
 #include <Bpp/Phyl/TreeTools.h>
 #include <set>
+#include <map>
+#include<unordered_map>
 #include <boost/progress.hpp>
 #include <boost/math/special_functions/binomial.hpp>
 #include <boost/math/special_functions/factorials.hpp>
 #include <boost/algorithm/string.hpp>
+
+#include "pairHasher.h"
 
 //#include <boost/mpi.hpp>
 
@@ -54,10 +58,8 @@ class approx_posterior
       set_ids.clear(); 
       id_sets.clear();
       Bip_counts.clear();
-      for (std::map <long int,std::map< std::set<long int> ,scalar_type> >::iterator it=Dip_counts.begin();it!=Dip_counts.end();it++)    
-	{
-	  (*it).second.clear();
-	}
+      for (std::vector < std::unordered_map< std::pair<long int, long int> ,scalar_type> >::iterator it=Dip_counts.begin();it!=Dip_counts.end();it++)    
+	(*it).clear();
       Dip_counts.clear();
       Gamma.clear();
       tree_bipstrings.clear();
@@ -106,7 +108,9 @@ class approx_posterior
   std::map <long int,scalar_type> Bip_counts;                                        //del-loc. For each bipartition, gives the number of times it was observed.
   std::map <long int,scalar_type> Bip_bls;                                           //del-loc. Sum of the branch lengths associated to the bipartitions.
 
-  std::map <long int, std::map< std::set<long int>,scalar_type> > Dip_counts;        //del-loc. Contains the frequency of triplets: mother clade and its two daughter clades. Map between the bipartition id of the mother clade and another map containing a set of bipartition ids (couldn't it be just a pair, in the case of bifurcating trees?) and the frequency of the associated triplet of bipartitions. 
+  //VECTORIZED BELOW  std::map <long int, std::map< std::set<long int>,scalar_type> > Dip_counts;        //del-loc. Contains the frequency of triplets: mother clade and its two daughter clades. Map between the bipartition id of the mother clade and another map containing a set of bipartition ids (couldn't it be just a pair, in the case of bifurcating trees?) and the frequency of the associated triplet of bipartitions. 
+
+  std::vector < std::unordered_map< std::pair<long int, long int>,scalar_type> > Dip_counts;  
   std::map <std::set <int>,long int>  set_ids;                                       //del-loc. Map between a set of leaf ids and the corresponding bipartition index. 
   std::map< long int, std::set <int> > id_sets;                                      //del-loc. Dual from above. Map between a bipartition index and the corresponding leaf ids.
   //nuisance vars

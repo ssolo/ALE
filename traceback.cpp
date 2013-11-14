@@ -81,12 +81,11 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
       vector <long int> gpp_ids;//del-loc
       vector <scalar_type> p_part;//del-loc
       if (g_id!=-1)
-	for (map< set<long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++)
+	for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++)
 	  {	  
-	    vector <long int> parts;
-	    for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
-	    long int gp_id=parts[0];
-	    long int gpp_id=parts[1];	    
+	    pair<long int, long int> parts = (*kt).first;
+	    long int gp_id=parts.first;
+	    long int gpp_id=parts.second;
 	    gp_ids.push_back(gp_id);
 	    gpp_ids.push_back(gpp_id);
 	    if (ale->Bip_counts[g_id]<=scalar_parameter["min_bip_count"])
@@ -146,7 +145,7 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 	      scalar_type t=time_slice_times[rank][t_i];
 	      scalar_type tpdt,tpdt_nl;
 	      //if ( t_i < scalar_parameter["D"]-1 )
-	      if ( t_i < time_slice_times[rank].size()-1 )
+	      if ( t_i < (int)time_slice_times[rank].size()-1 )
 		tpdt=time_slice_times[rank][t_i+1];
 	      else if (rank<last_rank-1)
 		tpdt=time_slice_times[rank+1][0];
