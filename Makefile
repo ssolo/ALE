@@ -22,7 +22,7 @@ CC=g++ -pipe
 #
 #Bio++ did not complie/link with clang.
 
-FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall 
+FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall -std=gnu++11
 OMP_FLAGS = -fopenmp
 DEV_FLAGS =  -g -Wall -fopenmp -lprofiler 
 
@@ -35,6 +35,7 @@ endif
 ifeq ($(OSTYPE),darwin)
 	#pre Mountaion Lion compatibility
 	CC=llvm-g++ -mmacosx-version-min=10.6 
+	CC=g++
 	bpp_libs = $(bpp_DIR)lib/libbpp-core.a $(bpp_DIR)lib/libbpp-phyl.a $(bpp_DIR)lib/libbpp-seq.a 
 	OSSTRING=OSX
 else
