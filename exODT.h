@@ -1,6 +1,6 @@
 //all code by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;
 #include "ALE.h"
-using namespace std;
+//using namespace std;
 struct step 
 {
   int e;
@@ -44,23 +44,23 @@ class exODT_model
   approx_posterior * ale_pointer;                            //Pointer to an approx_posterior object on which dynamic programming is performed in p for instance.
 
   //Runge-Krutta variables
-  vector<scalar_type> Ee_y ;//del-loc                                                                          
+  std::vector<scalar_type> Ee_y ;//del-loc                                                                          
                                                                                                                                                                                                         
   scalar_type Ee_y_1;
   //  map<int,scalar_type> Ge_y;//del-loc                                                                                                                                                                
-  vector<scalar_type> Ge_y ;//del-loc                                                                                                                                   
+  std::vector<scalar_type> Ge_y ;//del-loc                                                                                                                                   
   scalar_type Ge_y_1;
 
-  vector<scalar_type> E_k1 ;
-  vector<scalar_type> E_k2 ;
-  vector<scalar_type> E_k3 ;
-  vector<scalar_type> E_k4 ;//del-loc. Maps used for Runge-Kutta computations (4 stages).                                                                                
+  std::vector<scalar_type> E_k1 ;
+  std::vector<scalar_type> E_k2 ;
+  std::vector<scalar_type> E_k3 ;
+  std::vector<scalar_type> E_k4 ;//del-loc. Maps used for Runge-Kutta computations (4 stages).                                                                                
   scalar_type E_k1_1, E_k2_1, E_k3_1, E_k4_1;
 
-  vector<scalar_type> G_k1;
-  vector<scalar_type> G_k2;
-  vector<scalar_type> G_k3;
-  vector<scalar_type> G_k4;//del-loc. Maps used for Runge-Kutta computations (4 stages).                                                                                
+  std::vector<scalar_type> G_k1;
+  std::vector<scalar_type> G_k2;
+  std::vector<scalar_type> G_k3;
+  std::vector<scalar_type> G_k4;//del-loc. Maps used for Runge-Kutta computations (4 stages).                                                                                
   scalar_type G_k1_1, G_k2_1, G_k3_1, G_k4_1;
 
 
