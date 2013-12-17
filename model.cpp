@@ -142,7 +142,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		//top of root stem
 		tpdt=t_begin[time_slices[rank][0]];
 
-	      if (scalar_parameter["event_node"]==1)
+	      if (scalar_parameter["event_node"]==1 and false)
 		tpdt_nl=t;
 	      else
 		tpdt_nl=tpdt;
@@ -432,7 +432,6 @@ void exODT_model::calculate_EGb()
   Ge.clear();
 
 
-  map<int,map <scalar_type,scalar_type> > y_E,y_G;//del-loc
   map<int,scalar_type> Ee_y;//del-loc
   map<int,scalar_type> Ge_y;//del-loc
   map<int,scalar_type> E_k1,E_k2,E_k3,E_k4;//del-loc
@@ -441,6 +440,9 @@ void exODT_model::calculate_EGb()
   for (int rank=0;rank<last_rank;rank++) 
     for (int tsi=0;tsi<(int)time_slice_times[rank].size();tsi++)
       {
+	map<int,map <scalar_type,scalar_type> > y_E,y_G;//del-loc
+	map<int,map <int,scalar_type> > iy_E,iy_G;//del-loc
+
 	scalar_type t_b;
 	if (tsi==(int)time_slice_times[rank].size()-1)
 	  t_b = time_slice_begins[rank];
@@ -467,7 +469,8 @@ void exODT_model::calculate_EGb()
 	scalar_type t=t_e;
 	scalar_type tpdt=t_b;
 	scalar_type h=(tpdt-t)/scalar_parameter["DD"];
-	scalar_type ti=t;
+	//scalar_type ti=t;
+
 	scalar_type h_lambda_avg=h*scalar_parameter["lambda_avg"]; 
 	scalar_type h_delta_avg=h*scalar_parameter["delta_avg"];	      
 	scalar_type h_tau_avg=h*scalar_parameter["tau_avg"]*(N-ni)/(N-1)*N;	      
@@ -485,11 +488,17 @@ void exODT_model::calculate_EGb()
 		  Ee[-1][t]=1;
 		//trivial else Ee[-1][t]=Ee[-1][t];
 	      
-		y_E[-1][t]=Ee[-1][t];
-		Ee_y[-1]=y_E[-1][t];
+		//y_E[-1][t]=Ee[-1][t];
+		iy_E[-1][ii]=Ee[-1][t];
+
+		//Ee_y[-1]=y_E[-1][t];
+		Ee_y[-1]=iy_E[-1][ii];
 	      
 		Ge_y[-1]=1;
-		y_G[-1][t]=1;	   
+
+		//y_G[-1][t]=1;	   
+		iy_G[-1][ii]=1;	   
+
 	      }
 	  
 	    for (int i=0;i<(int)time_slices[rank].size();i++)
@@ -507,11 +516,17 @@ void exODT_model::calculate_EGb()
 			Ee[e][t]=Ee[f][t]*Ee[g][t];	   
 		      }
 		    //trivial else{Ee[e][t]=Ee[e][t];}
-		    y_E[e][t]=Ee[e][t];
-		    Ee_y[e]=y_E[e][t];
+		    //y_E[e][t]=Ee[e][t];
+		    iy_E[e][ii]=Ee[e][t];
+
+		    //Ee_y[e]=y_E[e][t];
+		    Ee_y[e]=iy_E[e][ii];
 
 		    Ge_y[e]=1;
-		    y_G[e][t]=1;
+
+		    //y_G[e][t]=1;
+		    iy_G[e][ii]=1;
+
 		  }
 	      }
 	    // RK4: 4th order Runge-Kutta for y'=f(y) 
@@ -540,8 +555,11 @@ void exODT_model::calculate_EGb()
 
 	      }
 	    // k2 = f(y[n]+h/2 k1)
-	    Ee_y[-1]=y_E[-1][ti]+1/2.* E_k1[-1];	      
-	    Ge_y[-1]=y_G[-1][ti]+1/2.* G_k1[-1];	      
+
+	    //Ee_y[-1]=y_E[-1][ti]+1/2.* E_k1[-1];	      
+	    Ee_y[-1]=iy_E[-1][ii]+1/2.* E_k1[-1];	      
+	    //Ge_y[-1]=y_G[-1][ti]+1/2.* G_k1[-1];	      
+	    Ge_y[-1]=iy_G[-1][ii]+1/2.* G_k1[-1];	      
 
 	    E_k2[-1]=(h_Lambda_bar+h_lambda_avg)*(1-Ee_y[-1])-( h_Delta_bar+h_delta_avg+h_tau_avg)*(1- Ee_y[-1])* Ee_y[-1];
 	    G_k2[-1]=-(( h_Delta_bar+h_delta_avg+h_tau_avg)*(1-2*Ee_y[-1]) + (h_Lambda_bar+h_lambda_avg) ) * Ge_y[-1];
@@ -560,18 +578,22 @@ void exODT_model::calculate_EGb()
 		scalar_type lambda=vector_parameter["lambda"][e];
 		scalar_type h_lambda=h*lambda; 
 		scalar_type h_delta=h*delta;	      
-
+		
 		// k2 = f(y[n]+h/2 k1)
-		Ee_y[e] =y_E[e][ti]+1/2. * E_k1[e];
-		Ge_y[e] =y_G[e][ti]+1/2. * G_k1[e];
-
+		//Ee_y[e] =y_E[e][ti]+1/2. * E_k1[e];
+		Ee_y[e] =iy_E[e][ii]+1/2. * E_k1[e];
+		//Ge_y[e] =y_G[e][ti]+1/2. * G_k1[e];
+		Ge_y[e] =iy_G[e][ii]+1/2. * G_k1[e];
+		
 		E_k2[e]=h_lambda*(1-Ee_y[e])-( h_delta*(1- Ee_y[e]) + (h_Delta_bar+h_tau_avg)*(1-Ee_y[-1])) * Ee_y[e];
 		G_k2[e]=-1*(h_lambda+h_delta*(1-2*Ee_y[e]) + (h_Delta_bar+h_tau_avg)*(1-Ee_y[-1]))* Ge_y[e];
 	      }
 
 	    // k3 = f(y[n]+h/2 k2)
-	    Ee_y[-1]=y_E[-1][ti]+1/2.* E_k2[-1];
-	    Ge_y[-1]=y_G[-1][ti]+1/2.* G_k2[-1];
+	    //Ee_y[-1]=y_E[-1][ti]+1/2.* E_k2[-1];
+	    Ee_y[-1]=iy_E[-1][ii]+1/2.* E_k2[-1];
+	    //Ge_y[-1]=y_G[-1][ti]+1/2.* G_k2[-1];
+	    Ge_y[-1]=iy_G[-1][ii]+1/2.* G_k2[-1];
 
 	    E_k3[-1]=(h_Lambda_bar+h_lambda_avg)*(1-Ee_y[-1])-( h_Delta_bar+h_delta_avg+h_tau_avg)*(1- Ee_y[-1])* Ee_y[-1];
 	    G_k3[-1]=-(( h_Delta_bar+h_delta_avg+h_tau_avg)*(1-2*Ee_y[-1]) + (h_Lambda_bar+h_lambda_avg) ) * Ge_y[-1];
@@ -592,16 +614,20 @@ void exODT_model::calculate_EGb()
 		scalar_type h_delta=h*delta;	      
  
 		// k3 = f(y[n]+h/2 k2)
-		Ee_y[e] =y_E[e][ti]+1/2. * E_k2[e];
-		Ge_y[e] =y_G[e][ti]+1/2. * G_k2[e];
+		//Ee_y[e] =y_E[e][ti]+1/2. * E_k2[e];
+		Ee_y[e] =iy_E[e][ii]+1/2. * E_k2[e];
+		//Ge_y[e] =y_G[e][ti]+1/2. * G_k2[e];
+		Ge_y[e] =iy_G[e][ii]+1/2. * G_k2[e];
 
 		E_k3[e]=h_lambda*(1-Ee_y[e])-( h_delta*(1- Ee_y[e]) + (h_Delta_bar+h_tau_avg)*(1-Ee_y[-1])) * Ee_y[e];
 		G_k3[e]=-1*(h_lambda+h_delta*(1-2*Ee_y[e]) + (h_Delta_bar+h_tau_avg)*(1-Ee_y[-1]))* Ge_y[e];
 	      }
 
 	    // k4 = f(y[n]+h k3)
-	    Ee_y[-1]=y_E[-1][ti]+1* E_k3[-1];
-	    Ge_y[-1]=y_G[-1][ti]+1* G_k3[-1];
+	    //Ee_y[-1]=y_E[-1][ti]+1* E_k3[-1];
+	    Ee_y[-1]=iy_E[-1][ii]+1* E_k3[-1];
+	    //Ge_y[-1]=y_G[-1][ti]+1* G_k3[-1];
+	    Ge_y[-1]=iy_G[-1][ii]+1* G_k3[-1];
 
 	    E_k4[-1]=(h_Lambda_bar+h_lambda_avg)*(1-Ee_y[-1])-( h_Delta_bar+h_delta_avg+h_tau_avg)*(1- Ee_y[-1])* Ee_y[-1];
 	    G_k4[-1]=-(( h_Delta_bar+h_delta_avg+h_tau_avg)*(1-2*Ee_y[-1]) + (h_Lambda_bar+h_lambda_avg) ) * Ge_y[-1];
@@ -622,34 +648,52 @@ void exODT_model::calculate_EGb()
 		scalar_type h_delta=h*delta;	      
 
 		// k4 = f(y[n]+h k3)
-		Ee_y[e] =y_E[e][ti]+1 * E_k3[e];
-		Ge_y[e] =y_G[e][ti]+1 * G_k3[e];
+		//Ee_y[e] =y_E[e][ti]+1 * E_k3[e];
+		Ee_y[e] =iy_E[e][ii]+1 * E_k3[e];
+
+		//Ge_y[e] =y_G[e][ti]+1 * G_k3[e];
+		Ge_y[e] =iy_G[e][ii]+1 * G_k3[e];
 
 		E_k4[e]=h_lambda*(1-Ee_y[e])-( h_delta*(1- Ee_y[e]) + (h_Delta_bar+h_tau_avg)*(1-Ee_y[-1])) * Ee_y[e];
 		G_k4[e]=-1*(h_lambda+h_delta*(1-2*Ee_y[e])  + (h_Delta_bar+h_tau_avg)*(1-Ee_y[-1]))* Ge_y[e];
 	      }	  
 	    // y[n+1] = y[n] + h/6 (k1 + 2 k2 + 2 k3 + k4) 
-	    y_E[-1][ti+h]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
-	    y_G[-1][ti+h]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
+	    //y_E[-1][ti+h]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
+	    iy_E[-1][ii+1]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
+
+	    //y_G[-1][ti+h]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
+	    iy_G[-1][ii+1]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
+
 	    if (ii==scalar_parameter["DD"]-1)
 	      {
-		Ee[-1][tpdt]=y_E[-1][ti+h];
-		Ge[-1][t]=y_G[-1][ti+h];
+		//Ee[-1][tpdt]=y_E[-1][ti+h];
+		Ee[-1][tpdt]=iy_E[-1][ii+1];
+
+		//Ge[-1][t]=y_G[-1][ti+h];
+		Ge[-1][t]=iy_G[-1][ii+1];
+
 	      }
 
 	    for (int i=0;i<(int)time_slices[rank].size();i++)
 	      {
 		int e=time_slices[rank][i];
 		// y[n+1] = y[n] + h/6 (k1 + 2 k2 + 2 k3 + k4) 
-		y_E[e][ti+h]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
-		y_G[e][ti+h]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
+		//y_E[e][ti+h]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
+		iy_E[e][ii+1]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
+
+		//y_G[e][ti+h]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
+		iy_G[e][ii+1]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
+
 		if (ii==scalar_parameter["DD"]-1)
 		  {
-		    Ee[e][tpdt]=y_E[e][ti+h];
-		    Ge[e][t]=y_G[e][ti+h];
+		    //Ee[e][tpdt]=y_E[e][ti+h];
+		    Ee[e][tpdt]=iy_E[e][ii+1];
+		    //Ge[e][t]=y_G[e][ti+h];
+		    Ge[e][t]=iy_G[e][ii+1];
 		  }
 	      }
-	    ti=ti+h;	  
+	    //ti=ti+h;	  
+
 	  }      
       }
   //del-locs
@@ -657,11 +701,12 @@ void exODT_model::calculate_EGb()
   Ge_y.clear();
   E_k1.clear();E_k2.clear();E_k3.clear();E_k4.clear();
   G_k1.clear();G_k2.clear();G_k3.clear();G_k4.clear();
-  
+  /*  
   for (map<int,map <scalar_type,scalar_type> >::iterator it=y_E.begin();it!=y_E.end();it++)
     (*it).second.clear();
   y_E.clear();
   for (map<int,map <scalar_type,scalar_type> >::iterator it=y_G.begin();it!=y_G.end();it++)
     (*it).second.clear();
   y_G.clear();	 	   
+  */
 }
