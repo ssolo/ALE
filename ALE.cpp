@@ -52,22 +52,22 @@ void approx_posterior::construct(string tree_string)
 
   last_leafset_id=0;
   observations=0;
-  name_separator="+";
+  // ? name_separator="+";
   tree_type * tree = TreeTemplateTools::parenthesisToTree(tree_string);//del-loc  
-  Node * root = tree->getRootNode();
-  vector <Node * > leaves = TreeTemplateTools::getLeaves(*root);//del-loc
+  vector <string > leaves = tree->getLeavesNames();//del-loc
+
   int id=0;
-  for (vector <Node * >::iterator it=leaves.begin();it!=leaves.end();it++ )
+  for (vector <string >::iterator it=leaves.begin();it!=leaves.end();it++ )
     {      
+
       id++;
-      string leaf_name=(*it)->getName();
+      string leaf_name=(*it);
       leaf_ids[leaf_name]=id;
       Gamma.insert(id);
       id_leaves[id]=leaf_name;
     }
   alpha=0;
   beta=0;
-
   Gamma_size=Gamma.size();
   //maybe should use boost pow
   //number of bipartitions of Gamma
@@ -168,6 +168,7 @@ void approx_posterior::load_state(string fname)
 	    }	 
 	  else if (reading=="#observations")
 	    {
+	      //cout << reading << endl;
 	      boost::trim(line);	    
 	      observations=atof(line.c_str());
 	    }
