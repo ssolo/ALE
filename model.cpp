@@ -2,6 +2,9 @@
 using namespace std;
 using namespace bpp;
 
+#include <bitset>
+
+
 //p(ale) calculates Pi(Gamma) cf. ALEPAPER
 scalar_type exODT_model::p(approx_posterior *ale)
 {
@@ -49,7 +52,17 @@ scalar_type exODT_model::p(approx_posterior *ale)
        
       if (g_id_sizes[i]==1)
 	{
-	  string gene_name=ale->id_leaves[(* (ale->id_sets[g_id].begin()) )];
+        int id = 0;
+        boost::dynamic_bitset<> temp = ale->id_sets[g_id];
+        for (auto i = 0; i < ale->Gamma_size + 1; ++i) {
+           // if ( BipartitionTools::testBit ( temp, i) ) {
+                if ( temp[i] ) {
+                    id = i;
+                break;
+            }
+        }
+        string gene_name=ale->id_leaves[ id ];
+//	  string gene_name=ale->id_leaves[ (* (ale->id_sets[g_id].begin()) )];
 	  vector <string> tokens;
 	  boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_separators"]),boost::token_compress_on);
 	  string species_name;
@@ -87,33 +100,35 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	  }
       else
 	{
-	  //root biprartition needs to be handled seperatly
-	  map<set<long int>,int> bip_parts;
-	  for (map <long int,scalar_type> :: iterator it = ale->Bip_counts.begin(); it != ale->Bip_counts.end(); it++)
+	  //root bipartition needs to be handled separately
+        map<set<long int>,int> bip_parts;
+        for (map <long int,scalar_type> :: iterator it = ale->Bip_counts.begin(); it != ale->Bip_counts.end(); it++)
 	    {
-	      long int gp_id=(*it).first;
-	      set <int> gamma=ale->id_sets[gp_id];
-	      set <int> not_gamma;
-	      for (set<int>::iterator st=ale->Gamma.begin();st!=ale->Gamma.end();st++)
-		if (gamma.count(*st)==0)
-		  not_gamma.insert(*st);
-	      long int gpp_id = ale->set_ids[not_gamma];
-	      set <long int> parts;
-	      parts.insert(gp_id);
-	      parts.insert(gpp_id);
-	      bip_parts[parts]=1;
-	      gamma.clear();
-	      not_gamma.clear();
+            long int gp_id=(*it).first;
+            boost::dynamic_bitset<> gamma =ale->id_sets.at(gp_id);
+            boost::dynamic_bitset<> not_gamma = ~gamma;
+            not_gamma[0] = 0;
+            long int gpp_id = ale->set_ids.at(not_gamma);
+            set <long int> parts;
+            parts.insert(gp_id);
+            parts.insert(gpp_id);
+            bip_parts[parts]=1;
+            // gamma.clear();
+            // not_gamma.clear();
 	    }
 	  for (map<set<long int>,int> :: iterator kt = bip_parts.begin();kt!=bip_parts.end();kt++)
 	    {
 	      vector <long int> parts;
-	      for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
+            for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) {
+                parts.push_back((*sit));
+            }
 	      long int gp_id=parts[0];
 	      long int gpp_id=parts[1];	    
 	      gp_ids.push_back(gp_id);
 	      gpp_ids.push_back(gpp_id);
-	      if (ale->Bip_counts[gp_id]<=scalar_parameter["min_bip_count"] and not ale->Gamma_size<4)
+            //Here we can create a new ale->Bip_counts[gp_id], in particular for leaves.
+            //We may want to add the leaf entries for Bip_counts when Bip_counts is first created.
+	      if (ale->Bip_counts[gp_id]<=scalar_parameter.at("min_bip_count") and not ale->Gamma_size<4)
 		p_part.push_back(0);	      
 	      else
 		p_part.push_back(ale->p_bip(gp_id));	      

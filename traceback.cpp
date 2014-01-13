@@ -51,7 +51,17 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
        
       if (g_id_sizes[i]==1)
 	{
-	  string gene_name=ale->id_leaves[(* (ale->id_sets[g_id].begin()) )];
+        int id = 0;
+        boost::dynamic_bitset<> temp = ale->id_sets[g_id];
+        for (auto i = 0; i < ale->Gamma_size + 1; ++i) {
+           // if ( BipartitionTools::testBit ( temp, i) ) {
+            if ( temp[ i ] ) {
+                id = i;
+                break;
+            }
+        }
+        string gene_name=ale->id_leaves[ id ];
+//	  string gene_name=ale->id_leaves[(* (ale->id_sets[g_id].begin()) )];
 	  vector <string> tokens;
 	  boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_separators"]),boost::token_compress_on);
 	  string species_name;
@@ -102,18 +112,23 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 	  for (map <long int,scalar_type> :: iterator it = ale->Bip_counts.begin(); it != ale->Bip_counts.end(); it++)
 	    {
 	      long int gp_id=(*it).first;
-	      set <int> gamma=ale->id_sets[gp_id];
-	      set <int> not_gamma;
-	      for (set<int>::iterator st=ale->Gamma.begin();st!=ale->Gamma.end();st++)
+	      boost::dynamic_bitset<>  gamma = ale->id_sets[gp_id];
+	      boost::dynamic_bitset<>  not_gamma = ~gamma;
+            not_gamma[0] = 0;
+/*	      for (set<int>::iterator st=ale->Gamma.begin();st!=ale->Gamma.end();st++)
 		if (gamma.count(*st)==0)
-		  not_gamma.insert(*st);
+		  not_gamma.insert(*st);*/
+          /*  for (auto i = 0; i < ale->nbint; ++i) {
+                not_gamma[i] = 0;
+            }
+            BipartitionTools::bitNot(not_gamma, gamma, ale->nbint);*/
 	      long int gpp_id = ale->set_ids[not_gamma];
 	      set <long int> parts;
 	      parts.insert(gp_id);
 	      parts.insert(gpp_id);
 	      bip_parts[parts]=1;
-	      gamma.clear();
-	      not_gamma.clear();
+	     /* gamma.clear();
+	      not_gamma.clear();*/
 	    }
 	  for (map<set<long int>,int> :: iterator kt = bip_parts.begin();kt!=bip_parts.end();kt++)
 	    {
@@ -781,7 +796,15 @@ string exODT_model::traceback(long int g_id,scalar_type t,scalar_type rank,int e
   scalar_type new_branch_length=branch_length+t-max_step.t;
   if (max_step.t!=max_step.t)
     new_branch_length=branch_length;
-  if (t==0 and ale_pointer->id_sets[g_id].size()==1 and e!=-1)
+    int size = 0;
+    boost::dynamic_bitset<>  temp = ale_pointer->id_sets[g_id];
+    for (auto i = 0; i < ale_pointer->Gamma_size + 1; ++i) {
+      //  if ( BipartitionTools::testBit ( temp, i) ) {
+        if ( temp[ i] ) {
+        size++;
+        }
+    }
+  if (t==0 and size==1 and e!=-1)
     {
       register_leaf(e);
       stringstream branch_string;

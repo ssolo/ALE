@@ -111,66 +111,87 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   approx_posterior * ale=ale_pointer;
   bool is_a_leaf=false; 
 
-  if ((int)(ale->id_sets[g_id].size())==1)
-    is_a_leaf=true;
-
+    int size = 0;
+    boost::dynamic_bitset<> temp;
+  //  if (g_id!=-1) { //We are not at the root bipartition
+        temp = ale->id_sets.at( g_id );
+        for (auto i = 0; i < ale->Gamma_size + 1; ++i) {
+            // if ( BipartitionTools::testBit ( temp, i) ) {
+            if ( temp[ i ] ) {
+                size++;
+            }
+        }
+        
+        
+        // if ((int)(ale->id_sets[g_id].size())==1)
+        if (size == 1)
+            is_a_leaf=true;
+  //  }
   vector <long int> gp_ids;//del-loc
   vector <long int> gpp_ids;//del-loc
   vector <scalar_type> p_part;//del-loc
-  if (g_id!=-1)
-    for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++)
-      {	  
-	pair<long int, long int> parts = (*kt).first;
-	long int gp_id=parts.first;
-	long int gpp_id=parts.second;
-	gp_ids.push_back(gp_id);
-	gpp_ids.push_back(gpp_id);
-	if (ale->Bip_counts[g_id]<=scalar_parameter["min_bip_count"])
-	  p_part.push_back(0);
-	else
-	  {
-	    p_part.push_back(ale->p_dip(g_id,gp_id,gpp_id));
-	  }
-      }
-  else
-    {
-      //root biprartition needs to be handled seperatly
+    if (g_id!=-1)
+        for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++)
+        {
+            pair<long int, long int> parts = (*kt).first;
+            long int gp_id=parts.first;
+            long int gpp_id=parts.second;
+            gp_ids.push_back(gp_id);
+            gpp_ids.push_back(gpp_id);
+            if (ale->Bip_counts[g_id]<=scalar_parameter["min_bip_count"])
+                p_part.push_back(0);
+            else
+            {
+                p_part.push_back(ale->p_dip(g_id,gp_id,gpp_id));
+            }
+        }
+    else
+  {
+      //root bipartition needs to be handled seperatly
       map<set<long int>,int> bip_parts;
       for (map <long int,scalar_type> :: iterator it = ale->Bip_counts.begin(); it != ale->Bip_counts.end(); it++)
-	{
-	  long int gp_id=(*it).first;
-	  set <int> gamma=ale->id_sets[gp_id];
-	  set <int> not_gamma;
-	  for (set<int>::iterator st=ale->Gamma.begin();st!=ale->Gamma.end();st++)
-	    if (gamma.count(*st)==0)
-	      not_gamma.insert(*st);
-	  long int gpp_id = ale->set_ids[not_gamma];
-	  set <long int> parts;
-	  parts.insert(gp_id);
-	  parts.insert(gpp_id);
-	  bip_parts[parts]=1;
-	  gamma.clear();
-	  not_gamma.clear();
-	}
+      {
+          long int gp_id=(*it).first;
+          boost::dynamic_bitset<> gamma = ale->id_sets[gp_id];
+          
+          boost::dynamic_bitset<> not_gamma = ~gamma;
+          not_gamma[0] = 0;
+
+          /* for (auto i = 0; i < ale->nbint; ++i) {
+           not_gamma[i] = 0;
+           }
+           BipartitionTools::bitNot(not_gamma, gamma, ale->nbint);*/
+          /*
+           for (set<int>::iterator st=ale->Gamma.begin();st!=ale->Gamma.end();st++)
+           if (gamma.count(*st)==0)
+           not_gamma.insert(*st);*/
+          long int gpp_id = ale->set_ids[not_gamma];
+          set <long int> parts;
+          parts.insert(gp_id);
+          parts.insert(gpp_id);
+          bip_parts[parts]=1;
+          //  gamma.clear();
+          //  not_gamma.clear();
+      }
       for (map<set<long int>,int> :: iterator kt = bip_parts.begin();kt!=bip_parts.end();kt++)
-	{
-	  vector <long int> parts;
-	  for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
-	  long int gp_id=parts[0];
-	  long int gpp_id=parts[1];	    
-	  gp_ids.push_back(gp_id);
-	  gpp_ids.push_back(gpp_id);
-	  if (ale->Bip_counts[gp_id]<=scalar_parameter["min_bip_count"] and not ale->Gamma_size<4)
-	    p_part.push_back(0);	      
-	  else
-	    p_part.push_back(ale->p_bip(gp_id));	      
-	}
+      {
+          vector <long int> parts;
+          for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
+          long int gp_id=parts[0];
+          long int gpp_id=parts[1];
+          gp_ids.push_back(gp_id);
+          gpp_ids.push_back(gpp_id);
+          if (ale->Bip_counts[gp_id]<=scalar_parameter["min_bip_count"] and not ale->Gamma_size<4)
+              p_part.push_back(0);
+          else
+              p_part.push_back(ale->p_bip(gp_id));	      
+      }
       bip_parts.clear();
-    }
+  }
   int N_parts=gp_ids.size();
   int n=time_slices[rank].size();
   //######################################################################################################################
-  //#########################################INNNER LOOP##################################################################
+  //######################################### INNER LOOP #################################################################
   //######################################################################################################################
       
   vector <step> sample_steps;
@@ -793,7 +814,19 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 
   scalar_type new_branch_length=branch_length+t-back_step.t;
 
-  if (back_step.t==0 and ale_pointer->id_sets[g_id].size()==1 and e!=-1)
+    size = 0;
+  //  if (g_id!=-1) { //We are not at the root bipartition
+        
+        temp = ale_pointer->id_sets[g_id];
+        for (auto i = 0; i < ale_pointer->Gamma_size + 1; ++i) {
+            // if ( BipartitionTools::testBit ( temp, i) ) {
+            if ( temp[i] ) {
+                size++;
+            }
+        }
+ //   }
+
+  if (back_step.t==0 and size == 1 and e!=-1)
     {
       register_leaf(e);
       stringstream branch_string;

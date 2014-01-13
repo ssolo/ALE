@@ -22,36 +22,37 @@ public:
   p_fun(exODT_model* model,approx_posterior* ale, double delta_start=0.01,double tau_start=0.01,double lambda_start=0.1) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale) 
   {
     //We declare parameters here:
-    IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
-    addParameter_(Parameter("delta", delta_start,constraint));
-    addParameter_(Parameter("tau", tau_start,constraint));
-    addParameter_(Parameter("lambda", lambda_start,constraint));    
+ //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
+      IntervalConstraint* constraint = new IntervalConstraint ( 1e-6, 10-1e-6, true, true );
+      addParameter_( new Parameter("delta", delta_start, constraint) ) ;
+      addParameter_( new Parameter("tau", tau_start, constraint) ) ;
+      addParameter_( new Parameter("lambda", lambda_start, constraint) ) ;
   }
   
   p_fun* clone() const { return new p_fun(*this); }
   
 public:
   
-  void setParameters(const ParameterList& pl) 
+    void setParameters(const ParameterList& pl)
     throw (ParameterNotFoundException, ConstraintException, Exception)
-  {
-    matchParametersValues(pl);
-  }
-  double getValue() const throw (Exception) { return fval_; }
-  void fireParameterChanged(const ParameterList& pl) 
-  {
-    double delta = getParameterValue("delta");
-    double tau = getParameterValue("tau");
-    double lambda = getParameterValue("lambda");
-
-    model_pointer->set_model_parameter("delta",delta);
-    model_pointer->set_model_parameter("tau",tau);
-    model_pointer->set_model_parameter("lambda",lambda);
-    model_pointer->calculate_EGb();
-    double y=-log(model_pointer->p(ale_pointer));
-    //cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda << "\t ll=" << -y <<endl;
-    fval_ = y;
-  }
+    {
+        matchParametersValues(pl);
+    }
+    double getValue() const throw (Exception) { return fval_; }
+    void fireParameterChanged(const ParameterList& pl)
+    {
+        double delta = getParameterValue("delta");
+        double tau = getParameterValue("tau");
+        double lambda = getParameterValue("lambda");
+        
+        model_pointer->set_model_parameter("delta",delta);
+        model_pointer->set_model_parameter("tau",tau);
+        model_pointer->set_model_parameter("lambda",lambda);
+        model_pointer->calculate_EGb();
+        double y=-log(model_pointer->p(ale_pointer));
+        //cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda << "\t ll=" << -y <<endl;
+        fval_ = y;
+    }
 };
 
 
@@ -96,14 +97,13 @@ int main(int argc, char ** argv)
   model->set_model_parameter("delta", delta);
   model->set_model_parameter("tau", tau);
   model->set_model_parameter("lambda", lambda);
-  //calculate_EGb() must always be called after chaging rates to calculate E-s and G-s 
+  //calculate_EGb() must always be called after changing rates to calculate E-s and G-s
   //cf. http://arxiv.org/abs/1211.4606
   model->calculate_EGb();
 
   cout << "Reconciliation model initialised, starting DTL rate optimisation" <<".."<<endl;
 
-    
-  //we use the Nelder–Mead method implemented in Bio++ 
+  //we use the Nelder–Mead method implemented in Bio++
   Function* f = new p_fun(model,ale,delta,tau,lambda);
   Optimizer* optimizer = new DownhillSimplexMethod(f);
 
@@ -112,16 +112,22 @@ int main(int argc, char ** argv)
   optimizer->setVerbose(2);
   
   optimizer->setConstraintPolicy(AutoParameter::CONSTRAINTS_AUTO);
-  
-  optimizer->init(f->getParameters()); //Here we optimizer all parameters, and start with the default values.
-  //FunctionStopCondition stop(optimizer, 1e-1);
-  //optimizer->setStopCondition(stop);
-  
-  optimizer->optimize();
+  optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
+
+    
+    
+ //   FunctionStopCondition stop(optimizer, 1);//1e-1);
+ // optimizer->setStopCondition(stop);
+    //TEMP
+    optimizer->setMaximumNumberOfEvaluations( 10 );
+    
+    optimizer->optimize();
+
   //optimizer->getParameters().printParameters(cout);
   delta=optimizer->getParameterValue("delta");
   tau=optimizer->getParameterValue("tau");
-  lambda=optimizer->getParameterValue("lambda");  
+  lambda=optimizer->getParameterValue("lambda");
+
   scalar_type mlll=-optimizer->getFunctionValue();
   cout << endl << "ML rates: " << " delta=" << delta << "; tau=" << tau << "; lambda="<<lambda<<"."<<endl;
   cout << "LL=" << mlll << endl;
@@ -164,6 +170,6 @@ int main(int argc, char ** argv)
   fout << ml_model->counts_string();
   
   cout << "Results in: " << outname << endl;
-  return 1;
+  return 0;
 }
 
