@@ -150,7 +150,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
                 break;
             }
         }
-        string gene_name=ale->id_leaves[ id ];
+        string gene_name=ale->id_leaves[ g_id ];
 	//  string gene_name=ale->id_leaves[(* (ale->id_sets[g_id].begin()) )];
 	  vector <string> tokens;
 	  boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_separators"]),boost::token_compress_on);
