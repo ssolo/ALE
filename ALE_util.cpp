@@ -5,7 +5,8 @@ using namespace bpp;
 bool fexists(const char *filename)
 {
   ifstream ifile(filename);
-  return ifile;
+  if (ifile) return true;
+    return false;
 };
 
 approx_posterior * observe_ALE_from_file(vector<string> fnames, int burnin,int every,int until)

@@ -141,7 +141,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
       long int g_id=g_ids[i];
       if (g_id_sizes[i]==1) //a leaf, mapping is by name
 	{
-        int id = 0;
+      /*  int id = 0;
          boost::dynamic_bitset<> temp = ale->id_sets[g_id];
         for (auto i = 0; i < ale->Gamma_size + 1 ; ++i) {
 //            if ( BipartitionTools::testBit ( temp, i) ) {
@@ -149,8 +149,19 @@ scalar_type exODT_model::p(approx_posterior *ale)
                 id = i;
                 break;
             }
+        }*/
+        
+        int id = 0;
+        for (auto i=0; i< ale->Gamma_size + 1; ++i) {
+            if ( ale->id_sets[g_id][i] ) {
+                id=i;
+                break;
+            }
         }
-        string gene_name=ale->id_leaves[ g_id ];
+        
+        string gene_name=ale->id_leaves[ id /*g_id*/ ];
+
+//        string gene_name=ale->id_leaves[ g_id ];
 	//  string gene_name=ale->id_leaves[(* (ale->id_sets[g_id].begin()) )];
 	  vector <string> tokens;
 	  boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_separators"]),boost::token_compress_on);

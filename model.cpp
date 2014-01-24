@@ -18,7 +18,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
     }      
   q.clear();
 
-  //directed partitions and thier sizes
+  //directed partitions and their sizes
   vector <long int>  g_ids;//del-loc
   vector <long int>  g_id_sizes;//del-loc  
   for (map <int, vector <long int > > :: iterator it = ale->size_ordered_bips.begin(); it != ale->size_ordered_bips.end(); it++)
@@ -27,11 +27,11 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	g_ids.push_back((*jt));
 	g_id_sizes.push_back((*it).first);
       }
-  //root biprartition needs to be handled seperatly
+  //root bipartition needs to be handled separately
   g_ids.push_back(-1);
   g_id_sizes.push_back(ale->Gamma_size);
 
-  // gene<->species mapping
+    // gene<->species mapping
   for (int i=0;i<(int)g_ids.size();i++)
     {
       long int g_id=g_ids[i];		
@@ -52,7 +52,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
        
       if (g_id_sizes[i]==1)
 	{
-        int id = 0;
+     /*   int id = 0;
         boost::dynamic_bitset<> temp = ale->id_sets[g_id];
         for (auto i = 0; i < ale->Gamma_size + 1; ++i) {
            // if ( BipartitionTools::testBit ( temp, i) ) {
@@ -60,9 +60,17 @@ scalar_type exODT_model::p(approx_posterior *ale)
                     id = i;
                 break;
             }
+        }*/
+        int id = 0;
+        for (auto i=0; i< ale->Gamma_size + 1; ++i) {
+            if ( ale->id_sets[g_id][i] ) {
+                id=i;
+                break;
+            }
         }
-        string gene_name=ale->id_leaves[ g_id ];
-//	  string gene_name=ale->id_leaves[ (* (ale->id_sets[g_id].begin()) )];
+        
+        string gene_name=ale->id_leaves[ id /*g_id*/ ];
+	//  string gene_name=ale->id_leaves[ (* (ale->id_sets[g_id].begin()) )];
 	  vector <string> tokens;
 	  boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_separators"]),boost::token_compress_on);
 	  string species_name;
@@ -71,7 +79,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	  else
 	    species_name=tokens[(int)scalar_parameter["species_field"]];	  
 	  gid_sps[g_id]=species_name;
-	}	 
+	}
     }
 
   for (int i=0;i<(int)g_ids.size();i++)
@@ -109,6 +117,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
             boost::dynamic_bitset<> not_gamma = ~gamma;
             not_gamma[0] = 0;
             long int gpp_id = ale->set_ids.at(not_gamma);
+
             set <long int> parts;
             parts.insert(gp_id);
             parts.insert(gpp_id);
@@ -126,6 +135,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	      long int gpp_id=parts[1];	    
 	      gp_ids.push_back(gp_id);
 	      gpp_ids.push_back(gpp_id);
+
             //Here we can create a new ale->Bip_counts[gp_id], in particular for leaves.
             //We may want to add the leaf entries for Bip_counts when Bip_counts is first created.
 	      if (ale->Bip_counts[gp_id]<=scalar_parameter.at("min_bip_count") and not ale->Gamma_size<4)
@@ -192,8 +202,9 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      //boundary at present
 		      if (t==0)
 			{
-			  if (is_a_leaf && extant_species[e]==gid_sps[g_id])			  
+                if (is_a_leaf && extant_species[e]==gid_sps[g_id])	{
 			    q[g_id][t][e]=1;
+                }
 			  else
 			    q[g_id][t][e]=0;
 			}
@@ -232,7 +243,8 @@ scalar_type exODT_model::p(approx_posterior *ale)
 				    q_sum+= S_pf_ppg + S_ppf_pg;
 				    //S.
 				  }
-			      q[g_id][t][e]=q_sum; 
+			      q[g_id][t][e]=q_sum;
+
 			    }
 
 			  //branches that cross to next time slice  
@@ -299,14 +311,13 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      }	    
 		
 		  q[g_id][tpdt_nl][alpha]+=q_sum_nl;
-		  
+
 		  for (int branch_i=0;branch_i<n;branch_i++)			  
 		    {
 		      int e = time_slices[rank][branch_i];		
 		      scalar_type tau_e=vector_parameter["tau"][e];
 		      scalar_type p_Ntau_e=tau_e*Delta_t;
-
-		      scalar_type TLb=p_Ntau_e*Ebar*q[g_id][t][e];
+                scalar_type TLb=p_Ntau_e*Ebar*q[g_id][t][e];
 		      //TL_bar EVENT, event #5 in part a of Fig.A1 in http://arxiv.org/abs/1211.4606
 		      //(note that since Ebar ~ 1, most transfers are expected to involve the TL evenet not the T event,
 		      //this should not be confused with the TL event of the Tofigh/Doyon/ODTL models, which here corresponds   
@@ -323,7 +334,6 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		  //0.
 
 		  q[g_id][tpdt][alpha]+=q_sum;
-
 		  //events within slice rank at time t on alpha virtual branch.
 		}
 	      if(1)
@@ -384,7 +394,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      //0.
 		   
 		      q[g_id][tpdt][e]+=q_sum;
-		      //if (q[g_id][tpdt][e]>1) q[g_id][tpdt][e]=1;
+                //if (q[g_id][tpdt][e]>1) q[g_id][tpdt][e]=1;
 		      //events within slice rank at time t on branch e. 
 		    }
 		}

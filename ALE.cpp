@@ -272,7 +272,7 @@ void approx_posterior::load_state(string fname)
                   temp[static_cast<int>(atoi((*it).c_str()))] = 1;
               }
 
-            //  std::cout <<"setid : "<< set_id << " READING: " << temp << std::endl;
+             // std::cout <<"setid : "<< set_id << " READING: " << temp << std::endl;
               set_ids[temp]=set_id;
               id_sets[set_id]=temp;
           }
@@ -297,7 +297,8 @@ void approx_posterior::load_state(string fname)
         }
         set_sizes[ (*it).first ] = size;
         size_ordered_bips[size].push_back( (*it).first );
-    /*  set_sizes[(*it).first]=(*it).second.size();
+        // std::cout << size << " AND "<< (*it).first <<std::endl;
+        /*  set_sizes[(*it).first]=(*it).second.size();
       size_ordered_bips[(*it).second.size()].push_back((*it).first);*/
     }
 /*    for ( auto it = size_ordered_bips.begin(); it != size_ordered_bips.end(); it++ )
@@ -350,6 +351,7 @@ string approx_posterior::set2name(boost::dynamic_bitset<> leaf_set) const
                 name += id_leaves.at(i) + name_separator;
         }
     }
+    std::cout << name.substr(0,name.size()-1) <<std::endl;
     return name.substr(0,name.size()-1);
 }
 
@@ -369,10 +371,12 @@ long int approx_posterior::set2id(boost::dynamic_bitset<> leaf_set)
         //VEC
         id_sets[last_leafset_id]=leaf_set;
         Bip_bls[last_leafset_id]=0;
+       // std::cout << "notid: "<< last_leafset_id <<std::endl;
         return last_leafset_id;
     }
     else
     {
+       // std::cout << "id: "<< id <<std::endl;
         return id;
     }
 }
@@ -441,6 +445,7 @@ scalar_type approx_posterior::p_bip(boost::dynamic_bitset<> gamma) const
     if (Gamma_size<4)
         return 1;
     long int g_id=set_ids.at(gamma);
+//    std::cout << "g_id: "<< g_id << " TO "<< p_bip(g_id) <<std::endl;
     return p_bip(g_id);
 }
 
@@ -452,6 +457,7 @@ scalar_type approx_posterior::p_dip(boost::dynamic_bitset<>  gamma, boost::dynam
     long int g_id=set_ids.at(gamma);
     long int gp_id=set_ids.at(gammap);
     long int gpp_id=set_ids.at(gammapp);
+ //   std::cout << "g_id: "<< g_id << " AND "<< gp_id << " AND "<<gpp_id << " TO: "<< p_dip(g_id, gp_id, gpp_id) <<std::endl;
     return p_dip( g_id, gp_id, gpp_id);
 }
 
