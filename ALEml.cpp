@@ -119,7 +119,7 @@ int main(int argc, char ** argv)
  //   FunctionStopCondition stop(optimizer, 1);//1e-1);
  // optimizer->setStopCondition(stop);
     //TEMP
-    optimizer->setMaximumNumberOfEvaluations( 10 );
+  //optimizer->setMaximumNumberOfEvaluations( 10 );
     
     optimizer->optimize();
 
@@ -136,7 +136,8 @@ int main(int argc, char ** argv)
  
   //a finer grained reconciliation model for recovering the ML reconciliation
   exODT_model* ml_model=new exODT_model();
-  ml_model->set_model_parameter("D",10);
+  ml_model->set_model_parameter("min_D",D);
+  ml_model->set_model_parameter("grid_delta_t",0.005);
   ml_model->construct(Sstring);
   ml_model->set_model_parameter("delta", delta);
   ml_model->set_model_parameter("tau", tau);
