@@ -351,8 +351,9 @@ string approx_posterior::set2name(boost::dynamic_bitset<> leaf_set) const
                 name += id_leaves.at(i) + name_separator;
         }
     }
-    std::cout << name.substr(0,name.size()-1) <<std::endl;
-    return name.substr(0,name.size()-1);
+    //std::cout << name.substr(0,name.size()-1) <<std::endl;
+    //return name.substr(0,name.size()-1);
+    return name.substr(0,name.size());
 }
 
 long int approx_posterior::set2id(boost::dynamic_bitset<> leaf_set)
