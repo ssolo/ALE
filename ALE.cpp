@@ -55,7 +55,7 @@ void approx_posterior::construct(string tree_string)
   last_leafset_id=0;
   observations=0;
   // ? name_separator="+";
-  tree_type * tree = TreeTemplateTools::parenthesisToTree(tree_string);//del-loc  
+  tree_type * tree = TreeTemplateTools::parenthesisToTree(tree_string,false);//del-loc  
   vector <string > leaves = tree->getLeavesNames();//del-loc
 
   int id=0;
@@ -530,7 +530,7 @@ map < boost::dynamic_bitset<> ,scalar_type > approx_posterior::recompose(string 
   map <dedge_type, int> dedges;//del-loc
   map <Node * , vector<Node*> > neighbor;//del-loc
 
-  tree_type * G = TreeTemplateTools::parenthesisToTree(G_string);//del-loc
+  tree_type * G = TreeTemplateTools::parenthesisToTree(G_string,false);//del-loc
 
   if (G->isRooted()) G->unroot();
   vector <Node*> nodes= G -> getNodes(); //del-loc
@@ -720,7 +720,7 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids )
   map <dedge_type, int> dedges;//del-loc
   map <Node * , vector<Node*> > neighbor;//del-loc
 
-  tree_type * G = TreeTemplateTools::parenthesisToTree(G_string);//del-loc
+  tree_type * G = TreeTemplateTools::parenthesisToTree(G_string,false);//del-loc
 
   if (G->isRooted()) G->unroot();
   vector <Node*> nodes= G -> getNodes(); //del-loc

@@ -146,7 +146,7 @@ approx_posterior * observe_ALE_from_nexus(string fname, int burnin,int every,int
 		  vector <string> tokens;
 		  boost::trim(line);	    
 		  boost::split(tokens,line,boost::is_any_of(" "),boost::token_compress_on);
-		  tree_type * tree=TreeTemplateTools::parenthesisToTree(tokens[4]);
+		  tree_type * tree=TreeTemplateTools::parenthesisToTree(tokens[4],false);
 		  vector <Node*> leaves=tree->getLeaves();
 		  for (vector <Node*> :: iterator it=leaves.begin();it!=leaves.end();it++)
 		    (*it)->setName(translate[(*it)->getName()]);
@@ -216,7 +216,7 @@ string save_ALE_to_file(string fname)
 
 string canonical_branch_lengths( string Sstring)
 {
-  tree_type * S =TreeTemplateTools::parenthesisToTree(Sstring);//del-loc
+  tree_type * S =TreeTemplateTools::parenthesisToTree(Sstring,false);//del-loc
   vector <Node *> nodes=S->getNodes();//del-loc
   map <Node*,scalar_type> node2height;//del-loc
   map <scalar_type,Node*> height2node;//del-loc
