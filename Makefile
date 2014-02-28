@@ -1,5 +1,5 @@
 #Please change to reflect your Bio++ and Boost installation:
-bpp_DIR= /Users/ssolo/newest_bpp/
+bpp_DIR= /home/ssolo/newest_bpp/
 boost_DIR=/usr/local/
 #works:
 # for Bio++ v2.0.3 (maybe works for 2.0.x)
@@ -39,9 +39,13 @@ ifeq ($(OSTYPE),darwin)
 	CC=g++
 	bpp_libs = $(bpp_DIR)lib/libbpp-core.a $(bpp_DIR)lib/libbpp-phyl.a $(bpp_DIR)lib/libbpp-seq.a 
 	OSSTRING=OSX
+	MPI_INCLUDE=/usr/local/include/openmpi #-I/usr/lib/openmpi/include/ 
+	bpp_DIR= /Users/ssolo/newest_bpp/
+
 else
 	bpp_libs = -lbpp-core -lbpp-seq -lbpp-phyl
 	OSSTRING=LINUX
+	MPI_INCLUDE=-I/usr/lib/openmpi/include/ 	
 
 endif
 
@@ -51,7 +55,6 @@ STATIC_OMP= libexODT_omp.a
 DYNAMIC =  -L. -L$(bpp_DIR)lib $(bpp_libs) 
 LINK = $(DYNAMIC) 
 INCLUDE = -I$(boost_DIR)include -I$(bpp_DIR)include  
-MPI_INCLUDE=/usr/local/include/openmpi #-I/usr/lib/openmpi/include/ 
 MPI_LINK= -lboost_mpi -lboost_serialization 
 
 ALE.o: ALE.h ALE.cpp Makefile 
