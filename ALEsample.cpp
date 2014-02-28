@@ -152,7 +152,7 @@ int main(int argc, char ** argv)
 	    {		  
 	      string sample_tree=sample_model->sample(false);
 	      sample_out << sample_tree << endl;
-	      tree_type * G=TreeTemplateTools::parenthesisToTree(sample_tree);
+	      tree_type * G=TreeTemplateTools::parenthesisToTree(sample_tree,false);
 	      vector<Node*> leaves = G->getLeaves();
 	      for (vector<Node*>::iterator it=leaves.begin();it!=leaves.end();it++ )
 		{
