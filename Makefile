@@ -1,11 +1,12 @@
 #Please change to reflect your Bio++ and Boost installation:
-bpp_DIR= /usr/local/
+bpp_DIR= /Users/ssolo/newest_bpp/
 boost_DIR=/usr/local/
 #works:
 # for Bio++ v2.0.3 (maybe works for 2.0.x)
 # for Boost v1.51 (should work for other versions) 
 
 CC=g++ -pipe
+mCC=mpic++
 
 #works: 
 #on Ubuntu 
@@ -24,7 +25,7 @@ CC=g++ -pipe
 
 FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall -std=gnu++11
 OMP_FLAGS = -fopenmp
-DEV_FLAGS =  -g -Wall -fopenmp -lprofiler 
+DEV_FLAGS =  -g -Wall -std=gnu++11 
 
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
@@ -50,6 +51,8 @@ STATIC_OMP= libexODT_omp.a
 DYNAMIC =  -L. -L$(bpp_DIR)lib $(bpp_libs) 
 LINK = $(DYNAMIC) 
 INCLUDE = -I$(boost_DIR)include -I$(bpp_DIR)include  
+MPI_INCLUDE=/usr/local/include/openmpi #-I/usr/lib/openmpi/include/ 
+MPI_LINK= -lboost_mpi -lboost_serialization 
 
 ALE.o: ALE.h ALE.cpp Makefile 
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o ALE.o ALE.cpp
@@ -97,8 +100,8 @@ ALEobserve:	libexODT.a ALEobserve.cpp Makefile
 ALEcount:	libexODT.a ALEcount.cpp Makefile
 	$(CC) ALEcount.cpp -o ALEcount $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
-omp_test:	libexODT_omp.a omp_test.cpp Makefile
-	$(CC) omp_test.cpp -o omp_test $(FLAGS)  $(OMP_FLAGS) $(INCLUDE) $(STATIC_OMP) $(LINK)
+test_omp:	libexODT_omp.a test.cpp Makefile
+	$(CC) test.cpp -o test_omp $(FLAGS)  $(OMP_FLAGS) $(INCLUDE) $(STATIC_OMP) $(LINK)
 
 test:	libexODT.a test.cpp Makefile
 	$(CC) test.cpp -o test $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
@@ -110,6 +113,9 @@ ALE_tutorial:	libexODT.a ALE_tutorial.cpp Makefile
 test_simpleML:	libexODT.a test_simpleML.cpp Makefile
 	$(CC) test_simpleML.cpp -o test_simpleML $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
+simulation: simulation.cpp Makefile
+	$(CC) simulation.cpp -o simulation $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
 
 bin:  ALEobserve ALEml ALEml_omp ALEsample ALEsample_omp
 	mv ALEobserve binaries/ALEobserve_$(OSSTRING)
@@ -117,3 +123,9 @@ bin:  ALEobserve ALEml ALEml_omp ALEsample ALEsample_omp
 	mv ALEsample binaries/ALEsample_$(OSSTRING)
 	mv ALEml_omp binaries/ALEml_omp_$(OSSTRING)
 	mv ALEsample_omp binaries/ALEsample_omp_$(OSSTRING)
+
+mpi_tree.o: ALE.h exODT.h mpi_tree.h mpi_tree.cpp Makefile 
+	$(CC) $(FLAGS) $(INCLUDE)  -c -o mpi_tree.o mpi_tree.cpp
+
+mpi_ml:	libexODT.a mpi_tree.o mpi_ml.cpp Makefile
+	$(mCC) mpi_ml.cpp -o mpi_ml $(FLAGS) $(INCLUDE) $(STATIC) mpi_tree.o $(LINK) $(MPI_LINK) 
