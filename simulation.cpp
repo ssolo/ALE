@@ -38,19 +38,19 @@ int main(int argc, char ** argv)
   
   int N=100;
   int n=10;
-  int G_n=10;
+  int G_n=1;
 
-  scalar_type omega=G_n*N;
+  scalar_type omega=G_n*N*0;
   //O rate overall 
-  scalar_type delta=1.94213e-02*1.5;
+  scalar_type delta=0.2;
   //D rate per gene
-  scalar_type tau=2.21313e-01*1.5;
+  scalar_type tau=0.2;
   //T rate per gene
-  scalar_type lambda=2.87193e-01*1.5;
+  scalar_type lambda=0.5;
   //L rate per gene
 
-  scalar_type init_t=3;
-  scalar_type sigma=2*N;
+  scalar_type init_t=2;
+  scalar_type sigma=N;
 
   cout << "# Species seed is : " << S_seed << endl;
   cout << "# Genes seed is : "  << G_seed << endl;
@@ -184,14 +184,20 @@ int main(int argc, char ** argv)
       species_event--;
     }
   stringstream root_bl;
-  root_bl<<init_t-age[lca]; //more general printing anyway needed for genes..
+  root_bl<<age[lca];//init_t-age[lca]; //more general printing anyway needed for genes..
 
   stringstream fname;
   fname << "S_" << S_seed << ".tree";
   ofstream s_out( fname.str().c_str() );
 
   s_out  << strings[lca] <<":"<<root_bl.str()<<";"<<endl;
-
+  cout  << strings[lca] <<":"<<root_bl.str()<<";"<<endl;
+  
+  // rates in units corresponding to unit height S
+  //delta  /= age[lca];
+  //tau    /= age[lca];
+  //lambda /= age[lca];
+  
   // a random tree on the same labels
   stringstream rfname;
   rfname << "R_" << S_seed << ".tree";
@@ -436,6 +442,7 @@ int main(int argc, char ** argv)
     }
 
   cout << "#gene simulation ends "<< Ds << " Ds; "<< Ts << " Ts; " << Ls << " Ls; " << Os <<" Os; "<< Ss << " Ss."<<endl;
+
 
   //traceback gene stories
   map<long int,int> sampled_gene_counts;
