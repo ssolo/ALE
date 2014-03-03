@@ -407,7 +407,8 @@ scalar_type exODT_model::p(approx_posterior *ale)
       gpp_ids.clear();
       p_part.clear();
     }
-
+  
+  scalar_type N=1;vector_parameter["N"][last_rank-1 ];
   scalar_type root_norm=0;
   for (int rank=0;rank<last_rank;rank++)
     {
@@ -416,9 +417,9 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	{	  
 	  for (int branch_i=0;branch_i<n;branch_i++)
 	    {	      
-	      root_norm+=1;	      
+	      root_norm+=1;
 	    }	     
-	  root_norm+=1;	      
+	  root_norm+=N;	      
 	}
     }
 
@@ -428,14 +429,14 @@ scalar_type exODT_model::p(approx_posterior *ale)
       int n=time_slices[rank].size();
       for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++)
 	{
-	  scalar_type t=time_slice_times[rank][t_i];		
-	  
+	  scalar_type t=time_slice_times[rank][t_i];			  
 	  for (int branch_i=0;branch_i<n;branch_i++)
 	    {
 	      int e = time_slices[rank][branch_i];
-	      root_sum+=q[-1][t][e]/root_norm;	      
+	      //if (rank==last_rank-1 and t_i==(int)time_slice_times[rank].size()-1)		
+		root_sum+=q[-1][t][e]/root_norm;
 	    }	     
-	  root_sum+=q[-1][t][alpha]/root_norm;	      
+	  root_sum+=q[-1][t][alpha]*N/root_norm;// /(1-Ee[-1][time_slice_times[rank][t_i]]);	      
 	}
     }
 
@@ -461,6 +462,10 @@ void exODT_model::calculate_EGb()
   map<int,scalar_type> Ge_y;//del-loc
   map<int,scalar_type> E_k1,E_k2,E_k3,E_k4;//del-loc
   map<int,scalar_type> G_k1,G_k2,G_k3,G_k4;//del-loc
+  
+  map<int,double> tmp; //XX
+  tmp[0]=1;
+  tmp[1]=1;
 
   for (int rank=0;rank<last_rank;rank++) 
     for (int tsi=0;tsi<(int)time_slice_times[rank].size();tsi++)
@@ -495,13 +500,12 @@ void exODT_model::calculate_EGb()
 	scalar_type tpdt=t_b;
 	scalar_type h=(tpdt-t)/scalar_parameter["DD"];
 	//scalar_type ti=t;
-
 	scalar_type h_lambda_avg=h*scalar_parameter["lambda_avg"]; 
 	scalar_type h_delta_avg=h*scalar_parameter["delta_avg"];	      
 	scalar_type h_tau_avg=h*scalar_parameter["tau_avg"]*(N-ni)/(N-1)*N;	      
 	scalar_type h_Delta_bar=h*Delta_bar;
 	scalar_type h_Lambda_bar=h*Lambda_bar;
-
+	
 
 	for (int ii=0;ii<scalar_parameter["DD"];ii++)
 	  {
@@ -684,11 +688,19 @@ void exODT_model::calculate_EGb()
 	      }	  
 	    // y[n+1] = y[n] + h/6 (k1 + 2 k2 + 2 k3 + k4) 
 	    //y_E[-1][ti+h]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
-	    iy_E[-1][ii+1]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
+	    //iy_E[-1][ii+1]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);	    
+	    if (ii==0)
+	      iy_E[-1][ii+1]=Ee[-1][t] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
+	    else
+	      iy_E[-1][ii+1]=iy_E[-1][ii] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
 
 	    //y_G[-1][ti+h]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
-	    iy_G[-1][ii+1]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
-
+	    //iy_G[-1][ii+1]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
+	    if (ii==0)
+	      iy_G[-1][ii+1]=1 + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
+	    else
+	      iy_G[-1][ii+1]=iy_G[-1][ii] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
+	    
 	    if (ii==scalar_parameter["DD"]-1)
 	      {
 		//Ee[-1][tpdt]=y_E[-1][ti+h];
@@ -704,10 +716,19 @@ void exODT_model::calculate_EGb()
 		int e=time_slices[rank][i];
 		// y[n+1] = y[n] + h/6 (k1 + 2 k2 + 2 k3 + k4) 
 		//y_E[e][ti+h]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
-		iy_E[e][ii+1]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
+		//iy_E[e][ii+1]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
+		if (ii==0)
+		  iy_E[e][ii+1]=Ee[e][t] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
+		else
+		  iy_E[e][ii+1]=iy_E[e][ii] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
 
-		//y_G[e][ti+h]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
-		iy_G[e][ii+1]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
+
+		//y_G[e][ti+h]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      		
+		//iy_G[e][ii+1]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
+		if (ii==0)
+		  iy_G[e][ii+1]=1 + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
+		else		  
+		  iy_G[e][ii+1]=iy_G[e][ii] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
 
 		if (ii==scalar_parameter["DD"]-1)
 		  {
@@ -715,6 +736,9 @@ void exODT_model::calculate_EGb()
 		    Ee[e][tpdt]=iy_E[e][ii+1];
 		    //Ge[e][t]=y_G[e][ti+h];
 		    Ge[e][t]=iy_G[e][ii+1];
+
+		    //if (e<2) cout << e << " " << t << " " << Ee[e][tpdt] << " " << Ge[e][t]<<" "<< tmp[e]<<endl;
+
 		  }
 	      }
 	    //ti=ti+h;	  
