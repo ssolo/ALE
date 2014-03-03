@@ -18,7 +18,8 @@ private:
   double fval_;
   mpi_tree* model_pointer;
 public:
-  p_fun(mpi_tree* model, double delta_start=0.01,double tau_start=0.01,double lambda_start=0.1) : AbstractParametrizable(""), fval_(0), model_pointer(model) 
+  p_fun(mpi_tree* model, double delta_start=0.2,double tau_start=0.2,double lambda_start=0.5//,double sigma_start=2
+) : AbstractParametrizable(""), fval_(0), model_pointer(model) 
   {
     //We declare parameters here:
  //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
@@ -26,6 +27,8 @@ public:
       addParameter_( new Parameter("delta", delta_start, constraint) ) ;
       addParameter_( new Parameter("tau", tau_start, constraint) ) ;
       addParameter_( new Parameter("lambda", lambda_start, constraint) ) ;
+      //addParameter_( new Parameter("sigma", sigma_start, constraint) ) ;
+
   }
   
   p_fun* clone() const { return new p_fun(*this); }
@@ -43,10 +46,16 @@ public:
         double delta = getParameterValue("delta");
         double tau = getParameterValue("tau");
         double lambda = getParameterValue("lambda");
+
+        //double sigma = getParameterValue("sigma");
         
         model_pointer->model->set_model_parameter("delta",delta);
         model_pointer->model->set_model_parameter("tau",tau);
         model_pointer->model->set_model_parameter("lambda",lambda);
+
+	//model_pointer->model->set_model_parameter("Delta_bar",sigma*1e6);
+        //model_pointer->model->set_model_parameter("Lambda_bar",sigma*1e6);
+
         //model_pointer->calculate_EGb();
         double y=-(model_pointer->calculate_p());
         //if (world.rank()==0) cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda << "\t ll=" << -y <<endl;
@@ -91,8 +100,10 @@ int main(int argc, char ** argv)
 
   optimizer->setProfiler(0);
   optimizer->setMessageHandler(0);
-  optimizer->setVerbose(2);
-  
+  optimizer->setVerbose(0);
+  if (world.rank()==0)   optimizer->setVerbose(0);
+
+
   optimizer->setConstraintPolicy(AutoParameter::CONSTRAINTS_AUTO);
   optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
 
@@ -110,9 +121,13 @@ int main(int argc, char ** argv)
 
   if (world.rank()==0)
     {
+      optimizer->getParameters().printParameters(cout);
       scalar_type delta=optimizer->getParameterValue("delta");
       scalar_type tau=optimizer->getParameterValue("tau");
       scalar_type lambda=optimizer->getParameterValue("lambda");
-      cout << delta << " " << tau << " " << lambda << endl;
+      //scalar_type sigma=optimizer->getParameterValue("sigma");
+
+      cout <<endl<< delta << " " << tau << " " << lambda// << " " << sigma
+	   << endl;
     }
 }

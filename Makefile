@@ -1,6 +1,6 @@
 #Please change to reflect your Bio++ and Boost installation:
 bpp_DIR= /home/ssolo/newest_bpp/
-boost_DIR=/usr/local/
+boost_DIR=/usr/
 #works:
 # for Bio++ v2.0.3 (maybe works for 2.0.x)
 # for Boost v1.51 (should work for other versions) 
@@ -23,9 +23,9 @@ mCC=mpic++
 #
 #Bio++ did not complie/link with clang.
 
-FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall -std=gnu++11
+FLAGS = -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall -std=c++0x
 OMP_FLAGS = -fopenmp
-DEV_FLAGS =  -g -Wall -std=gnu++11 
+DEV_FLAGS =  -g -Wall -std=c++0x 
 
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
@@ -46,7 +46,6 @@ else
 	bpp_libs = -lbpp-core -lbpp-seq -lbpp-phyl
 	OSSTRING=LINUX
 	MPI_INCLUDE=-I/usr/lib/openmpi/include/ 	
-
 endif
 
 STATIC= libexODT.a
@@ -54,8 +53,8 @@ STATIC_OMP= libexODT_omp.a
 
 DYNAMIC =  -L. -L$(bpp_DIR)lib $(bpp_libs) 
 LINK = $(DYNAMIC) 
-INCLUDE = -I$(boost_DIR)include -I$(bpp_DIR)include  
-MPI_LINK= -lboost_mpi -lboost_serialization 
+INCLUDE = -I$(boost_DIR)include -I$(bpp_DIR)include -I/usr/include/mpich2/
+MPI_LINK= -L/home/ssolo/lib -lboost_mpi -lboost_serialization 
 
 ALE.o: ALE.h ALE.cpp Makefile 
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o ALE.o ALE.cpp
@@ -131,4 +130,7 @@ mpi_tree.o: ALE.h exODT.h mpi_tree.h mpi_tree.cpp Makefile
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o mpi_tree.o mpi_tree.cpp
 
 mpi_ml:	libexODT.a mpi_tree.o mpi_ml.cpp Makefile
-	$(mCC) mpi_ml.cpp -o mpi_ml $(FLAGS) $(INCLUDE) $(STATIC) mpi_tree.o $(LINK) $(MPI_LINK) 
+	$(mCC) mpi_ml.cpp -o mpi_ml $(FLAGS) $(INCLUDE)   $(LINK) $(MPI_LINK) mpi_tree.o $(STATIC)
+#WTF 
+#mpic++ mpi_ml.cpp -o mpi_ml -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall -std=gnu++11 -I/usr/include -I/home/ssolo/newest_bpp/include -I/usr/include/mpich2/   -L. -L/home/ssolo/newest_bpp/lib -lbpp-core -lbpp-seq -lbpp-phyl   -L/home/ssolo/lib -lboost_mpi -lboost_serialization  mpi_tree.o libexODT.a
+#mpic++ mpi_ml.cpp -o mpi_ml -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall -std=gnu++11 -I/usr/include -I/home/ssolo/newest_bpp/include -I/usr/include/mpich2/   -L. -L/home/ssolo/newest_bpp/lib -lbpp-core -lbpp-seq -lbpp-phyl   -L/usr/lib -lboost_mpi -lboost_serialization  mpi_tree.o libexODT.a
