@@ -434,9 +434,10 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	    {
 	      int e = time_slices[rank][branch_i];
 	      //if (rank==last_rank-1 and t_i==(int)time_slice_times[rank].size()-1)		
-		root_sum+=q[-1][t][e]/root_norm;
+		root_sum+=q[-1][t][e]/root_norm /(1-Ee[e][time_slice_times[rank][t_i]]);
 	    }	     
-	  root_sum+=q[-1][t][alpha]*N/root_norm;// /(1-Ee[-1][time_slice_times[rank][t_i]]);	      
+	  //if (rank==last_rank-1 and t_i==(int)time_slice_times[rank].size()-1)		
+	    root_sum+=q[-1][t][alpha]*N/root_norm /(1-Ee[-1][time_slice_times[rank][t_i]]);	      
 	}
     }
 
@@ -688,19 +689,24 @@ void exODT_model::calculate_EGb()
 	      }	  
 	    // y[n+1] = y[n] + h/6 (k1 + 2 k2 + 2 k3 + k4) 
 	    //y_E[-1][ti+h]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
-	    //iy_E[-1][ii+1]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);	    
+	    iy_E[-1][ii+1]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);	    
+	    
+	    ///*
 	    if (ii==0)
 	      iy_E[-1][ii+1]=Ee[-1][t] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
 	    else
 	      iy_E[-1][ii+1]=iy_E[-1][ii] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
-
+	    //*/
 	    //y_G[-1][ti+h]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
-	    //iy_G[-1][ii+1]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
+	    iy_G[-1][ii+1]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
+
+	    /*
 	    if (ii==0)
 	      iy_G[-1][ii+1]=1 + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
 	    else
 	      iy_G[-1][ii+1]=iy_G[-1][ii] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
-	    
+	    */
+
 	    if (ii==scalar_parameter["DD"]-1)
 	      {
 		//Ee[-1][tpdt]=y_E[-1][ti+h];
@@ -716,15 +722,18 @@ void exODT_model::calculate_EGb()
 		int e=time_slices[rank][i];
 		// y[n+1] = y[n] + h/6 (k1 + 2 k2 + 2 k3 + k4) 
 		//y_E[e][ti+h]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
-		//iy_E[e][ii+1]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
+		iy_E[e][ii+1]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);		
+
+		///*
 		if (ii==0)
 		  iy_E[e][ii+1]=Ee[e][t] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
 		else
 		  iy_E[e][ii+1]=iy_E[e][ii] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
-
+		//*/
 
 		//y_G[e][ti+h]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      		
-		//iy_G[e][ii+1]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
+		iy_G[e][ii+1]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
+
 		if (ii==0)
 		  iy_G[e][ii+1]=1 + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
 		else		  
