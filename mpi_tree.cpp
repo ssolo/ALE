@@ -71,7 +71,7 @@ void mpi_tree::distribute_ales(vector<string> fnames,bool list_of_trees)
 	      while (gidsum_ranks.count(gidsum)!=0)
 		gidsum+=0.1;
 	      gidsum_ranks[gidsum]=i; 
-	      cout << i << " has " << gidsum << " " <<scatter_fnames[i].size()  << endl;
+	      //cout << i << " has " << gidsum << " " <<scatter_fnames[i].size()  << endl;
 	      if (max_sum<gidsum)
 		{
 		  max_sum=gidsum;
@@ -83,7 +83,7 @@ void mpi_tree::distribute_ales(vector<string> fnames,bool list_of_trees)
 		  min_rank=i;
 		}
 	    }
-	  cout << endl;
+	  //cout << endl;
 	  max_sum=0;
 	  for (int j=0;j<(int)scatter_fnames[max_rank].size();j++)
 	    max_sum+=fname_counts[scatter_fnames[max_rank][j]];
@@ -390,6 +390,7 @@ scalar_type mpi_tree::calculate_p()
   scalar_type sum_ll=0;
   if (rank==server) for (int i=0;i<size;i++) sum_ll+=gather_ll[i];
   broadcast(world,sum_ll,server);
+  if (rank==server) cout << model->scalar_parameter["delta_avg"] <<  " " << model->vector_parameter["N"][0]*model->scalar_parameter["tau_avg"] << " " << model->scalar_parameter["lambda_avg"] << " " << model->vector_parameter["Delta_bar"][0] <<" " << sum_ll<<endl;
 
   return sum_ll;
 }
