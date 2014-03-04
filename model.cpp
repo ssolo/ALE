@@ -369,7 +369,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			    q_sum_nl+= Sb_pa_ppe + Sb_pe_ppa;
 			    //S_bar.
 
-			    scalar_type D=p_delta_e*qpe*qppe*pp;
+			    scalar_type D=2*p_delta_e*qpe*qppe*pp;
 			    //D EVENT, event #2 in part a of Fig.A1 in http://arxiv.org/abs/1211.4606
 			    //q[g_id][tpdt][e]+=p_delta_e*q[gp_id][t][e]*q[gpp_id][t][e];
 			    q_sum_nl+= D;
@@ -496,7 +496,6 @@ void exODT_model::calculate_EGb()
 	scalar_type ni=time_slices[rank].size();
 	scalar_type Delta_bar=vector_parameter["Delta_bar"][rank];//1
 	scalar_type Lambda_bar=vector_parameter["Lambda_bar"][rank]*N/(N-ni);;
-      
 	scalar_type t=t_e;
 	scalar_type tpdt=t_b;
 	scalar_type h=(tpdt-t)/scalar_parameter["DD"];
@@ -698,14 +697,14 @@ void exODT_model::calculate_EGb()
 	      iy_E[-1][ii+1]=iy_E[-1][ii] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
 	    //*/
 	    //y_G[-1][ti+h]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
-	    iy_G[-1][ii+1]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
+	    //iy_G[-1][ii+1]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
 
-	    /*
+	    
 	    if (ii==0)
 	      iy_G[-1][ii+1]=1 + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
 	    else
 	      iy_G[-1][ii+1]=iy_G[-1][ii] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
-	    */
+	    
 
 	    if (ii==scalar_parameter["DD"]-1)
 	      {
@@ -714,6 +713,8 @@ void exODT_model::calculate_EGb()
 
 		//Ge[-1][t]=y_G[-1][ti+h];
 		Ge[-1][t]=iy_G[-1][ii+1];
+		
+		//cout << -1 << " " << t << " " << Ee[-1][tpdt] << " " << Ge[-1][t]<<endl;
 
 	      }
 

@@ -11,7 +11,7 @@ exODT_model::exODT_model()
   scalar_parameter["min_bip_count"]=-1;
   scalar_parameter["min_branch_lenghts"]=0;  
   // length of "stem" branch above root
-  scalar_parameter["stem_length"]=1.;
+  scalar_parameter["stem_length"]=2-0.856146;
   //number of discretization slices (subslices) per time slice
   scalar_parameter["D"]=3;
   scalar_parameter["grid_delta_t"]=0.005;
@@ -127,7 +127,9 @@ void exODT_model::construct(string Sstring,scalar_type N)
     }
 
   // and has height one
-  scalar_type h=node_ts[S_root];
+  scalar_type h=node_ts[S_root];  
+  //h=1;
+  scalar_type tree_heigth=node_ts[S_root]/h;
   for (map <Node *,scalar_type >::iterator it=node_ts.begin();it!=node_ts.end();it++ )
     {
       (*it).second/=h;
@@ -137,8 +139,8 @@ void exODT_model::construct(string Sstring,scalar_type N)
 	  (*it).first->setDistanceToFather(l/h);
 	}
     }
-
   string_parameter["S"] = TreeTemplateTools::treeToParenthesis(*S);
+  //cout << string_parameter["S"]  << endl;//XX
   
   //determine time order and time slices
   map <scalar_type,Node *> t_nodes;
@@ -241,7 +243,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
 	slice_end=0;
       else
 	//root is at t=1
-	slice_end=1;
+	slice_end=tree_heigth;
       scalar_type slice_begin;
       if (rank+1<last_rank)	
 	slice_begin=t_end[rank_ids[rank+1]];
@@ -270,6 +272,8 @@ void exODT_model::construct(string Sstring,scalar_type N)
       //  time_slice_times[rank].push_back(slice_end+internal_interval*slice_height/scalar_parameter["D"]);
       // }
       //time_slice_begins[rank]=slice_begin;
+      //cout << rank << " " << slice_end << " " << slice_begin <<endl; //XX
+
     }
 
   //annotate time orders in bootstrap values
