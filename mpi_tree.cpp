@@ -13,7 +13,7 @@ void mpi_tree::distribute_ales(vector<string> fnames,bool list_of_trees)
   
   if (rank==server)
     {
-      cout << "#rank:" <<rank <<" of " << size <<" started distribute."<<endl;
+      //cout << "#rank:" <<rank <<" of " << size <<" started distribute."<<endl;
       
       set <string> verify;
       for (vector<string>::iterator it=fnames.begin();it!=fnames.end();it++)
