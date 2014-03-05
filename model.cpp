@@ -408,7 +408,6 @@ scalar_type exODT_model::p(approx_posterior *ale)
       p_part.clear();
     }
   
-  scalar_type N=1;vector_parameter["N"][last_rank-1 ];
   scalar_type root_norm=0;
   for (int rank=0;rank<last_rank;rank++)
     {
@@ -419,7 +418,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	    {	      
 	      root_norm+=1;
 	    }	     
-	  root_norm+=N;	      
+	  root_norm+=1;	      
 	}
     }
 
@@ -433,11 +432,11 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	  for (int branch_i=0;branch_i<n;branch_i++)
 	    {
 	      int e = time_slices[rank][branch_i];
-	      //if (rank==last_rank-1 and t_i==(int)time_slice_times[rank].size()-1)		
-		root_sum+=q[-1][t][e]/root_norm /(1-Ee[e][time_slice_times[rank][t_i]]);
+	      //if (rank==last_rank-1 and t_i==(int)time_slice_times[rank].size()-1)//(1-Ee[e][time_slice_times[rank][t_i]])/
+	      root_sum+=q[-1][t][e]/root_norm;
 	    }	     
-	  //if (rank==last_rank-1 and t_i==(int)time_slice_times[rank].size()-1)		
-	    root_sum+=q[-1][t][alpha]*N/root_norm /(1-Ee[-1][time_slice_times[rank][t_i]]);	      
+	  //if (rank==last_rank-1 and t_i==(int)time_slice_times[rank].size()-1)//(1-Ee[-1][time_slice_times[rank][t_i]]);	       
+	  root_sum+=q[-1][t][alpha]/root_norm; 	      
 	}
     }
 
@@ -688,7 +687,7 @@ void exODT_model::calculate_EGb()
 	      }	  
 	    // y[n+1] = y[n] + h/6 (k1 + 2 k2 + 2 k3 + k4) 
 	    //y_E[-1][ti+h]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
-	    iy_E[-1][ii+1]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);	    
+	    //iy_E[-1][ii+1]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);	    
 	    
 	    ///*
 	    if (ii==0)
@@ -723,7 +722,7 @@ void exODT_model::calculate_EGb()
 		int e=time_slices[rank][i];
 		// y[n+1] = y[n] + h/6 (k1 + 2 k2 + 2 k3 + k4) 
 		//y_E[e][ti+h]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
-		iy_E[e][ii+1]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);		
+		//iy_E[e][ii+1]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);		
 
 		///*
 		if (ii==0)
@@ -733,7 +732,7 @@ void exODT_model::calculate_EGb()
 		//*/
 
 		//y_G[e][ti+h]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      		
-		iy_G[e][ii+1]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
+		//iy_G[e][ii+1]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
 
 		if (ii==0)
 		  iy_G[e][ii+1]=1 + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
