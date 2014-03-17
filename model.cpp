@@ -274,8 +274,6 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      scalar_type tau_e=vector_parameter["tau"][e];
 		      scalar_type p_Ntau_e=tau_e*Delta_t;
 			  
-
-
 		      //non-leaf directed partition
 		      if (not is_a_leaf)
 			for (int i=0;i<N_parts;i++)
@@ -317,7 +315,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      int e = time_slices[rank][branch_i];		
 		      scalar_type tau_e=vector_parameter["tau"][e];
 		      scalar_type p_Ntau_e=tau_e*Delta_t;
-                scalar_type TLb=p_Ntau_e*Ebar*q[g_id][t][e];
+		      scalar_type TLb=p_Ntau_e*Ebar*q[g_id][t][e];
 		      //TL_bar EVENT, event #5 in part a of Fig.A1 in http://arxiv.org/abs/1211.4606
 		      //(note that since Ebar ~ 1, most transfers are expected to involve the TL evenet not the T event,
 		      //this should not be confused with the TL event of the Tofigh/Doyon/ODTL models, which here corresponds   

@@ -116,7 +116,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	    for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++) //Going through the subslices
 	      {
 		//cerr<<"\t\tt_i: "<<t_i<<"\n";
-		scalar_type t=time_slice_times[rank][t_i];
+		//scalar_type t=time_slice_times[rank][t_i];
 		//vector<scalar_type> vbranch(n, 0.);
 		map<int, scalar_type> vbranch;
 		for (int branch_i=0;branch_i<n;branch_i++)
@@ -285,7 +285,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      //######################################################################################################################
                      
 		      scalar_type t=time_slice_times[rank][t_i];
-		      scalar_type tpdt,tpdt_nl;
+		      scalar_type tpdt;//,tpdt_nl;
 		      int tpdt_rank, tpdt_t_i;
 		      if ( t_i <  (int)time_slice_times[rank].size()-1 ){
 			tpdt=time_slice_times[rank][t_i+1];
@@ -306,9 +306,9 @@ scalar_type exODT_model::p(approx_posterior *ale)
                      
 		      bool tpdt_nl_is_t = true;
 		      if (scalar_parameter["event_node"]==1 and false)
-			tpdt_nl=t;			
+			;//tpdt_nl=t;			
 		      else{
-			tpdt_nl=tpdt;
+			//tpdt_nl=tpdt;
 			tpdt_nl_is_t = false;
 		      }
                      
@@ -569,7 +569,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 				    //q[g_id][tpdt][e]+=p_Delta_bar*(q[gp_id][t][alpha]*q[gpp_id][t][e]+q[gp_id][t][e]*q[gpp_id][t][alpha]);			  
 				    //S_bar.
                                          
-				    scalar_type D=p_delta_e*qpe*qppe*pp;
+				    scalar_type D=2*p_delta_e*qpe*qppe*pp;
 				    //D EVENT
 				    q_sum_nl+= D;
                                          
@@ -725,7 +725,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			//######################################################################################################################
                          
 			scalar_type t=time_slice_times[rank][t_i];
-			scalar_type tpdt,tpdt_nl;
+			scalar_type tpdt;//,tpdt_nl;
 			int tpdt_rank, tpdt_t_i;
 			if ( t_i <  (int)time_slice_times[rank].size()-1 ){
 			  tpdt=time_slice_times[rank][t_i+1];
@@ -746,9 +746,9 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			
 			bool tpdt_nl_is_t = true;
 			if (scalar_parameter["event_node"]==1 and false)
-			  tpdt_nl=t;			
+			  ;//tpdt_nl=t;			
 			else{
-			  tpdt_nl=tpdt;
+			  //tpdt_nl=tpdt;
 			  tpdt_nl_is_t = false;
 			}
 
@@ -1046,7 +1046,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			//######################################################################################################################
                          
 			scalar_type t=time_slice_times[rank][t_i]; //End time of the current subslice.
-			scalar_type tpdt,tpdt_nl; //tpdt: beginning time of the current subslice. tpdt_nl=tpdt is for the event node.
+			scalar_type tpdt;//,tpdt_nl; //tpdt: beginning time of the current subslice. tpdt_nl=tpdt is for the event node.
 			int tpdt_rank, tpdt_t_i;
 			if ( t_i <  (int)time_slice_times[rank].size()-1 ){
 			  tpdt=time_slice_times[rank][t_i+1];
@@ -1067,9 +1067,9 @@ scalar_type exODT_model::p(approx_posterior *ale)
 			
 			bool tpdt_nl_is_t = true;
 			if (scalar_parameter["event_node"]==1 and false)
-			  tpdt_nl=t;			
+			  ;//tpdt_nl=t;			
 			else{
-			  tpdt_nl=tpdt;
+			  //tpdt_nl=tpdt;
 			  tpdt_nl_is_t = false;
 			}
 			 
@@ -1389,7 +1389,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
       int n=time_slices[rank].size();
       for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++)
 	{
-	  scalar_type t=time_slice_times[rank][t_i];		
+	  //scalar_type t=time_slice_times[rank][t_i];		
 	  
 	  for (int branch_i=0;branch_i<n;branch_i++)
 	    {
@@ -1679,10 +1679,23 @@ void exODT_model::calculate_EGb()
 	      }	  
 	    // y[n+1] = y[n] + h/6 (k1 + 2 k2 + 2 k3 + k4) 
 	    //y_E[-1][ti+h]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
-	    iy_E[-1][ii+1]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
-
+	    iy_E[-1][ii+1]=Ee_y[-1] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);	    
+	    
+	    ///*
+	    if (ii==0)
+	      iy_E[-1][ii+1]=Ee[-1][t] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
+	    else
+	      iy_E[-1][ii+1]=iy_E[-1][ii] + 1/6. * (E_k1[-1] + 2*E_k2[-1] + 2*E_k3[-1] + E_k4[-1]);
+	    //*/
 	    //y_G[-1][ti+h]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
-	    iy_G[-1][ii+1]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
+	    //iy_G[-1][ii+1]=Ge_y[-1] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
+
+	    
+	    if (ii==0)
+	      iy_G[-1][ii+1]=1 + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
+	    else
+	      iy_G[-1][ii+1]=iy_G[-1][ii] + 1/6. * (G_k1[-1] + 2*G_k2[-1] + 2*G_k3[-1] + G_k4[-1]);
+	    
 
 	    if (ii==scalar_parameter["DD"]-1)
 	      {
@@ -1699,10 +1712,22 @@ void exODT_model::calculate_EGb()
 		int e=time_slices[rank][i];
 		// y[n+1] = y[n] + h/6 (k1 + 2 k2 + 2 k3 + k4) 
 		//y_E[e][ti+h]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
-		iy_E[e][ii+1]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
- 
-		//y_G[e][ti+h]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
+		iy_E[e][ii+1]=Ee_y[e] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);		
+
+		///*
+		if (ii==0)
+		  iy_E[e][ii+1]=Ee[e][t] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
+		else
+		  iy_E[e][ii+1]=iy_E[e][ii] + 1/6. * (E_k1[e] + 2*E_k2[e] + 2*E_k3[e] + E_k4[e]);
+		//*/
+
+		//y_G[e][ti+h]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      		
 		iy_G[e][ii+1]=Ge_y[e] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
+
+		if (ii==0)
+		  iy_G[e][ii+1]=1 + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
+		else		  
+		  iy_G[e][ii+1]=iy_G[e][ii] + 1/6. * (G_k1[e] + 2*G_k2[e] + 2*G_k3[e] + G_k4[e]);	      
 
 		if (ii==scalar_parameter["DD"]-1)
 		  {

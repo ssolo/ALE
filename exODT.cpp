@@ -55,7 +55,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
   //virtual branch
   alpha=-1;
   last_branch=0;
-  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_in"]);//del-loc
+  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_in"],false);//del-loc
 
   S_root = S->getRootNode();//del-loc
   vector <Node*> leaves = TreeTemplateTools::getLeaves(*S_root);//del-loc
@@ -291,7 +291,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
       node->setBranchProperty("ID",BppString(out.str()));
     }  
   string_parameter["S_with_ranks"]=TreeTemplateTools::treeToParenthesis(*S,false,"ID");
-  //cout << string_parameter["S_with_ranks"] << endl;
+  cout << string_parameter["S_with_ranks"] << endl;//XX
   for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
     (*it).first->setBranchProperty("ID",BppString(""));
 
