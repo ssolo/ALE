@@ -11,7 +11,7 @@ exODT_model::exODT_model()
   scalar_parameter["min_bip_count"]=-1;
   scalar_parameter["min_branch_lenghts"]=0;  
   // length of "stem" branch above root
-  scalar_parameter["stem_length"]=2-0.856146;
+  scalar_parameter["stem_length"]=1;
   //number of discretization slices (subslices) per time slice
   scalar_parameter["D"]=3;
   scalar_parameter["grid_delta_t"]=0.005;
@@ -55,7 +55,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
   //virtual branch
   alpha=-1;
   last_branch=0;
-  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_in"]);//del-loc
+  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_in"],false);//del-loc
 
   S_root = S->getRootNode();//del-loc
   vector <Node*> leaves = TreeTemplateTools::getLeaves(*S_root);//del-loc
@@ -129,7 +129,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
   // and has height one
   scalar_type h=node_ts[S_root];  
   //h=1;
-  scalar_type tree_heigth=node_ts[S_root]/h;
+  scalar_type tree_heigth=1;//node_ts[S_root]/h;
   for (map <Node *,scalar_type >::iterator it=node_ts.begin();it!=node_ts.end();it++ )
     {
       (*it).second/=h;
@@ -291,7 +291,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
       node->setBranchProperty("ID",BppString(out.str()));
     }  
   string_parameter["S_with_ranks"]=TreeTemplateTools::treeToParenthesis(*S,false,"ID");
-  //cout << string_parameter["S_with_ranks"] << endl;
+  cout << string_parameter["S_with_ranks"] << endl;//XX
   for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
     (*it).first->setBranchProperty("ID",BppString(""));
 

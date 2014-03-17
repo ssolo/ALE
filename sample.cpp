@@ -111,46 +111,46 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   approx_posterior * ale=ale_pointer;
   bool is_a_leaf=false; 
 
-    int size = 0;
-    boost::dynamic_bitset<> temp;
+  int size = 0;
+  boost::dynamic_bitset<> temp;
   //  if (g_id!=-1) { //We are not at the root bipartition
-        temp = ale->id_sets.at( g_id );
-        for (auto i = 0; i < ale->Gamma_size + 1; ++i) {
-            // if ( BipartitionTools::testBit ( temp, i) ) {
-            if ( temp[ i ] ) {
-                size++;
-            }
-        }
+  temp = ale->id_sets.at( g_id );
+  for (int i = 0; i < ale->Gamma_size + 1; ++i) {
+    // if ( BipartitionTools::testBit ( temp, i) ) {
+    if ( temp[ i ] ) {
+      size++;
+    }
+  }
         
         
-        // if ((int)(ale->id_sets[g_id].size())==1)
-        if (size == 1)
-            is_a_leaf=true;
+  // if ((int)(ale->id_sets[g_id].size())==1)
+  if (size == 1)
+    is_a_leaf=true;
   //  }
   vector <long int> gp_ids;//del-loc
   vector <long int> gpp_ids;//del-loc
   vector <scalar_type> p_part;//del-loc
-    if (g_id!=-1)
-        for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++)
-        {
-            pair<long int, long int> parts = (*kt).first;
-            long int gp_id=parts.first;
-            long int gpp_id=parts.second;
-            gp_ids.push_back(gp_id);
-            gpp_ids.push_back(gpp_id);
-            if (ale->Bip_counts[g_id]<=scalar_parameter["min_bip_count"])
-                p_part.push_back(0);
-            else
-            {
-                p_part.push_back(ale->p_dip(g_id,gp_id,gpp_id));
-            }
-        }
-    else
-  {
+  if (g_id!=-1)
+    for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++)
+      {
+	pair<long int, long int> parts = (*kt).first;
+	long int gp_id=parts.first;
+	long int gpp_id=parts.second;
+	gp_ids.push_back(gp_id);
+	gpp_ids.push_back(gpp_id);
+	if (ale->Bip_counts[g_id]<=scalar_parameter["min_bip_count"])
+	  p_part.push_back(0);
+	else
+	  {
+	    p_part.push_back(ale->p_dip(g_id,gp_id,gpp_id));
+	  }
+      }
+  else
+    {
       //root bipartition needs to be handled seperatly
       map<set<long int>,int> bip_parts;
       for (map <long int,scalar_type> :: iterator it = ale->Bip_counts.begin(); it != ale->Bip_counts.end(); it++)
-      {
+	{
           long int gp_id=(*it).first;
           boost::dynamic_bitset<> gamma = ale->id_sets[gp_id];
           
@@ -158,13 +158,13 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
           not_gamma[0] = 0;
 
           /* for (auto i = 0; i < ale->nbint; ++i) {
-           not_gamma[i] = 0;
-           }
-           BipartitionTools::bitNot(not_gamma, gamma, ale->nbint);*/
+	     not_gamma[i] = 0;
+	     }
+	     BipartitionTools::bitNot(not_gamma, gamma, ale->nbint);*/
           /*
-           for (set<int>::iterator st=ale->Gamma.begin();st!=ale->Gamma.end();st++)
-           if (gamma.count(*st)==0)
-           not_gamma.insert(*st);*/
+	    for (set<int>::iterator st=ale->Gamma.begin();st!=ale->Gamma.end();st++)
+	    if (gamma.count(*st)==0)
+	    not_gamma.insert(*st);*/
           long int gpp_id = ale->set_ids[not_gamma];
           set <long int> parts;
           parts.insert(gp_id);
@@ -172,9 +172,9 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
           bip_parts[parts]=1;
           //  gamma.clear();
           //  not_gamma.clear();
-      }
+	}
       for (map<set<long int>,int> :: iterator kt = bip_parts.begin();kt!=bip_parts.end();kt++)
-      {
+	{
           vector <long int> parts;
           for (set<long int>::iterator sit=(*kt).first.begin();sit!=(*kt).first.end();sit++) parts.push_back((*sit));
           long int gp_id=parts[0];
@@ -182,12 +182,12 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
           gp_ids.push_back(gp_id);
           gpp_ids.push_back(gpp_id);
           if (ale->Bip_counts[gp_id]<=scalar_parameter["min_bip_count"] and not ale->Gamma_size<4)
-              p_part.push_back(0);
+	    p_part.push_back(0);
           else
-              p_part.push_back(ale->p_bip(gp_id));	      
-      }
+	    p_part.push_back(ale->p_bip(gp_id));	      
+	}
       bip_parts.clear();
-  }
+    }
   int N_parts=gp_ids.size();
   int n=time_slices[rank].size();
   //######################################################################################################################
@@ -255,7 +255,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 
       t=time_slice_times[rank][t_i];
       scalar_type tpdt;//,tpdt_nl;      
-      if ( t_i < scalar_parameter["D"]-1 )
+      if ( t_i < (int)time_slice_times[rank].size()-1 )
 	tpdt=time_slice_times[rank][t_i+1];
       else if (rank<last_rank-1)
 	tpdt=time_slice_times[rank+1][0];
@@ -264,9 +264,9 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	tpdt=t_begin[time_slices[rank][0]];
 
       /*
-      if (scalar_parameter["event_node"]==1 and 0)
+	if (scalar_parameter["event_node"]==1 and 0)
 	tpdt_nl=t;
-      else
+	else
 	tpdt_nl=tpdt;
       */
       //root
@@ -323,114 +323,141 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	  else
 	    {
 	      //cout << " here " <<endl;
-	  //boundaries for branch alpha virtual branch.  
-	  //events within slice rank at time t on alpha virtual branch
-	  scalar_type G_bar=Ge[-1][t];//exp(-(Delta_bar*(n-N)/N+Lambda_bar)*Delta_t );	
-	  //q[g_id][tpdt][alpha]=0;
-	  //scalar_type q_sum=0;
-	  //scalar_type q_sum_nl=0;
-	  for (int branch_i=0;branch_i<n;branch_i++)			  
-	    {
-	      int e = time_slices[rank][branch_i];		
-	      scalar_type tau_e=vector_parameter["tau"][e];		    
-	      scalar_type p_Ntau_e=1-exp(-tau_e*Delta_t);
+	      //boundaries for branch alpha virtual branch.  
+	      //events within slice rank at time t on alpha virtual branch
+	      scalar_type G_bar=Ge[-1][t];
+	      //q[g_id][tpdt][alpha]=0;
+	      //scalar_type q_sum=0;
+	      //scalar_type q_sum_nl=0;
+	      for (int branch_i=0;branch_i<n;branch_i++)			  
+		{
+		  int e = time_slices[rank][branch_i];		
+		  scalar_type tau_e=vector_parameter["tau"][e];		    
+		  scalar_type p_Ntau_e=tau_e*Delta_t;
+
+		  //non-leaf directed partition
+		  if (not is_a_leaf)
+		    for (int i=0;i<N_parts;i++)
+		      {	
+			long int gp_id=gp_ids[i];
+			long int gpp_id=gpp_ids[i];	    
+			scalar_type pp=p_part[i];				    
+			scalar_type T_ep_app=p_Ntau_e*q[gp_id][t][e]*q[gpp_id][t][alpha]*pp;
+			scalar_type T_ap_epp=p_Ntau_e*q[gp_id][t][alpha]*q[gpp_id][t][e]*pp;
+			//T EVENT
+			resum+=T_ep_app;
+			if (1)
+			  {
+			    sample_ps.push_back(T_ep_app);
+			    step step;
+			    step.e=-1;
+			    step.ep=e;
+			    step.epp=alpha;
+			    step.t=t;
+			    step.rank=rank;
+			    step.g_id=-1;
+			    step.gp_id=gp_id;
+			    step.gpp_id=gpp_id;
+			    step.event="Tb";
+			    sample_steps.push_back(step);	       	      
+			  }
+
+			resum+=T_ap_epp;
+			if (1)
+			  {
+			    sample_ps.push_back(T_ap_epp);
+			    step step;
+			    step.e=-1;
+			    step.ep=alpha;
+			    step.epp=e;
+			    step.t=t;
+			    step.rank=rank;
+			    step.g_id=-1;
+			    step.gp_id=gp_id;
+			    step.gpp_id=gpp_id;
+			    step.event="Tb";			      
+			    sample_steps.push_back(step);
+			  }
+
+			//q_sum_nl+=
+			//q[g_id][tpdt][alpha]+=p_Ntau_e*(q[gp_id][t][e]*q[gpp_id][t][alpha]+q[gp_id][t][alpha]*q[gpp_id][t][e]);
+			//T.
+		    
+		      }
+		}
+
 	      //non-leaf directed partition
 	      if (not is_a_leaf)
 		for (int i=0;i<N_parts;i++)
 		  {	
 		    long int gp_id=gp_ids[i];
 		    long int gpp_id=gpp_ids[i];	    
-		    scalar_type pp=p_part[i];				    
-		    scalar_type T_ep_app=p_Ntau_e*q[gp_id][t][e]*q[gpp_id][t][alpha]*pp;
-		    scalar_type T_ap_epp=p_Ntau_e*q[gp_id][t][alpha]*q[gpp_id][t][e]*pp;
-		    //T EVENT
-		    resum+=T_ep_app;
+		    scalar_type pp=p_part[i];
+		    scalar_type Sb=p_Delta_bar*(2*q[gp_id][t][alpha]*q[gpp_id][t][alpha])*pp;
+		    //S_bar EVENT
+		    resum+=Sb;
 		    if (1)
 		      {
-			sample_ps.push_back(T_ep_app);
+			sample_ps.push_back(Sb);
 			step step;
 			step.e=-1;
-			step.ep=e;
+			step.ep=alpha;
 			step.epp=alpha;
 			step.t=t;
 			step.rank=rank;
 			step.g_id=-1;
 			step.gp_id=gp_id;
 			step.gpp_id=gpp_id;
-			step.event="Tb";
-			sample_steps.push_back(step);	       	      
-		      }
-
-		    resum+=T_ap_epp;
-		    if (1)
-		      {
-			sample_ps.push_back(T_ap_epp);
-			step step;
-			step.e=-1;
-			step.ep=alpha;
-			step.epp=e;
-			step.t=t;
-			step.rank=rank;
-			step.g_id=-1;
-			step.gp_id=gp_id;
-			step.gpp_id=gpp_id;
-			step.event="Tb";			      
+			step.event="Sb";			      
 			sample_steps.push_back(step);
 		      }
 
-		    //q_sum_nl+=
-		    //q[g_id][tpdt][alpha]+=p_Ntau_e*(q[gp_id][t][e]*q[gpp_id][t][alpha]+q[gp_id][t][alpha]*q[gpp_id][t][e]);
-		    //T.
-		    
-		  }
-	    }
-	  //non-leaf directed partition
-	  if (not is_a_leaf)
-	    for (int i=0;i<N_parts;i++)
-	      {	
-		long int gp_id=gp_ids[i];
-		long int gpp_id=gpp_ids[i];	    
-		scalar_type pp=p_part[i];
-		scalar_type Sb=p_Delta_bar*(2*q[gp_id][t][alpha]*q[gpp_id][t][alpha])*pp;
-		//S_bar EVENT
-		resum+=Sb;
-		if (1)
-		  {
-		    sample_ps.push_back(Sb);
-		    step step;
-		    step.e=-1;
-		    step.ep=alpha;
-		    step.epp=alpha;
-		    step.t=t;
-		    step.rank=rank;
-		    step.g_id=-1;
-		    step.gp_id=gp_id;
-		    step.gpp_id=gpp_id;
-		    step.event="Sb";			      
-		    sample_steps.push_back(step);
-		  }
+		    //q_sum_nl+=Sb;
+		    //q[g_id][tpdt][alpha]+=p_Delta_bar*(2*q[gp_id][t][alpha]*q[gpp_id][t][alpha]);
+		    //S_bar.
 
-		//q_sum_nl+=Sb;
-		//q[g_id][tpdt][alpha]+=p_Delta_bar*(2*q[gp_id][t][alpha]*q[gpp_id][t][alpha]);
-		//S_bar.
-
-	      }	    
+		  }	    
 		
-	  //q[g_id][tpdt_nl][alpha]+=q_sum_nl;
+	      //q[g_id][tpdt_nl][alpha]+=q_sum_nl;
 	  
-	  for (int branch_i=0;branch_i<n;branch_i++)			  
-	    {
-	      int e = time_slices[rank][branch_i];		
-	      scalar_type tau_e=vector_parameter["tau"][e];
-	      scalar_type p_Ntau_e=1-exp(-tau_e*Delta_t);
-	      scalar_type TLb=p_Ntau_e*Ebar*q[g_id][t][e];
-	      //TL_bar EVENT
-	      resum+=TLb;
+	      for (int branch_i=0;branch_i<n;branch_i++)			  
+		{
+		  int e = time_slices[rank][branch_i];		
+		  scalar_type tau_e=vector_parameter["tau"][e];
+		  scalar_type p_Ntau_e=tau_e*Delta_t;
+		  scalar_type TLb=p_Ntau_e*Ebar*q[g_id][t][e];
+		  //TL_bar EVENT
+		  resum+=TLb;
+		  if (1)
+		    {
+		      sample_ps.push_back(TLb);
+		      step step;
+		      step.e=e;
+		      step.ep=-1;
+		      step.epp=-1;
+		      step.t=t;
+		      step.rank=rank;
+		      step.g_id=g_id;
+		      step.gp_id=-1;
+		      step.gpp_id=-1;
+		      step.event="TLb";			      
+		      sample_steps.push_back(step);
+		    }
+
+		  //q_sum+=TLb;
+		  //q[g_id][tpdt][alpha]+=p_Ntau_e*Ebar*q[g_id][t][e];
+		  //TL_bar.
+
+		}
+
+	      //0 EVENT
+	      scalar_type empty=G_bar*q[g_id][t][alpha]; 
+	      resum+=empty;
 	      if (1)
 		{
-		  sample_ps.push_back(TLb);
+		  sample_ps.push_back(empty);
 		  step step;
-		  step.e=e;
+		  step.e=alpha;
 		  step.ep=-1;
 		  step.epp=-1;
 		  step.t=t;
@@ -438,57 +465,34 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		  step.g_id=g_id;
 		  step.gp_id=-1;
 		  step.gpp_id=-1;
-		  step.event="TLb";			      
-		  sample_steps.push_back(step);
+		  step.event="0";		
+		  sample_steps.push_back(step);	      
 		}
 
-	      //q_sum+=TLb;
-	      //q[g_id][tpdt][alpha]+=p_Ntau_e*Ebar*q[g_id][t][e];
-	      //TL_bar.
+	      //q_sum+=empty;
 
-	    }
-	  //0 EVENT
-	  scalar_type empty=G_bar*q[g_id][t][alpha]; 
-	  resum+=empty;
-	  if (1)
-	    {
-	      sample_ps.push_back(empty);
-	      step step;
-	      step.e=alpha;
-	      step.ep=-1;
-	      step.epp=-1;
-	      step.t=t;
-	      step.rank=rank;
-	      step.g_id=g_id;
-	      step.gp_id=-1;
-	      step.gpp_id=-1;
-	      step.event="0";		
-	      sample_steps.push_back(step);	      
-	    }
+	      //q[g_id][tpdt][alpha]+=G_bar*q[g_id][t][alpha];
+	      //0.
 
-	  //q_sum+=empty;
-
-	  //q[g_id][tpdt][alpha]+=G_bar*q[g_id][t][alpha];
-	  //0.
-
-	  //q[g_id][tpdt][alpha]+=q_sum;
-	  //events within slice rank at time t on alpha virtual branch.
+	      //q[g_id][tpdt][alpha]+=q_sum;
+	      //events within slice rank at time t on alpha virtual branch.
 	    }
 	}
       else
 	{
+
 	  //int e = time_slices[rank][branch_i];
 	  scalar_type Get=Ge[e][t];
 	  scalar_type Eet=Ee[e][t];	
 	  scalar_type delta_e=vector_parameter["delta"][e];
-	  scalar_type p_delta_e=1-exp(-delta_e*Delta_t);
+	  scalar_type p_delta_e=delta_e*Delta_t;
 	  if (S_node)
 	    {
 	      //boundaries for branch e
 	      //boundary at present
 	      if (t==0)
 		{
-		 ;
+		  ;
 		}
 	      //boundary between slice rank and rank-1
 	      else if (t_i==0 )
@@ -626,142 +630,146 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	  //boundaries for branch e.
 	  else
 	    {
-	  //events within slice rank at time t on branch e 
-	  //q[g_id][tpdt][e]=0;
-	  //scalar_type q_sum=0;
-	  //scalar_type q_sum_nl=0;
 
-	  //non-leaf directed partition		   
-	  if (not is_a_leaf)
-	    for (int i=0;i<N_parts;i++)
-	      {	
-		long int gp_id=gp_ids[i];
-		long int gpp_id=gpp_ids[i];	    
-		scalar_type pp=p_part[i];
-		scalar_type qpe=q[gp_id][t][e];
-		scalar_type qppe=q[gpp_id][t][e];
-		scalar_type Sb_pa_ppe= p_Delta_bar*q[gp_id][t][alpha]*qppe*pp;
-		scalar_type Sb_pe_ppa= p_Delta_bar*qpe*q[gpp_id][t][alpha]*pp;
-		//S_bar EVENT
-		resum+=Sb_pa_ppe;
-		if(1)
-		  {
-		    sample_ps.push_back(Sb_pa_ppe);
-		    step step;
-		    step.e=-1;
-		    step.ep=alpha;
-		    step.epp=e;
-		    step.t=t;
-		    step.rank=rank;
-		    step.g_id=-1;
-		    step.gp_id=gp_id;
-		    step.gpp_id=gpp_id;
-		    step.event="Sb";			      
-		    sample_steps.push_back(step);
+	      //events within slice rank at time t on branch e 
+	      //q[g_id][tpdt][e]=0;
+	      //scalar_type q_sum=0;
+	      //scalar_type q_sum_nl=0;
+
+	      //non-leaf directed partition		   
+	      if (not is_a_leaf)
+		for (int i=0;i<N_parts;i++)
+		  {	
+
+		    long int gp_id=gp_ids[i];
+		    long int gpp_id=gpp_ids[i];	    
+		    scalar_type pp=p_part[i];
+		    scalar_type qpe=q[gp_id][t][e];
+		    scalar_type qppe=q[gpp_id][t][e];
+		    scalar_type Sb_pa_ppe= p_Delta_bar*q[gp_id][t][alpha]*qppe*pp;
+		    scalar_type Sb_pe_ppa= p_Delta_bar*qpe*q[gpp_id][t][alpha]*pp;
+		    //S_bar EVENT
+		    resum+=Sb_pa_ppe;
+		    if(1)
+		      {
+			sample_ps.push_back(Sb_pa_ppe);
+			step step;
+			step.e=-1;
+			step.ep=alpha;
+			step.epp=e;
+			step.t=t;
+			step.rank=rank;
+			step.g_id=-1;
+			step.gp_id=gp_id;
+			step.gpp_id=gpp_id;
+			step.event="Sb";			      
+			sample_steps.push_back(step);
+		      }
+
+
+		    resum+=Sb_pe_ppa;
+		    if(1)
+		      {
+			sample_ps.push_back(Sb_pe_ppa);
+			step step;
+			step.e=-1;
+			step.ep=e;
+			step.epp=alpha;
+			step.t=t;
+			step.rank=rank;
+			step.g_id=-1;
+			step.gp_id=gp_id;
+			step.gpp_id=gpp_id;
+			step.event="Sb";		
+
+			sample_steps.push_back(step);	     
+		      }
+		    //q_sum_nl+= Sb_pa_ppe + Sb_pe_ppa;
+
+		    //q[g_id][tpdt][e]+=p_Delta_bar*(q[gp_id][t][alpha]*q[gpp_id][t][e]+q[gp_id][t][e]*q[gpp_id][t][alpha]);			  
+		    //S_bar.
+
+		    scalar_type D=2*p_delta_e*qpe*qppe*pp;
+		    resum+=D;
+		    if(1)
+		      {
+			sample_ps.push_back(D);
+			step step;
+			step.e=-1;
+			step.ep=e;
+			step.epp=e;
+			step.t=t;
+			step.rank=rank;
+			step.g_id=-1;
+			step.gp_id=gp_id;
+			step.gpp_id=gpp_id;
+			step.event="D";			      
+
+			sample_steps.push_back(step);	     
+		      } 
+		    //D EVENT
+		    //q_sum_nl+= D;
+
+		    //q[g_id][tpdt][e]+=p_delta_e*q[gp_id][t][e]*q[gpp_id][t][e];
+		    //D.
+
 		  }
 
+	      scalar_type SLb=p_Delta_bar*Eet*q[g_id][t][alpha];
+	      //SL_bar EVENT
+	      resum+=SLb;
+	      if(1)
+		{
+		  sample_ps.push_back(SLb);
+		  step step;
+		  step.e=alpha;
+		  step.ep=-1;
+		  step.epp=-1;
+		  step.t=t;
+		  step.rank=rank;
+		  step.g_id=g_id;
+		  step.gp_id=-1;
+		  step.gpp_id=-1;
+		  step.event="SLb";			      
+		  sample_steps.push_back(step);	     
+		}
+	      //q_sum_nl+=SLb;
 
-		resum+=Sb_pe_ppa;
-		if(1)
-		  {
-		    sample_ps.push_back(Sb_pe_ppa);
-		    step step;
-		    step.e=-1;
-		    step.ep=e;
-		    step.epp=alpha;
-		    step.t=t;
-		    step.rank=rank;
-		    step.g_id=-1;
-		    step.gp_id=gp_id;
-		    step.gpp_id=gpp_id;
-		    step.event="Sb";		
-		    sample_steps.push_back(step);	     
-		  }
-		//q_sum_nl+= Sb_pa_ppe + Sb_pe_ppa;
+	      //q[g_id][tpdt][e]+=p_Delta_bar*Eet*q[g_id][t][alpha];
+	      //SL_bar.
 
-		//q[g_id][tpdt][e]+=p_Delta_bar*(q[gp_id][t][alpha]*q[gpp_id][t][e]+q[gp_id][t][e]*q[gpp_id][t][alpha]);			  
-		//S_bar.
+	      //q[g_id][tpdt_nl][e]+=q_sum_nl;
 
-		scalar_type D=p_delta_e*qpe*qppe*pp;
-		resum+=D;
-		if(1)
-		  {
-		    sample_ps.push_back(D);
-		    step step;
-		    step.e=-1;
-		    step.ep=e;
-		    step.epp=e;
-		    step.t=t;
-		    step.rank=rank;
-		    step.g_id=-1;
-		    step.gp_id=gp_id;
-		    step.gpp_id=gpp_id;
-		    step.event="D";			      
-		    sample_steps.push_back(step);	     
-		  } 
-		//D EVENT
-		//q_sum_nl+= D;
+	      scalar_type empty=Get*q[g_id][t][e];
+	      //0 EVENT
+	      resum+=empty;
+	      if(1)
+		{
+		  sample_ps.push_back(empty);
+		  step step;
+		  step.e=e;
+		  step.ep=-1;
+		  step.epp=-1;
+		  step.t=t;
+		  step.rank=rank;
+		  step.g_id=g_id;
+		  step.gp_id=-1;
+		  step.gpp_id=-1;
+		  step.event="0";			   
+		  sample_steps.push_back(step);	     
+		}
+	      //q_sum+=empty;
 
-		//q[g_id][tpdt][e]+=p_delta_e*q[gp_id][t][e]*q[gpp_id][t][e];
-		//D.
-
-	      }
-
-	  scalar_type SLb=p_Delta_bar*Eet*q[g_id][t][alpha];
-	  //SL_bar EVENT
-	  resum+=SLb;
-	  if(1)
-	    {
-	      sample_ps.push_back(SLb);
-	      step step;
-	      step.e=alpha;
-	      step.ep=-1;
-	      step.epp=-1;
-	      step.t=t;
-	      step.rank=rank;
-	      step.g_id=g_id;
-	      step.gp_id=-1;
-	      step.gpp_id=-1;
-	      step.event="SLb";			      
-	      sample_steps.push_back(step);	     
-	    }
-	  //q_sum_nl+=SLb;
-
-	  //q[g_id][tpdt][e]+=p_Delta_bar*Eet*q[g_id][t][alpha];
-	  //SL_bar.
-
-	  //q[g_id][tpdt_nl][e]+=q_sum_nl;
-
-	  scalar_type empty=Get*q[g_id][t][e];
-
-	  //0 EVENT
-	  resum+=empty;
-	  if(1)
-	    {
-	      sample_ps.push_back(empty);
-	      step step;
-	      step.e=e;
-	      step.ep=-1;
-	      step.epp=-1;
-	      step.t=t;
-	      step.rank=rank;
-	      step.g_id=g_id;
-	      step.gp_id=-1;
-	      step.gpp_id=-1;
-	      step.event="0";			   
-	      sample_steps.push_back(step);	     
-	    }
-	  //q_sum+=empty;
-
-	  //q[g_id][tpdt][e]=Get*q[g_id][t][e];
-	  //0.
+	      //q[g_id][tpdt][e]=Get*q[g_id][t][e];
+	      //0.
 		    
-	  //q[g_id][tpdt][e]+=q_sum;
+	      //q[g_id][tpdt][e]+=q_sum;
 
-	  //events within slice rank at time t on branch e. 	    
+	      //events within slice rank at time t on branch e. 	    
 	    }
 	}
     }
+
   //######################################################################################################################
   //#########################################INNNER LOOP##################################################################
   //######################################################################################################################		    
@@ -771,7 +779,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   if (S_node)
     {
       rank-=1;      
-      t_i=scalar_parameter["D"]-1;  
+      t_i=time_slice_times[rank].size()-1;  
       S_node=false;      
     }
   if (set_S_node) 
@@ -800,10 +808,15 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
     }
   if (max_rec)
     step_i=max_i;
-  step back_step=sample_steps[step_i];
+  step back_step=sample_steps.at(step_i);
   sample_steps.clear();
   sample_ps.clear();
-
+  /*
+    if (back_step.e==-1)
+    cout  <<  back_step.event << "\t" << back_step.rank << "\tid_rank:" << id_ranks[back_step.ep] << "\text_sp:" << extant_species[back_step.ep] << "\te:" << back_step.ep<< "\tg_id:" << ale_pointer->set2name(ale_pointer->id_sets[g_id]) << "\t" << back_step.t << " t_i:" << t_i << endl;
+    else
+    cout  <<  back_step.event << "\t" << back_step.rank << "\tid_rank:" << id_ranks[back_step.e] << "\text_sp:" << extant_species[back_step.e] << "\te:" << back_step.e<< "\tg_id:" << ale_pointer->set2name(ale_pointer->id_sets[g_id]) << "\t" << back_step.t << " t_i:" << t_i << endl;
+  */
   stringstream toptmp;
   if (back_step.e==alpha)
     toptmp<<-1;
@@ -811,20 +824,31 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
     toptmp<<extant_species[back_step.e];
   else
     toptmp<<id_ranks[back_step.e];
-
-  scalar_type new_branch_length=branch_length+t-back_step.t;
-
-    size = 0;
+  //cout << branch_length << " +  " << t << " + " << back_step.t << endl;
+  scalar_type new_branch_length=-1;//branch_length+t-back_step.t;
+  
+  size = 0;
   //  if (g_id!=-1) { //We are not at the root bipartition
-        
-        temp = ale_pointer->id_sets[g_id];
-        for (auto i = 0; i < ale_pointer->Gamma_size + 1; ++i) {
-            // if ( BipartitionTools::testBit ( temp, i) ) {
-            if ( temp[i] ) {
-                size++;
-            }
-        }
- //   }
+  
+  temp = ale_pointer->id_sets[g_id];
+  for (int i = 0; i < ale_pointer->Gamma_size + 1; ++i) {
+    // if ( BipartitionTools::testBit ( temp, i) ) {
+    if ( temp[i] ) {
+      size++;
+    }
+  }
+  //   }
+
+  
+  if (ale_pointer->Bip_counts[g_id]>0)
+    {
+      new_branch_length=max(ale_pointer->Bip_bls[g_id]/ale_pointer->Bip_counts[g_id],(long double)scalar_parameter["min_branch_lenghts"]);
+    }
+  else
+    {
+      new_branch_length=max(ale_pointer->Bip_bls[g_id]/ale_pointer->observations,(long double)scalar_parameter["min_branch_lenghts"]);
+      
+    }
 
   if (back_step.t==0 and size == 1 and e!=-1)
     {
@@ -834,12 +858,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
       branch_string <<":"<<new_branch_length;
       return ale_pointer->set2name(ale_pointer->id_sets[g_id])+branch_string.str();
     }
-  
-  if (ale_pointer->Bip_counts[g_id]>0)
-    new_branch_length=max(ale_pointer->Bip_bls[g_id]/ale_pointer->Bip_counts[g_id],(long double)scalar_parameter["min_branch_lenghts"]);
-  else
-    new_branch_length=max(ale_pointer->Bip_bls[g_id]/ale_pointer->observations,(long double)scalar_parameter["min_branch_lenghts"]);
-  
+
   if (back_step.event=="D" or back_step.event=="Tb" or back_step.event=="S" or back_step.event=="Sb")
     {
 
@@ -958,6 +977,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	{
 	  if (back_step.event=="SL")
 	    {
+	      t_i=time_slice_times[rank].size()-1;
 	      register_S(e);	      
 	      int f=daughters[e][0];
 	      int g=daughters[e][1];
@@ -1010,11 +1030,13 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	    }
 	}
       if (transfer_token_stream.str()=="")
-	{
+	{	  
 	  return sample(S_node,back_step.g_id, t_i,rank, back_step.e, new_branch_length, branch_string.str(),transfer_token,max_rec);
 	}
       else
-	return sample(S_node,back_step.g_id, t_i,rank, back_step.e, new_branch_length, branch_string.str(),transfer_token_stream.str(),max_rec);
+	{
+	  return sample(S_node,back_step.g_id, t_i,rank, back_step.e, new_branch_length, branch_string.str(),transfer_token_stream.str(),max_rec);	
+	}
     }
   else
     {

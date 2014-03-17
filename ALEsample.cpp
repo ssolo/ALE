@@ -29,24 +29,17 @@ int main(int argc, char ** argv)
   ale=load_ALE_from_file(ale_file);
   cout << "Read summary of tree sample for "<<ale->observations<<" trees from: " << ale_file <<".."<<endl;
 
-  //we initialise a coarse grained reconciliation model for calculating the sum
+  //we initialise the model 
   exODT_model* model=new exODT_model();
   //
   model->set_model_parameter("min_D",3);
-  model->set_model_parameter("grid_delta_t",0.005);
-  model->construct(Sstring);
-  //cf. section S1.4 of the Supporting Material of www.pnas.org/cgi/doi/10.1073/pnas.1202997109
-  model->set_model_parameter("event_node",1);
+  model->set_model_parameter("grid_delta_t",0.05);
+  model->set_model_parameter("DD",10);
 
-  //and a finer grained reconciliation model for sampling
-  exODT_model* sample_model=new exODT_model();
-  sample_model->set_model_parameter("min_D",3);
-  sample_model->set_model_parameter("grid_delta_t",0.005);
-  sample_model->construct(Sstring);
-  //stocahstic sampling is not compatible with the event node approximation
-  sample_model->set_model_parameter("event_node",0);
-  //we want events on the leaves as well
-  sample_model->set_model_parameter("leaf_events",1);
+  model->construct(Sstring);
+
+  model->set_model_parameter("event_node",0);
+  model->set_model_parameter("leaf_events",1);
 
   //a set of inital rates 
   scalar_type delta=0.01,tau=0.01,lambda=0.02;
@@ -141,16 +134,17 @@ int main(int argc, char ** argv)
 	{
 	  sampled++;
 	  ++pd;
-	  sample_model->set_model_parameter("delta",delta);
-	  sample_model->set_model_parameter("tau",tau);
-	  sample_model->set_model_parameter("lambda",lambda);
-	  sample_model->calculate_EGb();
-	  sample_model->p(ale);
+	  model->set_model_parameter("delta",delta);
+	  model->set_model_parameter("tau",tau);
+	  model->set_model_parameter("lambda",lambda);
+	  model->calculate_EGb();
+	  old_p= model->p(ale);
+	      
 	  rate_out << sampled << "\t" << steps << "\t" << delta << "\t" << tau << "\t" << lambda << "\t" << log(old_p) << endl;
 	  
 	  for (int i=0;i<subsamples;i++) 
 	    {		  
-	      string sample_tree=sample_model->sample(false);
+	      string sample_tree=model->sample(false);
 	      sample_out << sample_tree << endl;
 	      tree_type * G=TreeTemplateTools::parenthesisToTree(sample_tree,false);
 	      vector<Node*> leaves = G->getLeaves();
@@ -164,7 +158,7 @@ int main(int argc, char ** argv)
 		}
 	      leaves.clear();
 	      sample_trees.push_back(G);	      
-	      event_out << i << "\t" << sampled << "\t" << steps << "\t" << sample_model->MLRec_events["D"] << "\t" << sample_model->MLRec_events["T"] << "\t" << sample_model->MLRec_events["L"]<< "\t" << sample_model->MLRec_events["S"] <<endl;
+	      event_out << i << "\t" << sampled << "\t" << steps << "\t" << model->MLRec_events["D"] << "\t" << model->MLRec_events["T"] << "\t" << model->MLRec_events["L"]<< "\t" << model->MLRec_events["S"] <<endl;
 	    }	      
 	}      
     }

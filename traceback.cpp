@@ -176,7 +176,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 	      //root
 	      scalar_type Delta_t=tpdt-t;
 	      scalar_type Delta_bar=vector_parameter["Delta_bar"][rank];
-	      //scalar_type p_Delta_bar=1-exp(-Delta_bar/N*Delta_t);			      
 	      scalar_type p_Delta_bar=Delta_bar*Delta_t;
 			      
 	      scalar_type Ebar=Ee[-1][t];;
@@ -317,8 +316,7 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		  //boundaries for branch alpha virtual branch.  
 
 		  //events within slice rank at time t on alpha virtual branch
-		  //scalar_type G_bar=exp(-n*(Delta_bar*(N-n)/N+Lambda_bar)*Delta_t);	
-		  scalar_type G_bar=Ge[-1][t];//exp(-(Delta_bar*(n-N)/N+Lambda_bar)*Delta_t);	
+		  scalar_type G_bar=Ge[-1][t];
 		  q[g_id][tpdt][alpha]=0;
 		  //sum scalar_type q_sum=0;
 		  //sum scalar_type q_sum_nl=0;
@@ -332,8 +330,8 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		    {
 		      int e = time_slices[rank][branch_i];		
 		      scalar_type tau_e=vector_parameter["tau"][e];
-		      //scalar_type p_Ntau_e=1-exp(-N*tau_e*Delta_t);
-		      scalar_type p_Ntau_e=1-exp(-tau_e*Delta_t);
+		      scalar_type p_Ntau_e=tau_e*Delta_t;
+
 		      //non-leaf directed partition
 		      if (not is_a_leaf)
 			for (int i=0;i<N_parts;i++)
@@ -412,8 +410,7 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		    {
 		      int e = time_slices[rank][branch_i];		
 		      scalar_type tau_e=vector_parameter["tau"][e];
-		      //scalar_type p_Ntau_e=1-exp(-N*tau_e*Delta_t);
-		      scalar_type p_Ntau_e=1-exp(-tau_e*Delta_t);
+		      scalar_type p_Ntau_e=tau_e*Delta_t;
 		      scalar_type TLb=p_Ntau_e*Ebar*q[g_id][t][e];
 		      //TL_bar EVENT
 		      //sum q_sum+=TLb;
@@ -480,7 +477,7 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		      scalar_type Get=Ge[e][t];
 		      scalar_type Eet=Ee[e][t];	
 		      scalar_type delta_e=vector_parameter["delta"][e];
-		      scalar_type p_delta_e=1-exp(-delta_e*Delta_t);
+		      scalar_type p_delta_e=delta_e*Delta_t;
 
 		      //events within slice rank at time t on branch e 
 		      q[g_id][tpdt][e]=0;
@@ -537,7 +534,7 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 			      }
 			    //max
 
-			    scalar_type D=p_delta_e*qpe*qppe*pp;
+			    scalar_type D=2*p_delta_e*qpe*qppe*pp;
 			    //D EVENT
 			    //sum q_sum_nl+= D;
 			    //q[g_id][tpdt][e]+=p_delta_e*q[gp_id][t][e]*q[gpp_id][t][e];

@@ -347,9 +347,12 @@ string approx_posterior::set2name(boost::dynamic_bitset<> leaf_set) const
     string name="";
     for (auto i = 0; i< Gamma_size + 1; ++i) {
        // if ( BipartitionTools::testBit(leaf_set, static_cast<int>(i)) ) {
-            if ( leaf_set[i] )  {
-                name += id_leaves.at(i) + name_separator;
-        }
+      if ( leaf_set[i] )  {
+	//stringstream tmp;
+	//tmp<<i;
+	name += id_leaves.at(i) + name_separator;
+		//XX
+	    }
     }
     //std::cout << name.substr(0,name.size()-1) <<std::endl;
     //return name.substr(0,name.size()-1);

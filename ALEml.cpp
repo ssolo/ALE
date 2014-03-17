@@ -62,7 +62,7 @@ int main(int argc, char ** argv)
 
   if (argc<3) 
     {
-      cout << "usage:\n ./ALEml species_tree.newick gene_tree_sample.ale" << endl;
+      cout << "usage:\n ./ALEml species_tree.newick gene_tree_sample.ale [gene_name_seperator]" << endl;
       return 1;
     }
 
@@ -83,7 +83,7 @@ int main(int argc, char ** argv)
 
   int D=3;
   if (argc>3)
-    D=atoi(argv[3]);
+    model->set_model_parameter("gene_name_separators", argv[3]);
 
 
   model->set_model_parameter("min_D",D);
@@ -134,28 +134,13 @@ int main(int argc, char ** argv)
 
   cout << "Calculating ML reconciled gene tree.."<<endl;
  
-  //a finer grained reconciliation model for recovering the ML reconciliation
-  exODT_model* ml_model=new exODT_model();
-  ml_model->set_model_parameter("min_D",D);
-  ml_model->set_model_parameter("grid_delta_t",0.005);
-  ml_model->construct(Sstring);
-  ml_model->set_model_parameter("delta", delta);
-  ml_model->set_model_parameter("tau", tau);
-  ml_model->set_model_parameter("lambda", lambda);
-  ml_model->calculate_EGb();
-  cout << "Reconciliation model initialised" <<".."<<endl;
 
-  //ML backtracking is not compatible with the event node approximation
-  ml_model->set_model_parameter("event_node",0);
-  //we want events on the leaves as well
-  ml_model->set_model_parameter("leaf_events",1);
-  //we trace back along the sum to recover the ML reconciled gene tree
-  pair<string, scalar_type> res = ml_model->p_MLRec(ale);    
+  pair<string, scalar_type> res = model->p_MLRec(ale);    
   //and output it..
   string outname=ale_file+".ml_rec"; 
   ofstream fout( outname.c_str() );
   fout <<  "#ALEml using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl<<endl;
-  fout << "S:\t"<<ml_model->string_parameter["S_with_ranks"] <<endl;
+  fout << "S:\t"<<model->string_parameter["S_with_ranks"] <<endl;
   fout << endl;
   fout << "Input ale from:\t"<<ale_file<<endl;
   fout << "rate of\t Duplications\tTransfers\tLosses" <<endl;
@@ -165,10 +150,10 @@ int main(int argc, char ** argv)
   fout << "reconciled G:\t"<< res.first <<endl;
   fout << endl;
   fout << "# of\t Duplications\tTransfers\tLosses\tSpeciations" <<endl; 
-  fout <<"Total \t"<< ml_model->MLRec_events["D"] << "\t" << ml_model->MLRec_events["T"] << "\t" << ml_model->MLRec_events["L"]<< "\t" << ml_model->MLRec_events["S"] <<endl;    
+  fout <<"Total \t"<< model->MLRec_events["D"] << "\t" << model->MLRec_events["T"] << "\t" << model->MLRec_events["L"]<< "\t" << model->MLRec_events["S"] <<endl;    
   fout << endl;
   fout << "# of\t Duplications\tTransfers\tLosses\tgene copies" <<endl; 
-  fout << ml_model->counts_string();
+  fout << model->counts_string();
   
   cout << "Results in: " << outname << endl;
   return 0;
