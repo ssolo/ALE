@@ -36,17 +36,17 @@ int main(int argc, char ** argv)
   long int G_seed=good_seed();
   if (argc>2) G_seed=atol(argv[2]);
   
-  int N=100;
-  int n=10;
-  int G_n=1;
+  int N=1000;
+  int n=36;
+  int G_n=10;
 
-  scalar_type omega=G_n*N*0;
+  scalar_type omega=N*0.08;
   //O rate overall 
   scalar_type delta=0.2;
   //D rate per gene
-  scalar_type tau=0.2;
+  scalar_type tau=0.8;
   //T rate per gene
-  scalar_type lambda=0.5;
+  scalar_type lambda=1.4;
   //L rate per gene
 
   scalar_type init_t=2;
@@ -67,7 +67,7 @@ int main(int argc, char ** argv)
   next_index++;
 
   //we record history 
-  vector<vector<long int> > families;
+  vector< vector< long int > > families;
   map <long long,scalar_type > event_times;
 
   vector < int > births;
@@ -88,6 +88,7 @@ int main(int argc, char ** argv)
       scalar_type t_next=RandomTools::randExponential(1./(sigma*N));
       t-=t_next;
       if (t<0) break;
+
       int death=RandomTools::giveIntRandomNumberBetweenZeroAndEntry(N);    
       deaths.push_back(death);
 
