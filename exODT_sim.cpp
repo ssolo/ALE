@@ -309,7 +309,7 @@ vector<string> exODT_sim::simulate_gene_trees(int G_n,scalar_type delta,scalar_t
 		  gene_event++;
 
 		  gene_event_times[father]=t;
-		  gene_event_types[father]="D";
+		  if (event_string) gene_event_types[father]="D"; else gene_event_types[father]="";
       
 		  population_of_genes[species][gene]=daugther;
 		  population_of_genes[species].push_back(son);
