@@ -91,7 +91,7 @@ while (Gstrings.size() < N_g) {
 
   std::cout << "simulateSpAndGeneTrees's done. Bye." << std::endl;
   ApplicationTools::displayTime("Total execution time:");
-
+  delete simulation;
 
 //The simulate_gene_trees(..) function can be called as many times as needed. The represented species tree cannot be specified, but fixing the random seed will fix the species tree (both the represented and the unrepresented one). This is done like this:
 

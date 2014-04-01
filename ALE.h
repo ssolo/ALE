@@ -27,6 +27,7 @@
 //#include <boost/mpi.hpp>
 
 typedef bpp::TreeTemplate<bpp::Node> tree_type;
+//typedef long double scalar_type;
 typedef long double scalar_type;
 typedef std::pair<bpp::Node*, bpp::Node*> dedge_type;
 //typedef std::pair<long int,std::set < long int > > dip_type;
