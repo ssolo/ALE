@@ -91,9 +91,12 @@ int main(int argc, char ** argv)
 
   model->construct(Sstring);
   model->set_model_parameter("event_node",0);
+  model->set_model_parameter("leaf_events",1);
 
   //a set of inital rates
   scalar_type delta=0.01,tau=0.01,lambda=0.1;  
+  if (argc>6)
+    delta=atof(argv[4]),tau=atof(argv[5]),lambda=atof(argv[6]);  
   model->set_model_parameter("delta", delta);
   model->set_model_parameter("tau", tau);
   model->set_model_parameter("lambda", lambda);
