@@ -118,6 +118,9 @@ test_simpleML:	libexODT.a test_simpleML.cpp Makefile
 simulation: simulation.cpp Makefile
 	$(CC) simulation.cpp -o simulation $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
+simulateSpAndGeneTrees: libexODT.a simulateSpAndGeneTrees.cpp  exODT_sim.cpp Makefile
+	$(CC)  simulateSpAndGeneTrees.cpp  exODT_sim.cpp -o simulateSpAndGeneTrees  $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
 
 bin:  ALEobserve ALEml ALEml_omp ALEsample ALEsample_omp
 	mv ALEobserve binaries/ALEobserve_$(OSSTRING)

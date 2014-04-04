@@ -1027,7 +1027,7 @@ scalar_type approx_posterior::p(string tree_string) const
 	if (gamma.count(*st)==0)
 	  not_gamma.insert(*st);*/
       p*=rec_map[not_gamma]*p_bip(gamma);
-      if (isnan(p) ) p = 0;//NumConstants::VERY_TINY ();
+      if (std::isnan(p) ) p = 0;//NumConstants::VERY_TINY ();
       //std::cout << "rec_map[not_gamma]: "<<rec_map[not_gamma] <<" p_bip(gamma) "<< p_bip(gamma) <<std::endl;
       break;
     }

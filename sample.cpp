@@ -842,11 +842,11 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   
   if (ale_pointer->Bip_counts[g_id]>0)
     {
-      new_branch_length=max(ale_pointer->Bip_bls[g_id]/ale_pointer->Bip_counts[g_id],(long double)scalar_parameter["min_branch_lenghts"]);
+      new_branch_length=max(ale_pointer->Bip_bls[g_id]/ale_pointer->Bip_counts[g_id],(scalar_type)scalar_parameter["min_branch_lenghts"]);
     }
   else
     {
-      new_branch_length=max(ale_pointer->Bip_bls[g_id]/ale_pointer->observations,(long double)scalar_parameter["min_branch_lenghts"]);
+      new_branch_length=max(ale_pointer->Bip_bls[g_id]/ale_pointer->observations,(scalar_type)scalar_parameter["min_branch_lenghts"]);
       
     }
 
