@@ -25,7 +25,7 @@ string exODT_model::sample(bool max_rec)
 	      int e = time_slices[rank][branch_i];
 	      root_resum+=qvec[0][rank][t_i][e];
 	    }	     
-	  root_resum+=qvec[0][rank][t][alpha]; 
+	  root_resum+=qvec[0][rank][t_i][alpha]; 
 	}
     }
   scalar_type r=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);
@@ -87,7 +87,6 @@ string exODT_model::sample(bool max_rec)
       root_t_i=max_root_t_i;      
     }
   register_O(root_e);
-  
   return sample(false,-1,root_t_i,root_rank,root_e,0,"","",max_rec)+";";
   //del-locs
 }
@@ -130,6 +129,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   //  }
   vector <long int> gp_ids;//del-loc
   vector <long int> gpp_ids;//del-loc
+  //p_part is filled up  CCPs
   vector <scalar_type> p_part;//del-loc
   if (g_id!=-1)
     for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++)
@@ -182,9 +182,9 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
           long int gpp_id=parts[1];
           gp_ids.push_back(gp_id);
           gpp_ids.push_back(gpp_id);
-          if (ale->Bip_counts[gp_id]<=scalar_parameter["min_bip_count"] and not ale->Gamma_size<4)
-	    p_part.push_back(0);
-          else
+          //if (ale->Bip_counts[gp_id]<=scalar_parameter["min_bip_count"] and not ale->Gamma_size<4)
+	  //  p_part.push_back(0);
+          //else
 	    p_part.push_back(ale->p_bip(gp_id));	      
 	}
       bip_parts.clear();
@@ -194,7 +194,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   //######################################################################################################################
   //######################################### INNER LOOP #################################################################
   //######################################################################################################################
-      
   vector <step> sample_steps;
   vector <scalar_type> sample_ps;
   scalar_type resum=0;
@@ -412,7 +411,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 
 		  }	    
 		
-	  
+
 	      for (int branch_i=0;branch_i<n;branch_i++)			  
 		{
 		  int e = time_slices[rank][branch_i];		
@@ -442,6 +441,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		  //TL_bar.
 
 		}
+
 
 	      //0 EVENT
 	      scalar_type empty=G_bar*qvec[g_id+1][rank][t_i][alpha]; 
@@ -473,6 +473,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	}
       else
 	{
+
 
 	  //int e = time_slices[rank][branch_i];
 	  scalar_type Get=Ge[e][t];
@@ -599,6 +600,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		  //branches that cross to next time slice  
 		  else
 		    {
+
 		      //trivial
 		      resum=1;
 		      if(1)
@@ -624,6 +626,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	  else
 	    {
 
+
 	      //events within slice rank at time t on branch e 
 	      //qvec[g_id+1][tpdt_rank][tpdt_t_i][e]=0;
 	      //scalar_type q_sum=0;
@@ -632,6 +635,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	      if (not is_a_leaf)
 		for (int i=0;i<N_parts;i++)
 		  {	
+
 
 		    long int gp_id=gp_ids[i];
 		    long int gpp_id=gpp_ids[i];	    
@@ -701,12 +705,10 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		      } 
 		    //D EVENT
 		    //q_sum+= D;
-
 		    //qvec[g_id+1][tpdt_rank][tpdt_t_i][e]+=2*p_delta_e*qvec[gp_id+1][rank][t_i][e]*qvec[gpp_id+1][rank][t_i][e];
 		    //D.
 
 		  }
-
 	      scalar_type SLb=p_Delta_bar*Eet*qvec[g_id+1][rank][t_i][alpha];
 	      //SL_bar EVENT
 	      resum+=SLb;
@@ -760,7 +762,6 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	    }
 	}
     }
-
   //######################################################################################################################
   //#########################################INNNER LOOP##################################################################
   //######################################################################################################################		    
@@ -817,7 +818,8 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
     toptmp<<id_ranks[back_step.e];
   //cout << branch_length << " +  " << t << " + " << back_step.t << endl;
   scalar_type new_branch_length=-1;//branch_length+t-back_step.t;
-  
+
+
   size = 0;
   //  if (g_id!=-1) { //We are not at the root bipartition
   
@@ -831,7 +833,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   //   }
 
   
-  if (ale_pointer->Bip_counts[g_id]>0)
+  if (ale_pointer->Bip_counts.count(g_id) and ale_pointer->Bip_counts[g_id]>0)
     {
       new_branch_length=max(ale_pointer->Bip_bls[g_id]/ale_pointer->Bip_counts[g_id],(scalar_type)scalar_parameter["min_branch_lenghts"]);
     }

@@ -13,15 +13,6 @@ scalar_type exODT_model::p(approx_posterior *ale)
   vector <long int>  g_ids;//del-loc
   vector <long int>  g_id_sizes;//del-loc  
 
-   //First, cleaning q. 
-  for (std::map<long int, std::map< scalar_type, std::map<int, scalar_type> > >::iterator it=q.begin();it!=q.end();it++)
-    {
-      for ( std::map< scalar_type, std::map<int, scalar_type> >::iterator jt=(*it).second.begin();jt!=(*it).second.end();jt++)
-	(*jt).second.clear();
-      (*it).second.clear();
-    }      
-  q.clear();
-
   //We sort the directed partitions by size (number of gene tree leaves) to ensure that we calculate things in the proper order (smaller to larger)
   for (map <int, vector <long int > > :: iterator it = ale->size_ordered_bips.begin(); it != ale->size_ordered_bips.end(); it++)
     for (vector <long int >  :: iterator jt = (*it).second.begin(); jt != (*it).second.end(); jt++)
@@ -33,7 +24,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
   g_ids.push_back(-1);
   g_id_sizes.push_back(ale->Gamma_size);
 
-    // gene<->species mapping
+  // gene<->species mapping
   //vector<vector<vector<map<int, scalar_type> > > > qvec;
   qvec.clear();//hope this doesn't leak..
 

@@ -2,20 +2,12 @@
 using namespace std;
 using namespace bpp;
 
-//High memory usage lowmem=false traceback is deprecated!
 //The current lowmem=true method uses sample(true) cf. sample.cpp. 
 //The general structure of the calculation, and lot of the code, is the same as p(ale) cf. model.cpp.
 pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem)
 {
-  ale_pointer=ale;
-  //cout << "start" << endl;  
-  //iterate over directed patitions (i.e. clades) ordered by the number of leaves
-  //cout << "start loop" << endl;
 
-  //test  
-  //long int tmp_g_id=-1;
-  //cout << ale->set2name(ale->id_sets[tmp_g_id]) <<endl;
-  //test  
+  ale_pointer=ale;
   //directed partitions and thier sizes
   vector <long int>  g_ids;//del-loc
   vector <long int>  g_id_sizes;//del-loc
@@ -29,11 +21,9 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
   g_ids.push_back(-1);
   g_id_sizes.push_back(ale->Gamma_size);
 
-  //
-    // gene<->species mapping
+  // gene<->species mapping
   //vector<vector<vector<map<int, scalar_type> > > > qvec;
   qvec.clear();//hope this doesn't leak..
-
   // gene<->species mapping
   //  for (int i=0;i<(int)g_ids.size();i++) //Going through each clade of the approx_posterior
   // {
@@ -87,28 +77,28 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
       long int g_id=g_ids[i];
       if (g_id_sizes[i]==1) //a leaf, mapping is by name
 	{
-      /*  int id = 0;
-         boost::dynamic_bitset<> temp = ale->id_sets[g_id];
-        for (auto i = 0; i < ale->Gamma_size + 1 ; ++i) {
-//            if ( BipartitionTools::testBit ( temp, i) ) {
-            if ( temp[i] ) {
-                id = i;
-                break;
-            }
-        }*/
+	  /*  int id = 0;
+	      boost::dynamic_bitset<> temp = ale->id_sets[g_id];
+	      for (auto i = 0; i < ale->Gamma_size + 1 ; ++i) {
+	      //            if ( BipartitionTools::testBit ( temp, i) ) {
+	      if ( temp[i] ) {
+	      id = i;
+	      break;
+	      }
+	      }*/
         
-        int id = 0;
-        for (auto i=0; i< ale->Gamma_size + 1; ++i) {
+	  int id = 0;
+	  for (auto i=0; i< ale->Gamma_size + 1; ++i) {
             if ( ale->id_sets[g_id][i] ) {
-                id=i;
-                break;
+	      id=i;
+	      break;
             }
-        }
+	  }
         
-        string gene_name=ale->id_leaves[ id /*g_id*/ ];
+	  string gene_name=ale->id_leaves[ id /*g_id*/ ];
 
-//        string gene_name=ale->id_leaves[ g_id ];
-	//  string gene_name=ale->id_leaves[(* (ale->id_sets[g_id].begin()) )];
+	  //        string gene_name=ale->id_leaves[ g_id ];
+	  //  string gene_name=ale->id_leaves[(* (ale->id_sets[g_id].begin()) )];
 	  vector <string> tokens;
 	  boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_separators"]),boost::token_compress_on);
 	  string species_name;
@@ -156,21 +146,21 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 	      long int gp_id=(*it).first;
 	      boost::dynamic_bitset<>  gamma = ale->id_sets[gp_id];
 	      boost::dynamic_bitset<>  not_gamma = ~gamma;
-            not_gamma[0] = 0;
-/*	      for (set<int>::iterator st=ale->Gamma.begin();st!=ale->Gamma.end();st++)
-		if (gamma.count(*st)==0)
-		  not_gamma.insert(*st);*/
-          /*  for (auto i = 0; i < ale->nbint; ++i) {
-                not_gamma[i] = 0;
-            }
-            BipartitionTools::bitNot(not_gamma, gamma, ale->nbint);*/
+	      not_gamma[0] = 0;
+	      /*	      for (set<int>::iterator st=ale->Gamma.begin();st!=ale->Gamma.end();st++)
+			      if (gamma.count(*st)==0)
+			      not_gamma.insert(*st);*/
+	      /*  for (auto i = 0; i < ale->nbint; ++i) {
+		  not_gamma[i] = 0;
+		  }
+		  BipartitionTools::bitNot(not_gamma, gamma, ale->nbint);*/
 	      long int gpp_id = ale->set_ids[not_gamma];
 	      set <long int> parts;
 	      parts.insert(gp_id);
 	      parts.insert(gpp_id);
 	      bip_parts[parts]=1;
-	     /* gamma.clear();
-	      not_gamma.clear();*/
+	      /* gamma.clear();
+		 not_gamma.clear();*/
 	    }
 	  for (map<set<long int>,int> :: iterator kt = bip_parts.begin();kt!=bip_parts.end();kt++)
 	    {
@@ -259,7 +249,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 			      //qvec[g_id+1][rank][t_i][e]=0;
 			      //max
 			      scalar_type max_term=0;
-			      step max_step;		       	
 			      //max
 			    
 			      scalar_type SL_fLg=qvec[g_id+1][rank][t_i][f]*Egt;
@@ -272,28 +261,10 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 			      if (max_term<SL_fLg) 
 				{
 				  max_term= SL_fLg;
-				  max_step.e=f;
-				  max_step.ep=-1;
-				  max_step.epp=-1;
-				  max_step.t=t;
-				  max_step.rank=rank;
-				  max_step.g_id=g_id;
-				  max_step.gp_id=-1;
-				  max_step.gpp_id=-1;
-				  max_step.event="SL";
 				}
 			      if (max_term<SL_Lfg) 
 				{
 				  max_term= SL_Lfg;
-				  max_step.e=g;
-				  max_step.ep=-1;
-				  max_step.epp=-1;
-				  max_step.t=t;
-				  max_step.rank=rank;
-				  max_step.g_id=g_id;
-				  max_step.gp_id=-1;
-				  max_step.gpp_id=-1;
-				  max_step.event="SL";
 				}
 			      //max
 
@@ -314,28 +285,10 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 				    if (max_term<S_pf_ppg) 
 				      {
 					max_term= S_pf_ppg;
-					max_step.e=-1;
-					max_step.ep=f;
-					max_step.epp=g;
-					max_step.t=t;
-					max_step.rank=rank;
-					max_step.g_id=-1;
-					max_step.gp_id=gp_id;
-					max_step.gpp_id=gpp_id;
-					max_step.event="S";
 				      }
 				    if (max_term<S_ppf_pg) 
 				      {
 					max_term=S_ppf_pg;
-					max_step.e=-1;
-					max_step.ep=g;
-					max_step.epp=f;
-					max_step.t=t;
-					max_step.rank=rank;
-					max_step.g_id=-1;
-					max_step.gp_id=gp_id;
-					max_step.gpp_id=gpp_id;
-					max_step.event="S";
 				      }
 				    //max
 
@@ -343,7 +296,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 
 			      //sum qvec[g_id+1][rank][t_i][e]=q_sum; 
 			      qvec[g_id+1][rank][t_i][e]=max_term; 
-			      if (not lowmem) q_step[g_id][t][e]=max_step; 
 			    }
 			  //branches that cross to next time slice  
 			  else
@@ -371,7 +323,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		  //sum scalar_type q_sum=0;
 		  //max
 		  scalar_type max_term=0;
-		  step max_step;
 		  //max
 		  for (int branch_i=0;branch_i<n;branch_i++)			  
 		    {
@@ -396,28 +347,10 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 			    if (max_term<T_ep_app) 
 			      {
 				max_term=T_ep_app;
-				max_step.e=-1;
-				max_step.ep=e;
-				max_step.epp=alpha;
-				max_step.t=t;
-				max_step.rank=rank;
-				max_step.g_id=-1;
-				max_step.gp_id=gp_id;
-				max_step.gpp_id=gpp_id;
-				max_step.event="Tb";			      
 			      }
 			    if (max_term<T_ap_epp) 
 			      {
 				max_term=T_ap_epp;
-				max_step.e=-1;
-				max_step.ep=alpha;
-				max_step.epp=e;
-				max_step.t=t;
-				max_step.rank=rank;
-				max_step.g_id=-1;
-				max_step.gp_id=gp_id;
-				max_step.gpp_id=gpp_id;
-				max_step.event="Tb";			      
 			      }
 			    //max
 
@@ -439,15 +372,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 			if (max_term<Sb) 
 			  {
 			    max_term=Sb;
-			    max_step.e=-1;
-			    max_step.ep=alpha;
-			    max_step.epp=alpha;
-			    max_step.t=t;
-			    max_step.rank=rank;
-			    max_step.g_id=-1;
-			    max_step.gp_id=gp_id;
-			    max_step.gpp_id=gpp_id;
-			    max_step.event="Sb";			      
 			  }
 			//max
 
@@ -467,15 +391,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		      if (max_term<TLb) 
 			{
 			  max_term=TLb;
-			  max_step.e=e;
-			  max_step.ep=-1;
-			  max_step.epp=-1;
-			  max_step.t=t;
-			  max_step.rank=rank;
-			  max_step.g_id=g_id;
-			  max_step.gp_id=-1;
-			  max_step.gpp_id=-1;
-			  max_step.event="TLb";			      			
 			}
 		      //max		    
 		    }
@@ -484,7 +399,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		  if (qvec[g_id+1][tpdt_rank][tpdt_t_i][alpha]<max_term)		      
 		    {
 		      qvec[g_id+1][tpdt_rank][tpdt_t_i][alpha]=max_term;
-		      if (not lowmem) q_step[g_id][tpdt][alpha]=max_step;
 		    }
 	      
 		  //0 EVENT
@@ -496,15 +410,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		  if (max_term<empty) 
 		    {
 		      max_term=empty;
-		      max_step.e=alpha;
-		      max_step.ep=-1;
-		      max_step.epp=-1;
-		      max_step.t=t;
-		      max_step.rank=rank;
-		      max_step.g_id=g_id;
-		      max_step.gp_id=-1;
-		      max_step.gpp_id=-1;
-		      max_step.event="0";			      
 		    }
 		  //max		    
 
@@ -512,7 +417,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		  if (qvec[g_id+1][tpdt_rank][tpdt_t_i][alpha]<max_term)		      
 		    {
 		      qvec[g_id+1][tpdt_rank][tpdt_t_i][alpha]=max_term;
-		      if (not lowmem) q_step[g_id][tpdt][alpha]=max_step;
 		    }
 		  //events within slice rank at time t on alpha virtual branch.
 		}
@@ -531,7 +435,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		      //sum scalar_type q_sum=0;
 		      //max
 		      scalar_type max_term=0;
-		      step max_step;
 		      //max
 
 		      //non-leaf directed partition		   
@@ -553,28 +456,10 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 			    if (max_term<Sb_pa_ppe) 
 			      {
 				max_term=Sb_pa_ppe;
-				max_step.e=-1;
-				max_step.ep=alpha;
-				max_step.epp=e;
-				max_step.t=t;
-				max_step.rank=rank;
-				max_step.g_id=-1;
-				max_step.gp_id=gp_id;
-				max_step.gpp_id=gpp_id;
-				max_step.event="Sb";
 			      }
 			    if (max_term<Sb_pe_ppa) 
 			      {
 				max_term=Sb_pe_ppa;
-				max_step.e=-1;
-				max_step.ep=e;
-				max_step.epp=alpha;
-				max_step.t=t;
-				max_step.rank=rank;
-				max_step.g_id=-1;
-				max_step.gp_id=gp_id;
-				max_step.gpp_id=gpp_id;
-				max_step.event="Sb";
 			      }
 			    //max
 
@@ -587,15 +472,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 			    if (max_term<D) 
 			      {
 				max_term=D;
-				max_step.e=-1;
-				max_step.ep=e;
-				max_step.epp=e;
-				max_step.t=t;
-				max_step.rank=rank;
-				max_step.g_id=-1;
-				max_step.gp_id=gp_id;
-				max_step.gpp_id=gpp_id;
-				max_step.event="D";
 			      }
 			    //max
 
@@ -604,7 +480,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		      if (qvec[g_id+1][tpdt_rank][tpdt_t_i][e]<max_term)		      
 			{
 			  qvec[g_id+1][tpdt_rank][tpdt_t_i][e]=max_term;
-			  if (not lowmem) q_step[g_id][tpdt][e]=max_step;
 			}
 
 		      scalar_type empty=Get*qvec[g_id+1][rank][t_i][e];
@@ -616,15 +491,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		      if (max_term<empty) 
 			{
 			  max_term=empty;
-			  max_step.e=e;
-			  max_step.ep=-1;
-			  max_step.epp=-1;
-			  max_step.t=t;
-			  max_step.rank=rank;
-			  max_step.g_id=g_id;
-			  max_step.gp_id=-1;
-			  max_step.gpp_id=-1;
-			  max_step.event="0";			      
 			}
 		      //max
 
@@ -637,15 +503,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		      if (max_term<SLb) 
 			{
 			  max_term=SLb;
-			  max_step.e=alpha;
-			  max_step.ep=-1;
-			  max_step.epp=-1;
-			  max_step.t=t;
-			  max_step.rank=rank;
-			  max_step.g_id=g_id;
-			  max_step.gp_id=-1;
-			  max_step.gpp_id=-1;
-			  max_step.event="SLb";			      
 			}
 		      //max
 
@@ -653,7 +510,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		      if (qvec[g_id+1][tpdt_rank][tpdt_t_i][e]<max_term)		      
 			{
 			  qvec[g_id+1][tpdt_rank][tpdt_t_i][e]=max_term;
-			  if (not lowmem) q_step[g_id][tpdt][e]=max_step;
 			}
 		      //events within slice rank at time t on branch e. 
 		    }	
@@ -671,82 +527,12 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
   //del-locs
   g_ids.clear();
   g_id_sizes.clear();
-  if (not lowmem)   
-    {
-      return traceback();	
-    }
-  else 
-    {
-      //cout << "LOWMEM" <<endl;
-      scalar_type max_term=0;  
-      long int g_id=-1;
-      int max_e=-11;
-      scalar_type max_t=-11;
-      scalar_type max_rank=-11;
-	
-	
-      scalar_type root_norm=0;
-      for (int rank=0;rank<last_rank;rank++)
-	{
-	  int n=time_slices[rank].size();
-	  for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++)
-	    {	  
-	      for (int branch_i=0;branch_i<n;branch_i++)
-		{	      
-		  root_norm+=1;	      
-		}	     
-	      root_norm+=1;	      
-	    }
-	}
-	
-	
-      for (int rank=0;rank<last_rank;rank++)
-	{
-	  int n=time_slices[rank].size();
-	  for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++)
-	    {
-	      //scalar_type t=time_slice_times[rank][t_i];
-	      for (int branch_i=0;branch_i<n;branch_i++)
-		{	    
-		  int e = time_slices[rank][branch_i];
-		  if (max_term<qvec[g_id+1][rank][t_i][e]) 
-		    {
-		      max_term=qvec[g_id+1][rank][t_i][e];
-		      max_e=e;
-		      max_t=t_i;
-		      max_rank=rank;
-		    }
-		}
-	      if (max_term<qvec[g_id+1][rank][t_i][alpha]) 
-		{
-		  max_term=qvec[g_id+1][rank][t_i][alpha];
-		  max_e=alpha;
-		  max_t=t_i;
-		  max_rank=rank;
-		}	  	  
-	    }
-	} 
-      pair<string,scalar_type> return_pair;
-      MLRec_events.clear();
-      Ttokens.clear();
-      register_O(max_e);
-      return_pair.first=sample(false,-1,max_t,max_rank,max_e,0,"","",true)+";\n";
-      return_pair.second=max_term/root_norm;	
-      return return_pair;
-    }
-}
-
-//deprecated
-pair<string,scalar_type> exODT_model::traceback()
-{
-  stringstream signal_stream;
   scalar_type max_term=0;  
-  long int g_id=-1;
   int max_e=-11;
   scalar_type max_t=-11;
   scalar_type max_rank=-11;
-
-
+  
+	
   scalar_type root_norm=0;
   for (int rank=0;rank<last_rank;rank++)
     {
@@ -756,294 +542,45 @@ pair<string,scalar_type> exODT_model::traceback()
 	  for (int branch_i=0;branch_i<n;branch_i++)
 	    {	      
 	      root_norm+=1;	      
-	    }	   
+	    }	     
 	  root_norm+=1;	      
 	}
     }
-
-
+	
+  
   for (int rank=0;rank<last_rank;rank++)
     {
       int n=time_slices[rank].size();
       for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++)
 	{
-	  scalar_type t=time_slice_times[rank][t_i];
+	  //scalar_type t=time_slice_times[rank][t_i];
 	  for (int branch_i=0;branch_i<n;branch_i++)
 	    {	    
 	      int e = time_slices[rank][branch_i];
-	      signal_stream << g_id<<" "<<t<<" "<<e<<" "<<qvec[g_id+1][rank][t_i][e]<<endl;
-	      if (max_term<qvec[g_id+1][rank][t_i][e]) 
+	      if (max_term<qvec[0][rank][t_i][e]) 
 		{
-		  max_term=qvec[g_id+1][rank][t_i][e];
+		  max_term=qvec[0][rank][t_i][e];
 		  max_e=e;
-		  max_t=t;
+		  max_t=t_i;
 		  max_rank=rank;
 		}
 	    }
-	  signal_stream << g_id<<" "<<t<<" "<<alpha<<" "<<qvec[g_id+1][rank][t_i][alpha]<<endl;
-	  if (max_term<qvec[g_id+1][rank][t_i][alpha]) 
+	  if (max_term<qvec[0][rank][t_i][alpha]) 
 	    {
-	      max_term=qvec[g_id+1][rank][t_i][alpha];
+	      max_term=qvec[0][rank][t_i][alpha];
 	      max_e=alpha;
-	      max_t=t;
+	      max_t=t_i;
 	      max_rank=rank;
 	    }	  	  
 	}
     } 
-  signal_string=signal_stream.str();
   pair<string,scalar_type> return_pair;
   MLRec_events.clear();
   Ttokens.clear();
   register_O(max_e);
-  return_pair.first=traceback(g_id,max_t,max_rank,max_e,0,"")+";\n";
-  return_pair.second=max_term/root_norm;
-
-  for (std::map<long int, std::map< scalar_type, std::map<int, scalar_type> > >::iterator it=q.begin();it!=q.end();it++)
-    {
-      for ( std::map< scalar_type, std::map<int, scalar_type> >::iterator jt=(*it).second.begin();jt!=(*it).second.end();jt++)
-	(*jt).second.clear();
-      (*it).second.clear();
-    }      
-  q.clear();
-  for (std::map<long int, std::map< scalar_type, std::map<int, step> > >::iterator it=q_step.begin();it!=q_step.end();it++)
-    {
-      for ( std::map< scalar_type, std::map<int, step> >::iterator jt=(*it).second.begin();jt!=(*it).second.end();jt++)
-	(*jt).second.clear();
-      (*it).second.clear();
-    }      
-  q_step.clear();  
+  return_pair.first=sample(false,-1,max_t,max_rank,max_e,0,"","",true)+";\n";
+  return_pair.second=max_term/root_norm;	
   return return_pair;
-}
-
-//deprecated
-string exODT_model::traceback(long int g_id,scalar_type t,scalar_type rank,int e,scalar_type branch_length,string branch_events, string transfer_token)
-{
-  /*
-  if (e==alpha)
-    cout << "b "<<-1;
-  else if (id_ranks[e]==0)
-    cout << "b "<<extant_species[e];
-  else
-    cout << "b "<< id_ranks[e];
-  
-  cout << "from " << e << " " << t << " " << endl; 
-  cout << "g_id "<< g_id <<" is " <<ale_pointer->set2name(ale_pointer->id_sets[g_id]) << endl;
-  */
-  step max_step=q_step[g_id][t][e];
-
-  //cout << max_step.event<<endl;
-  
-  //cout << t << "==0 and " << (int)( tmpset.size() ) << "==1 and " <<e <<" !=-1 "<<endl;
-  scalar_type new_branch_length=branch_length+t-max_step.t;
-  if (max_step.t!=max_step.t)
-    new_branch_length=branch_length;
-    int size = 0;
-    boost::dynamic_bitset<>  temp = ale_pointer->id_sets[g_id];
-    for (auto i = 0; i < ale_pointer->Gamma_size + 1; ++i) {
-      //  if ( BipartitionTools::testBit ( temp, i) ) {
-        if ( temp[ i] ) {
-        size++;
-        }
-    }
-  if (t==0 and size==1 and e!=-1)
-    {
-      register_leaf(e);
-      stringstream branch_string;
-      if (scalar_parameter["leaf_events"]==1) branch_string<<branch_events;
-      branch_string <<":"<<new_branch_length;
-      return ale_pointer->set2name(ale_pointer->id_sets[g_id])+branch_string.str();
-    }
-  /*
-  if (ale_pointer->Bip_counts[g_id]>0)
-    new_branch_length=ale_pointer->Bip_bls[g_id]/ale_pointer->Bip_counts[g_id];
-  else
-    new_branch_length=ale_pointer->Bip_bls[g_id]/ale_pointer->observations;
-  */
-  if (max_step.event=="D" or max_step.event=="Tb" or max_step.event=="S" or max_step.event=="Sb")
-    {
-
-      //cout << max_step.event << " " << max_step.ep << "-" << max_step.epp <<" "<<max_step.t <<endl; 
-      stringstream transfer_token_stream;
-      transfer_token_stream<<"";
-      stringstream branch_string;
-      if (max_step.event=="S")
-	{
-	  register_S(e);
-	  branch_string<< branch_events//<<max_step.event<<"@"
-		       <<"."<<id_ranks[e]<<":"<<max(new_branch_length,(scalar_type)0.0); 
-	}
-      else
-	{
-	  if (max_step.event=="Tb")
-	    {
-	      //cout << "T";
-	      int this_e;
-	      if (max_step.ep==alpha)
-		this_e=max_step.epp;
-	      else
-		this_e=max_step.ep;
-	      stringstream named_branch;	      
-	      if (this_e==alpha)
-		named_branch<<-1;
-	      else if (id_ranks[this_e]==0)
-		named_branch<<extant_species[this_e];
-	      else
-		named_branch<<id_ranks[this_e];
-	      // Tto
-	      register_Tto(this_e);
-	      stringstream tmp;
-	      tmp<<max_step.rank<<"|"<<t<<"|"<<named_branch.str();
-	      //tmp<<max_step.t<<"|"<<this_e;
-	      register_Ttoken(transfer_token+"|"+tmp.str());
-	      // Tto
-	      
-	      branch_string<< branch_events<<max_step.event<<"@"<<max_step.rank<<"|"<<named_branch.str()<<":"<<max(new_branch_length,(scalar_type)0.0); 
-	    }
-	  else if (max_step.event=="Sb")
-	    {
-	      int this_e;
-	      if (max_step.ep==alpha)
-		this_e=max_step.epp;
-	      else
-		this_e=max_step.ep;
-	      // Tfrom
-	      register_Tfrom(this_e);
-	      // Tfrom
-	      stringstream named_branch;
-	      if (this_e==alpha)
-		named_branch<<-1;
-	      else if (id_ranks[this_e]==0)
-		named_branch<<extant_species[this_e];
-	      else
-		named_branch<<id_ranks[this_e];
-	      
-	      transfer_token_stream<< rank<<"|"<<t<<"|"<<named_branch.str();
-	      //transfer_token_stream<< t<<"|"<<this_e;
-
-	      branch_string<< branch_events<<"T@"<<rank<<"|"<<named_branch.str()<<":"<<max(new_branch_length,(scalar_type)0.0); 	    
-	    }
-	  else
-	    {
-	      //cout << "D";
-	      register_D(e);	      
-	      stringstream named_branch;
-	      if (e==alpha)
-		named_branch<<-1;
-	      else if (id_ranks[e]==0)
-		named_branch<<extant_species[e];
-	      else
-		named_branch<<id_ranks[e];
-	    
-	      branch_string<< branch_events<<max_step.event<<"@"<<rank<<"|"<<named_branch.str()<<":"<<max(new_branch_length,(scalar_type)0.0); 
-	    }
-	}
-      if ( transfer_token_stream.str()=="")
-	return "("+
-	  traceback(max_step.gp_id,max_step.t,max_step.rank,max_step.ep,0,"",transfer_token)
-	  +","+
-	  traceback(max_step.gpp_id,max_step.t,max_step.rank,max_step.epp,0,"",transfer_token)
-	  +")"+branch_string.str();
-      else
-	if(max_step.ep==alpha)
-	  return "("+
-	    traceback(max_step.gp_id,max_step.t,max_step.rank,max_step.ep,0,"",transfer_token_stream.str())
-	    +","+
-	    traceback(max_step.gpp_id,max_step.t,max_step.rank,max_step.epp,0,"",transfer_token)
-	    +")"+branch_string.str();
-	else
-	  return "("+
-	    traceback(max_step.gp_id,max_step.t,max_step.rank,max_step.ep,0,"",transfer_token)
-	    +","+
-	    traceback(max_step.gpp_id,max_step.t,max_step.rank,max_step.epp,0,"",transfer_token_stream.str())
-	    +")"+branch_string.str();
-	  
-    }
-  else if ( max_step.event=="TLb" or max_step.event=="SL" or max_step.event=="SLb" or max_step.event=="0")
-    {
-      //cout << max_step.event << " " << max_step.e <<" "<<max_step.t <<endl; 
-
-      stringstream branch_string;
-      stringstream transfer_token_stream;
-      transfer_token_stream <<"";
-      
-      branch_string<< branch_events;
-      if (max_step.event!="0")
-	{
-	  if (max_step.event=="SL")
-	    {
-	      register_S(e);	      
-	      int f=daughters[e][0];
-	      int g=daughters[e][1];
-	      if (max_step.e==f)
-		register_L(g);
-	      else
-		register_L(f);
-	      branch_string<<"."//<<max_step.event<<"@"
-			   <<id_ranks[e];
-	    }
-	  else
-	    {
-	      if (max_step.event=="TLb")
-		{
-		  register_Tto(max_step.e);
-		  stringstream tmp;
-
-		  stringstream named_branch;
-		  if (max_step.e==alpha)
-		    named_branch<<-1;
-		  else if (id_ranks[max_step.e]==0)
-		    named_branch<<extant_species[max_step.e];
-		  else
-		    named_branch<<id_ranks[max_step.e];
-
-		  tmp<<max_step.rank<<"|"<< t << "|"<< named_branch.str();
-		  //tmp<<max_step.t<<"|"<<max_step.e;
-		  register_Ttoken(transfer_token+"|"+tmp.str());
-		  transfer_token="";
-	      
-		  branch_string<<""//<<max_step.event
-			       <<"@"<<max_step.rank<<"|"<<named_branch.str();
-		}
-	      else  if (max_step.event=="SLb")
-		{
-		  //cout << "L";
-		  register_L(e);
-		  register_Tfrom(e);
-		  stringstream named_branch;
-		  if (e==alpha)
-		    named_branch<<-1;
-		  else if (id_ranks[e]==0)
-		    named_branch<<extant_species[e];
-		  else
-		    named_branch<<id_ranks[e];
-
-		  transfer_token_stream<< rank<<"|"<<t<<"|"<<named_branch.str();
-		  //transfer_token_stream<< max_step.t<<"|"<<e;
-
-		  branch_string<<".T"//<<max_step.event
-			       <<"@"<<rank<<"|"<<named_branch.str();
-		}
-	    }
-	}
-      if (transfer_token_stream.str()=="")
-	return traceback(max_step.g_id, max_step.t,max_step.rank, max_step.e, new_branch_length, branch_string.str(),transfer_token);
-      else
-	return traceback(max_step.g_id, max_step.t,max_step.rank, max_step.e, new_branch_length, branch_string.str(),transfer_token_stream.str());
-    }
-  else
-    {
-      cout <<  "me " <<max_step.event << endl;
-      cout << "error "  <<endl;
-      cout << " g_id " << g_id;
-      cout << " t " << t;
-      cout << " e " << e; 
-      cout << " l " << branch_length;
-      cout << " str " << branch_events;
-      cout << endl;
-      cout << ale_pointer->constructor_string <<endl;
-      signal=-11;
-    }
-  return "error";
 }
 
 //used by sample() consider moving to sample.cpp
