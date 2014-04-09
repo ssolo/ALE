@@ -295,8 +295,8 @@ scalar_type exODT_model::p(approx_posterior *ale)
 				    q_sum+= S_pf_ppg + S_ppf_pg;
 				    //S.
 				  }
-			      qvec[g_id+1][rank][t_i][e]=q_sum;
-
+			      qvec[g_id+1][rank][t_i][e]=q_sum;//UNDERFLOW
+			      
 			    }
 
 			  //branches that cross to next time slice  
@@ -359,7 +359,6 @@ scalar_type exODT_model::p(approx_posterior *ale)
 
 		      }	    
 		
-		  //.nl qvec[g_id+1][tpdt_rank][tpdt_t_i][alpha]+=q_sum;
 
 		  for (int branch_i=0;branch_i<n;branch_i++)			  
 		    {
@@ -382,7 +381,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		  q_sum+=empty;
 		  //0.
 
-		  qvec[g_id+1][tpdt_rank][tpdt_t_i][alpha]+=q_sum;
+		  qvec[g_id+1][tpdt_rank][tpdt_t_i][alpha]+=q_sum;//UNDERFLOW
 		  //events within slice rank at time t on alpha virtual branch.
 		}
 	      if(1)
@@ -432,15 +431,13 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      q_sum+=SLb;
 		      //SL_bar.
 
-		      //.nl qvec[g_id+1][tpdt_rank][tpdt_t_i][e]+=q_sum;
-
 		      scalar_type empty=Get*qvec[g_id+1][rank][t_i][e];
 		      //0 EVENT, event #1 in part a of Fig.A1 in http://arxiv.org/abs/1211.4606
 		      //qvec[g_id+1][tpdt_rank][tpdt_t_i][e]=Get*qvec[g_id+1][rank][t_i][e];
 		      q_sum+=empty;
 		      //0.
 		   
-		      qvec[g_id+1][tpdt_rank][tpdt_t_i][e]+=q_sum;
+		      qvec[g_id+1][tpdt_rank][tpdt_t_i][e]+=q_sum;//UNDERFLOW
                 //if (qvec[g_id+1][tpdt_rank][tpdt_t_i][e]>1) qvec[g_id+1][tpdt_rank][tpdt_t_i][e]=1;
 		      //events within slice rank at time t on branch e. 
 		    }
