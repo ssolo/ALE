@@ -50,6 +50,7 @@ endif
 
 STATIC= libexODT.a
 STATIC_OMP= libexODT_omp.a
+STATIC_QVEC= libexODT_qvec.a
 
 DYNAMIC =  -L. -L$(bpp_DIR)lib $(bpp_libs) 
 LINK = $(DYNAMIC) 
@@ -77,12 +78,24 @@ traceback.o: ALE.h exODT.h traceback.cpp Makefile
 sample.o: ALE.h exODT.h sample.cpp Makefile 
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o sample.o sample.cpp	
 
+model_qvec.o: ALE.h exODT.h model_qvec.cpp Makefile 
+	$(CC) $(FLAGS) $(INCLUDE) -c -o model_qvec.o model_qvec.cpp
+
+traceback_qvec.o: ALE.h exODT.h traceback_qvec.cpp Makefile 
+	$(CC) $(FLAGS) $(INCLUDE)  -c -o traceback_qvec.o traceback_qvec.cpp
+
+sample_qvec.o: ALE.h exODT.h sample_qvec.cpp Makefile 
+	$(CC) $(FLAGS) $(INCLUDE)  -c -o sample_qvec.o sample_qvec.cpp	
+
 
 libexODT.a: ALE.o ALE_util.o exODT.o model.o traceback.o sample.o Makefile
 	ar rcs libexODT.a ALE.o exODT.o model.o traceback.o  ALE_util.o  sample.o
 
 libexODT_omp.a: ALE.o ALE_util.o exODT.o model_omp.o traceback.o sample.o Makefile
 	ar rcs libexODT_omp.a ALE.o exODT.o model_omp.o traceback.o  ALE_util.o  sample.o
+
+libexODT_qvec.a: ALE.o ALE_util.o exODT.o model_qvec.o traceback_qvec.o sample_qvec.o Makefile
+	ar rcs libexODT_qvec.a ALE.o exODT.o model_qvec.o traceback_qvec.o  ALE_util.o  sample_qvec.o
 
 ALEml:	libexODT.a ALEml.cpp Makefile
 	$(CC) ALEml.cpp -o ALEml $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
@@ -105,8 +118,15 @@ ALEcount:	libexODT.a ALEcount.cpp Makefile
 test_omp:	libexODT_omp.a test.cpp Makefile
 	$(CC) test.cpp -o test_omp $(FLAGS)  $(OMP_FLAGS) $(INCLUDE) $(STATIC_OMP) $(LINK)
 
+test_qvec:	libexODT_qvec.a test.cpp Makefile
+	$(CC) test.cpp -o test_qvec $(FLAGS) $(INCLUDE) $(STATIC_QVEC) $(LINK)
+
 test:	libexODT.a test.cpp Makefile
 	$(CC) test.cpp -o test $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+summary:	libexODT.a summary.cpp Makefile
+	$(CC) summary.cpp -o summary $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
 
 ALE_tutorial:	libexODT.a ALE_tutorial.cpp Makefile
 	$(CC) ALE_tutorial.cpp -o ALE_tutorial $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
