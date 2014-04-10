@@ -91,8 +91,8 @@ sample_qvec.o: ALE.h exODT.h sample_qvec.cpp Makefile
 libexODT.a: ALE.o ALE_util.o exODT.o model.o traceback.o sample.o Makefile
 	ar rcs libexODT.a ALE.o exODT.o model.o traceback.o  ALE_util.o  sample.o
 
-libexODT_omp.a: ALE.o ALE_util.o exODT.o model_omp.o traceback.o sample.o Makefile
-	ar rcs libexODT_omp.a ALE.o exODT.o model_omp.o traceback.o  ALE_util.o  sample.o
+libexODT_omp.a: ALE.o ALE_util.o exODT.o model_omp.o traceback_qvec.o sample_qvec.o Makefile
+	ar rcs libexODT_omp.a ALE.o exODT.o model_omp.o traceback_qvec.o  ALE_util.o  sample_qvec.o
 
 libexODT_qvec.a: ALE.o ALE_util.o exODT.o model_qvec.o traceback_qvec.o sample_qvec.o Makefile
 	ar rcs libexODT_qvec.a ALE.o exODT.o model_qvec.o traceback_qvec.o  ALE_util.o  sample_qvec.o
