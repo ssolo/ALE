@@ -124,6 +124,9 @@ test_qvec:	libexODT_qvec.a test.cpp Makefile
 test:	libexODT.a test.cpp Makefile
 	$(CC) test.cpp -o test $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
+mlsampler:	libexODT.a mlsampler.cpp Makefile
+	$(CC) mlsampler.cpp -o mlsampler $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
 summary:	libexODT.a summary.cpp Makefile
 	$(CC) summary.cpp -o summary $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
