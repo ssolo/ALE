@@ -88,6 +88,9 @@ class exODT_model
   std::map<int,std::map <scalar_type,scalar_type> > Ee;                       //del-loc. Probability (scalar value) that a gene present at a given time slice (whose rank is the int key) at time the first scalar key is getting extinct before reaching extant species.
   std::map<int,std::map <scalar_type,scalar_type> > Ge;                       //del-loc. Probability (scalar value) that a gene present at a given time slice (whose rank is the int key) actually reaches extant species.
   std::map<long int, std::map< scalar_type, std::map<int, scalar_type> > > q; //del-loc. Map between clade id (from the approx_posterior object) and a map between the time of a subslice and a map between branch id and probability of the clade given the ODTL model.
+  
+  std::vector< std::vector < std::vector < std::map<int, scalar_type> > > > qvec;// NO del-loc !!
+
   std::map<long int, std::map< scalar_type, std::map<int, step> > > q_step;   //del-loc
   std::map <long int,std::string> gid_sps;                                    //del-loc. Map between clade id (from the approx_posterior object) and species included in that clade.
  
