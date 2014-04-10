@@ -18,7 +18,7 @@ string exODT_model::sample(bool max_rec)
       int n=time_slices[rank].size();
       for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++)
 	{
-	  scalar_type t=time_slice_times[rank][t_i];		
+	  //scalar_type t=time_slice_times[rank][t_i];		
 	  
 	  for (int branch_i=0;branch_i<n;branch_i++)
 	    {
