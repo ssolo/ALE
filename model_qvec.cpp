@@ -4,6 +4,7 @@ using namespace bpp;
 
 #include <bitset>
 
+static double EPSILON = 10^-300;
 
 //p(ale) calculates Pi(Gamma) cf. ALEPAPER
 scalar_type exODT_model::p(approx_posterior *ale)
@@ -286,8 +287,13 @@ scalar_type exODT_model::p(approx_posterior *ale)
 				    q_sum+= S_pf_ppg + S_ppf_pg;
 				    //S.
 				  }
-			      qvec[g_id+1][rank][t_i][e]=q_sum;//UNDERFLOW
-			      
+				  //UNDERFLOW ?
+				  if (q_sum < EPSILON) {
+                    qvec[g_id+1][rank][t_i][e] = EPSILON;
+                  }
+                  else {
+                    qvec[g_id+1][rank][t_i][e] = q_sum;
+                  }
 			    }
 
 			  //branches that cross to next time slice  
@@ -372,7 +378,12 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		  q_sum+=empty;
 		  //0.
 
-		  qvec[g_id+1][tpdt_rank][tpdt_t_i][alpha]+=q_sum;//UNDERFLOW
+         //UNDERFLOW ?
+         qvec[g_id+1][tpdt_rank][tpdt_t_i][alpha]+=q_sum;
+         if ( qvec[g_id+1][tpdt_rank][tpdt_t_i][alpha] < EPSILON ) {
+            qvec[g_id+1][tpdt_rank][tpdt_t_i][alpha] = EPSILON;
+         }
+
 		  //events within slice rank at time t on alpha virtual branch.
 		}
 	      if(1)
@@ -428,7 +439,12 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      q_sum+=empty;
 		      //0.
 		   
-		      qvec[g_id+1][tpdt_rank][tpdt_t_i][e]+=q_sum;//UNDERFLOW
+              qvec[g_id+1][tpdt_rank][tpdt_t_i][e]+=q_sum;
+              //UNDERFLOW?
+              if ( qvec[g_id+1][tpdt_rank][tpdt_t_i][e] < EPSILON ) {
+                qvec[g_id+1][tpdt_rank][tpdt_t_i][e] = EPSILON;
+              }
+              
                 //if (qvec[g_id+1][tpdt_rank][tpdt_t_i][e]>1) qvec[g_id+1][tpdt_rank][tpdt_t_i][e]=1;
 		      //events within slice rank at time t on branch e. 
 		    }

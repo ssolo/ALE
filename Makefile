@@ -48,9 +48,9 @@ else
 	MPI_INCLUDE=-I/usr/lib/openmpi/include/ 	
 endif
 
-STATIC= libexODT.a
+STATIC_LEGACY= libexODT_legacy.a
 STATIC_OMP= libexODT_omp.a
-STATIC_QVEC= libexODT_qvec.a
+STATIC= libexODT.a
 
 DYNAMIC =  -L. -L$(bpp_DIR)lib $(bpp_libs) 
 LINK = $(DYNAMIC) 
