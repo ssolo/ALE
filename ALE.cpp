@@ -485,9 +485,11 @@ scalar_type approx_posterior::p_bip(long int g_id) const
   //if ( gamma.size()==1 or (int)gamma.size()==Gamma_size-1) Bip_count=observations;
   if ( set_sizes.at(g_id)==1 or set_sizes.at(g_id)==Gamma_size-1) Bip_count=observations;
 
-  //return Bip_count / (observations+alpha) + (alpha/N_Gamma*Bi(gamma.size())) / (observations+alpha);
-  return Bip_count / (observations+alpha) + (alpha/N_Gamma*Bi( set_sizes.at(g_id) ) ) / (observations+alpha);
-}
+    if ( alpha>0 )
+        return Bip_count / ( observations+alpha ) + ( alpha/N_Gamma*Bi ( set_sizes.at ( g_id ) ) ) / ( observations+alpha );
+    else
+        return Bip_count / observations;
+    }
 
 
 scalar_type approx_posterior::p_dip(long int g_id,long int gp_id,long int gpp_id) const
@@ -521,8 +523,10 @@ scalar_type approx_posterior::p_dip(long int g_id,long int gp_id,long int gpp_id
     }
   if (set_sizes.at(g_id)==1 or set_sizes.at(g_id)==Gamma_size-1) Bip_count=observations;
 
-  return ( Dip_count + (alpha/N_Gamma*Tri(set_sizes.at(gp_id),set_sizes.at(gpp_id) ) ) + beta_switch*beta/(pow(2.,set_sizes.at(g_id)-1)-1) ) / ( Bip_count + (alpha/N_Gamma*Bi(set_sizes.at(g_id))) + beta_switch*beta );
-
+    if ( alpha>0 or beta>0 )
+        return ( Dip_count + ( alpha/N_Gamma*Tri ( set_sizes.at ( gp_id ),set_sizes.at ( gpp_id ) ) ) + beta_switch*beta/ ( pow ( 2.,set_sizes.at ( g_id )-1 )-1 ) ) / ( Bip_count + ( alpha/N_Gamma*Bi ( set_sizes.at ( g_id ) ) ) + beta_switch*beta );
+    else
+        return Dip_count/Bip_count;
 }
 
 

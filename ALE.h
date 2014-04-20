@@ -102,7 +102,7 @@ class approx_posterior
    // size_t nbint;                                                                    //Number of ints in a bitvector used to store a partition
    // int filterForXor;                                                                //Integer used for xor operations to leave the unused bits of the last integer of the bitvector to 0
 	scalar_type K_Gamma;                                                             //number of bipartitions of Gamma.
-  scalar_type N_Gamma;                                                               //number of unrooted trees on Gamma_size leaves
+  long double N_Gamma;                                                               //number of unrooted trees on Gamma_size leaves
   std::string name_separator;                                                        //Character used between leaf names when writing the content of a leaf set.
   std::map <std::string,std::string> tree_bipstrings;                                //del-loc. Map between tree string and string containing all bipartitions in the tree.
   std::map <std::string,std::string> bipstring_trees;                                //del-loc. Dual from above. Map between string containing all bipartitions in the tree and tree string.
