@@ -4,7 +4,10 @@ using namespace bpp;
 
 #include <bitset>
 
-static double EPSILON = 10^-300;
+
+static double EPSILON = numeric_limits< double >::min();
+
+//static double EPSILON = 10^-300;
 
 //p(ale) calculates Pi(Gamma) cf. ALEPAPER
 scalar_type exODT_model::p(approx_posterior *ale)
