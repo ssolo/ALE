@@ -90,7 +90,7 @@ void approx_posterior::construct(string tree_string)
   if (Gamma_size==2)
     N_Gamma=1;
   else
-    N_Gamma=boost::math::double_factorial<scalar_type>(2*Gamma_size-5);
+    N_Gamma=boost::math::double_factorial<long double>(2*Gamma_size-5);
 
   //del-locs
   leaves.clear();
