@@ -71,6 +71,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
   map <Node*,int> next_generation; //Map between node and slice id of descendant nodes.
   map <Node*,scalar_type> node_ts; //Map between node and its time.
 
+  map<string,int> species_order;
   // register extant species
   for (vector <Node * >::iterator it=leaves.begin();it!=leaves.end();it++ )
     {
@@ -81,6 +82,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
       // a leaf
       daughters[last_branch].push_back(-1);
       extant_species[last_branch]=node->getName();
+      species_order[node->getName()]=-1;
       node_ts[node]=0;
       branch_ts[last_branch]=0;
       node_ids[node]=last_branch;
@@ -89,7 +91,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
       last_branch++;
     }
 
-  // make sure S is ultrametric
+    // make sure S is ultrametric
   while(1)
     {
       vector <Node*> tmp;
@@ -190,6 +192,48 @@ void exODT_model::construct(string Sstring,scalar_type N)
       last_branch++;
       sons.clear();      
     }
+
+  // extant_taxa map for id-ing branches across trees
+  int i=0;
+  for (map<string,int>::iterator it=species_order.begin();it!=species_order.end();it++ )   
+    {
+      (*it).second=i;
+      //cout << (*it).first << " " << (*it).second << endl;
+      i++;
+    }
+  vector <Node*> nodes = TreeTemplateTools::getNodes(*S_root);
+  //map <int,string> extant_taxa;
+  for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
+    {
+      stringstream name;
+      if (not (*it)->isLeaf())
+	{
+	  Node * node=(*it);
+	  vector <Node*> tmp = TreeTemplateTools::getLeaves(*node);
+	  map<string,int> tmp2;	 
+	  for (vector <Node * >::iterator jt=tmp.begin();jt!=tmp.end();jt++ )
+	    {
+	      //cout << (*jt)->getName() << ":" << species_order[ (*jt)->getName() ]<<endl;
+	      tmp2[(*jt)->getName()]=-1;
+	    }
+	  for (map<string,int>::iterator jt=tmp2.begin();jt!=tmp2.end();jt++ )
+	    {
+	      name<< species_order[(*jt).first] << ".";	  
+	    }
+	}
+      else
+	{
+	  name<< species_order[(*it)->getName()] << ".";	  	 
+	}
+      string taxa_name=name.str();
+      int branch = node_ids[(*it)];
+      taxa_name.pop_back();
+      extant_taxa[ branch ]=taxa_name;
+      //cout << branch << " " <<  extant_taxa[branch] << endl;
+    }
+  
+  // extant_taxa map end.
+
   //set t_begin for terminal branches 
   for (map <int,string>::iterator it=extant_species.begin();it!=extant_species.end();it++ )
     {

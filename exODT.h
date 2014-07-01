@@ -67,6 +67,9 @@ class exODT_model
   std::map<int,int> father;                                  //del-loc. Map between node id and id of its father.
   std::map<int,std::vector<int> > daughters;                 //del-loc. Map between node id and ids of its daughters (-1 if node is a leaf).
   std::map<int,std::string> extant_species;                  //del-loc. Map between leaf id (0 to # of leaves) and leaf name.
+  std::map <int,std::string> extant_taxa;                    // extant_taxa map for id-ing branches across trees
+
+
   std::map<int, scalar_type> branch_ts;                      //del-loc. Map between branch identified by the id of the node it ends at, and time of the time slice.
   std::map<int,int>rank_ids;                                 //del-loc. Map between rank of a time slice and the id of the node that terminates it. 
   std::map<int,int>id_ranks;                                 //del-loc. Map between node id and rank of the time slice it terminates. Time slice at leaves has rank 0.
