@@ -49,6 +49,7 @@ else
 endif
 
 STATIC_LEGACY= libexODT_legacy.a
+STATIC_SCALED= libexODT_scaled.a
 STATIC_OMP= libexODT_omp.a
 STATIC= libexODT.a
 
@@ -87,6 +88,17 @@ traceback_qvec.o: ALE.h exODT.h traceback_qvec.cpp Makefile
 sample_qvec.o: ALE.h exODT.h sample_qvec.cpp Makefile 
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o sample_qvec.o sample_qvec.cpp	
 
+model_scaled.o: ALE.h exODT.h model_scaled.cpp Makefile 
+	$(CC) $(FLAGS) $(INCLUDE) -c -o model_scaled.o model_scaled.cpp
+
+traceback_scaled.o: ALE.h exODT.h traceback_scaled.cpp Makefile 
+	$(CC) $(FLAGS) $(INCLUDE)  -c -o traceback_scaled.o traceback_scaled.cpp
+
+sample_scaled.o: ALE.h exODT.h sample_scaled.cpp Makefile 
+	$(CC) $(FLAGS) $(INCLUDE)  -c -o sample_scaled.o sample_scaled.cpp	
+
+libexODT_scaled.a: ALE.o ALE_util.o exODT.o model_scaled.o traceback_scaled.o sample_scaled.o Makefile
+	ar rcs libexODT_scaled.a ALE.o exODT.o model_scaled.o traceback_scaled.o  ALE_util.o  sample_scaled.o
 
 libexODT.a: ALE.o ALE_util.o exODT.o model_qvec.o traceback_qvec.o sample_qvec.o Makefile
 	ar rcs libexODT.a ALE.o exODT.o model_qvec.o traceback_qvec.o  ALE_util.o  sample_qvec.o
@@ -99,6 +111,9 @@ libexODT_legacy.a: ALE.o ALE_util.o exODT.o model.o traceback.o sample.o Makefil
 
 ALEml:	libexODT.a ALEml.cpp Makefile
 	$(CC) ALEml.cpp -o ALEml $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+ALEml_scaled:	libexODT_scaled.a ALEml_scaled.cpp Makefile
+	$(CC) ALEml_scaled.cpp -o ALEml_scaled $(FLAGS) $(INCLUDE) $(STATIC_SCALED) $(LINK)
 
 ALEml_omp:	libexODT_omp.a ALEml.cpp Makefile
 	$(CC) ALEml.cpp -o ALEml_omp $(FLAGS) $(OMP_FLAGS) $(INCLUDE) $(STATIC_OMP) $(LINK)
@@ -124,6 +139,12 @@ test_qvec:	libexODT_qvec.a test.cpp Makefile
 test:	libexODT.a test.cpp Makefile
 	$(CC) test.cpp -o test $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
+test_scaled:	libexODT_scaled.a test.cpp Makefile
+	$(CC) test_scaled.cpp -o test_scaled $(FLAGS) $(INCLUDE) $(STATIC_SCALED)  $(LINK)
+
+bw:	libexODT.a bw.cpp Makefile
+	$(CC) bw.cpp -o bw $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
 computeALEcomplexity: libexODT.a computeALEcomplexity.cpp Makefile
 	$(CC) computeALEcomplexity.cpp -o computeALEcomplexity $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
@@ -143,6 +164,12 @@ test_simpleML:	libexODT.a test_simpleML.cpp Makefile
 
 simulation: simulation.cpp Makefile
 	$(CC) simulation.cpp -o simulation $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+simulation_cp: simulation_cp.cpp Makefile
+	$(CC) simulation_cp.cpp -o simulation_cp $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+GEsim: GEsim.cpp Makefile
+	$(CC) GEsim.cpp -o GEsim $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
 simulateSpAndGeneTrees: libexODT.a simulateSpAndGeneTrees.cpp  exODT_sim.cpp Makefile
 	$(CC)  simulateSpAndGeneTrees.cpp  exODT_sim.cpp -o simulateSpAndGeneTrees  $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
