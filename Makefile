@@ -97,10 +97,13 @@ traceback_scaled.o: ALE.h exODT.h traceback_scaled.cpp Makefile
 sample_scaled.o: ALE.h exODT.h sample_scaled.cpp Makefile 
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o sample_scaled.o sample_scaled.cpp	
 
+libexODT.a: ALE.o ALE_util.o exODT.o model_scaled.o traceback_scaled.o sample_scaled.o Makefile
+	ar rcs libexODT.a ALE.o exODT.o model_scaled.o traceback_scaled.o  ALE_util.o  sample_scaled.o
+
 libexODT_scaled.a: ALE.o ALE_util.o exODT.o model_scaled.o traceback_scaled.o sample_scaled.o Makefile
 	ar rcs libexODT_scaled.a ALE.o exODT.o model_scaled.o traceback_scaled.o  ALE_util.o  sample_scaled.o
 
-libexODT.a: ALE.o ALE_util.o exODT.o model_qvec.o traceback_qvec.o sample_qvec.o Makefile
+libexODT_qvec.a: ALE.o ALE_util.o exODT.o model_qvec.o traceback_qvec.o sample_qvec.o Makefile
 	ar rcs libexODT.a ALE.o exODT.o model_qvec.o traceback_qvec.o  ALE_util.o  sample_qvec.o
 
 libexODT_omp.a: ALE.o ALE_util.o exODT.o model_omp.o traceback_qvec.o sample_qvec.o Makefile
