@@ -346,13 +346,16 @@ void exODT_model::construct(string Sstring,scalar_type N)
   set_model_parameter("event_node",0);
   //the calculation of depends only very weakly on the value of N  
   //default value of N=1e6 is set in exODT.h 
-  set_model_parameter("N",N);
+  set_model_parameter("N",1);
+  set_model_parameter("sigma_hat",1);
+
   //if we assume the that height of the species tree is equal to its expected value under the colaescent
   // cf. http://arxiv.org/abs/1211.4606
   //Delta is sigma, i.e. the speciation rate of the Moran model in http://arxiv.org/abs/1211.4606 and ALEPAPER
   set_model_parameter("Delta_bar",N);
   //Lambda is not used
   set_model_parameter("Lambda_bar",N);
+
   // delta is the gene duplication rate
   set_model_parameter("delta",0.2);
   // tau is the gene transfer rate
