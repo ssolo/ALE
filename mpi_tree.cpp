@@ -220,7 +220,7 @@ void mpi_tree::gather_counts()
 	      for (int i=1;i<size;i++)
 		model->branch_counts[count_name][branch]+=gathered_branch_counts[count_name][i][branch];
 	    }    
-	  //model->show_counts(count_name);
+	  model->show_counts(count_name);
 	}  
     }  
   //del-locs
@@ -351,7 +351,7 @@ scalar_type mpi_tree::calculate_MLRecs(bool estimate,bool branchwise)
 	  cout << "ERERERER "<<rank << " " << i << endl;
 	  ale_pointers[i]->save_state("error_ale");
 	}
-      
+      cout <<"#ML " << client_fnames[i] << " " << res.first << " " << log(res.second) << endl;
       ll+=log(res.second);
       MLRec_res.push_back(res);      
     }
@@ -382,6 +382,8 @@ scalar_type mpi_tree::calculate_p()
       //cout << rank <<" at " <<round(i/(float)ale_pointers.size()*100.)<<" %, strats "<< client_fnames[i] << endl;
       scalar_type tmpp=model->p(ale_pointers[i]);
       if (tmpp==0) cout << client_fnames[i] << " is 0 !!"<<endl;
+      cout <<"#LL " << client_fnames[i] << " " << log(tmpp) << endl;
+
       ll +=log(tmpp);
     }
   //cout << rank << " "<<t->elapsed() <<endl;
