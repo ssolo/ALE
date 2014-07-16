@@ -139,7 +139,7 @@ test_qvec:	libexODT_qvec.a test.cpp Makefile
 test:	libexODT.a test.cpp Makefile
 	$(CC) test.cpp -o test $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
-test_scaled:	libexODT_scaled.a test.cpp Makefile
+test_scaled:	libexODT_scaled.a test_scaled.cpp Makefile
 	$(CC) test_scaled.cpp -o test_scaled $(FLAGS) $(INCLUDE) $(STATIC_SCALED)  $(LINK)
 
 bw:	libexODT.a bw.cpp Makefile
