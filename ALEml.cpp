@@ -93,7 +93,7 @@ int main(int argc, char ** argv)
 
 
   model->set_model_parameter("min_D",D);
-  model->set_model_parameter("grid_delta_t",0.005);
+  model->set_model_parameter("grid_delta_t",0.05);
 
   model->construct(Sstring);
   model->set_model_parameter("event_node",0);
