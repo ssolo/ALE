@@ -30,7 +30,8 @@ struct step
 class exODT_model
 {
  public:
-  
+  std::map <int,int> rank2label;
+
   std::map <std::string,scalar_type> scalar_parameter;//del_loc
   std::map <std::string,std::vector <scalar_type> > vector_parameter;//del_loc
   std::map <std::string,std::string> string_parameter;//del_loc

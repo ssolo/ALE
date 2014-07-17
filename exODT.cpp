@@ -227,7 +227,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
 	}
       string taxa_name=name.str();
       int branch = node_ids[(*it)];
-      taxa_name.pop_back();
+      //taxa_name.pop_back();
       extant_taxa[ branch ]=taxa_name;
       //cout << branch << " " <<  extant_taxa[branch] << endl;
     }
@@ -332,6 +332,15 @@ void exODT_model::construct(string Sstring,scalar_type N)
       out2<< t_end[branch];
       int rank=id_ranks[branch];
       out<<rank;
+      if ( node->hasBranchProperty("bootstrap") )
+	{
+	  rank2label[rank]=node->getBootstrapValue();
+	  cout <<rank2label[rank]<<"->"<<rank<< endl;
+	}
+      else
+	{
+	  rank2label[rank]=-1;
+	}
       node->setBranchProperty("ID",BppString(out.str()));
     }  
   string_parameter["S_with_ranks"]=TreeTemplateTools::treeToParenthesis(*S,false,"ID");
