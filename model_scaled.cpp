@@ -485,11 +485,14 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	      int e = time_slices[rank][branch_i];
 	      //if (rank==last_rank-1 and t_i==(int)time_slice_times[rank].size()-1)//(1-Ee[e][time_slice_times[rank][t_i]])/
 	      root_sum+=qvec[0][rank][t_i][e]*Delta_t;
-	      survive+=(1-Ee[-1][t])*Delta_t;
+	      survive+=(1-Ee[e][t])*Delta_t;
+	      //cout << t<< " " <<rank << " " << branch_i << " " << qvec[0][rank][t_i][e]*Delta_t << " "<< (1-Ee[-1][t])*Delta_t <<endl; 
 	    }	     
 	  //if (rank==last_rank-1 and t_i==(int)time_slice_times[rank].size()-1)//(1-Ee[-1][time_slice_times[rank][t_i]]);	       
 	  root_sum+=qvec[0][rank][t_i][alpha]*Delta_t; 	      
 	  survive+=Ee[-1][t]*Delta_t;
+	  //cout << t<< " " <<rank << " " << alpha << " " << qvec[0][rank][t_i][alpha]*Delta_t << " "<< (1-Ee[-1][t])*Delta_t <<endl; 
+
 	}
     }
 
