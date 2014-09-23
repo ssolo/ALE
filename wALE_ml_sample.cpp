@@ -50,7 +50,7 @@ public:
     model_pointer->set_model_parameter("lambda",lambda);
     model_pointer->calculate_EGb();
     double y=-log(model_pointer->p(ale_pointer));
-    //cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda << "\t ll=" << -y <<endl;
+    cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda << "\t ll=" << -y <<endl;
     fval_ = y;
   }
 };
@@ -66,7 +66,7 @@ int main(int argc, char ** argv)
       return 1;
     }
 
-  //we need a dared species tree in newick format
+  //we need a dated species tree in newick format
   string Sstring;
   ifstream file_stream_S (argv[1]);
   getline (file_stream_S,Sstring);
@@ -80,39 +80,37 @@ int main(int argc, char ** argv)
 
   //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();
+  cout << "o" << endl;
 
-  int D=2;
-  //if (argc>3)
-  model->set_model_parameter("gene_name_separators", "+");
-
+  int D=4;
+  model->set_model_parameter("gene_name_separators", ".");
 
   model->set_model_parameter("min_D",D);
-  model->set_model_parameter("grid_delta_t",0.01);
+  model->set_model_parameter("grid_delta_t",0.05);
 
   model->construct(Sstring);
-
   model->set_model_parameter("event_node",0);
   model->set_model_parameter("leaf_events",1);
+  model->set_model_parameter("N",1);
 
   //a set of inital rates
   scalar_type delta=0.01,tau=0.01,lambda=0.1;  
-  bool optimize=true;
-  if (argc>5)
-    {
-      delta=atof(argv[3]),tau=atof(argv[4]),lambda=atof(argv[5]);  
-      optimize=false;
-    }
+  if (argc>6)
+    delta=atof(argv[4]),tau=atof(argv[5]),lambda=atof(argv[6]);  
   model->set_model_parameter("delta", delta);
   model->set_model_parameter("tau", tau);
   model->set_model_parameter("lambda", lambda);
+  model->set_model_parameter("sigma_hat", 1);
+
   //calculate_EGb() must always be called after changing rates to calculate E-s and G-s
   //cf. http://arxiv.org/abs/1211.4606
   model->calculate_EGb();
-  
-  if (optimize)
-    {
-      cout << "Reconciliation model initialised, starting DTL rate optimisation" <<".."<<endl;
 
+  cout << "Reconciliation model initialised, starting DTL rate optimisation" <<".."<<endl;
+  
+  if (true)
+    {
+      
       //we use the Nelder–Mead method implemented in Bio++
       Function* f = new p_fun(model,ale,delta,tau,lambda);
       Optimizer* optimizer = new DownhillSimplexMethod(f);
@@ -129,7 +127,7 @@ int main(int argc, char ** argv)
       //TEMP
       //optimizer->setMaximumNumberOfEvaluations( 10 );
       
-      optimizer->optimize();
+      //optimizer->optimize();
       
       //optimizer->getParameters().printParameters(cout);
       delta=optimizer->getParameterValue("delta");

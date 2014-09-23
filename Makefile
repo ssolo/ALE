@@ -154,6 +154,9 @@ computeALEcomplexity: libexODT.a computeALEcomplexity.cpp Makefile
 mlsampler:	libexODT.a mlsampler.cpp Makefile
 	$(CC) mlsampler.cpp -o mlsampler $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
+wALE_ml_sample:	libexODT.a wALE_ml_sample.cpp Makefile
+	$(CC) wALE_ml_sample.cpp -o wALE_ml_sample $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
 summary:	libexODT.a summary.cpp Makefile
 	$(CC) summary.cpp -o summary $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
@@ -167,6 +170,9 @@ test_simpleML:	libexODT.a test_simpleML.cpp Makefile
 
 simulation: simulation.cpp Makefile
 	$(CC) simulation.cpp -o simulation $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+wol_tree: wol_tree.cpp Makefile
+	$(CC) wol_tree.cpp -o wol_tree $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
 simulation_cp: simulation_cp.cpp Makefile
 	$(CC) simulation_cp.cpp -o simulation_cp $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
