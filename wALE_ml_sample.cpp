@@ -69,6 +69,7 @@ int main(int argc, char ** argv)
   //we need a dated species tree in newick format
   string Sstring;
   ifstream file_stream_S (argv[1]);
+  string S_tree_name=argv[1];
   getline (file_stream_S,Sstring);
   cout << "Read species tree from: " << argv[1] <<".."<<endl;
   //we need an .ale file containing observed conditional clade probabilities
@@ -143,7 +144,7 @@ int main(int argc, char ** argv)
 
       pair<string, scalar_type> res = model->p_MLRec(ale);    
       //and output it..
-      string outname=ale_file+".ml_rec"; 
+      string outname=S_tree_name+".ml_rec"; 
 
       ofstream fout( outname.c_str() );
       fout <<  "#ALEml using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl<<endl;
@@ -167,10 +168,10 @@ int main(int argc, char ** argv)
     }
 
   cout << "strating sampling.. " << endl;
-  string sample_name=ale_file+".ml_samples"; 
+  string sample_name=S_tree_name+".ml_samples"; 
   ofstream sample_out( sample_name.c_str() );
 
-  string hist_name=ale_file+".hist"; 
+  string hist_name=S_tree_name+".hist"; 
 
   map <string,map <int,map<int,int> > > event_histograms;
   vector<string> event_types;
@@ -216,7 +217,7 @@ int main(int argc, char ** argv)
   cout << "sampling done." << endl;
   for (vector<string>::iterator et=event_types.begin();et!=event_types.end();++et )
     {
-      ofstream h_out( ale_file+"_"+((*et)+".h").c_str() );
+      ofstream h_out( S_tree_name+"_"+((*et)+".h").c_str() );
       h_out << "# Fraction of samples with number of " << (*et) << " in " <<samples_in_histogram << " samples for each branch of S." << endl;
       h_out << "#id\ttb\tte\trnk";
       for (int i=0;i<10;++i)
