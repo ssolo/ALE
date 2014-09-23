@@ -127,7 +127,7 @@ int main(int argc, char ** argv)
       //TEMP
       //optimizer->setMaximumNumberOfEvaluations( 10 );
       
-      //optimizer->optimize();
+      optimizer->optimize();
       
       //optimizer->getParameters().printParameters(cout);
       delta=optimizer->getParameterValue("delta");
@@ -200,7 +200,7 @@ int main(int argc, char ** argv)
 
   cout << model->p(ale) << endl;
   
-  for (int i =0; i < 100; i++ )
+  for (int i =0; i < 10000; i++ )
     {
       string sample_tree=model->sample(false);
       cout << sample_tree << endl;
