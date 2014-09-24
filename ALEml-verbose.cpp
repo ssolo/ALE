@@ -181,8 +181,8 @@ int main(int argc, char ** argv)
   for (std::map<long int, std::vector<int> >::iterator it=model->gid_branches.begin();it!=model->gid_branches.end();it++)
     {
       long int g_id=(*it).first;
-      vcout << g_id << " " << model->vertical_string(g_id) << endl;
-	  /*
+      // FIX ME // vout << g_id << " " << model->vertical_string(g_id) << endl;
+      
       for (int i = 0; i < (int)(*it).second.size(); i++)
 	{
 	  int branch = model->gid_branches[g_id][i];
@@ -196,9 +196,9 @@ int main(int argc, char ** argv)
 	  else
 	    named_branch<<model->id_ranks[branch];
 	  
-	  cout << "\t" << model->gid_events[g_id][i] << "\t" << model->gid_times[g_id][i]<< "\t" << named_branch.str() << "\t" << model->gid_gidp[g_id][i] << "\t" << model->gid_gidpp[g_id][i] << "\t" <<endl;
+	  vout << "\t" << model->gid_events[g_id][i] << "\t" << model->gid_times[g_id][i]<< "\t" << named_branch.str() << "\t" << model->gid_gidp[g_id][i] << "\t" << model->gid_gidpp[g_id][i] << "\t" <<endl;
 	}
-	  */
+	  
 
     };
   return 0;
