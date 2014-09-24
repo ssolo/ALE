@@ -175,11 +175,13 @@ int main(int argc, char ** argv)
   fout << model->counts_string();
   
   cout << "Results in: " << outname << endl;
+  string voutname=ale_file+".vstrings"; 
+  ofstream vout( voutname.c_str() );
 
   for (std::map<long int, std::vector<int> >::iterator it=model->gid_branches.begin();it!=model->gid_branches.end();it++)
     {
       long int g_id=(*it).first;
-      cout << g_id << " " << model->vertical_string(g_id) << endl;
+      vcout << g_id << " " << model->vertical_string(g_id) << endl;
 	  /*
       for (int i = 0; i < (int)(*it).second.size(); i++)
 	{
