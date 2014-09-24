@@ -551,7 +551,6 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 	}
     }
 	
-  
   for (int rank=0;rank<last_rank;rank++)
     {
       int n=time_slices[rank].size();
@@ -705,6 +704,73 @@ string exODT_model::counts_string()
 	
     }  
   return out.str();
+}
+
+//ad hoc function should be moved to a future exODT_util.cpp 
+string exODT_model::vertical_string(long int g_id, string ancestral_string,scalar_type t_0)
+{
+  stringstream event_stream;
+  if (t_0==-1) t_0=gid_times[g_id][0];
+  for (int i = 0; i < (int)gid_branches[g_id].size(); i++)
+    {
+	  int branch = gid_branches[g_id][i];
+	  stringstream named_branch;
+	  if (branch==alpha)
+	    named_branch<<-1;
+	  else if (id_ranks[branch]==0)
+	    {
+	      named_branch<<extant_species[branch];
+	    }
+	  else
+	    named_branch<<id_ranks[branch];
+
+	  event_stream<<gid_events[g_id][i]
+		      <<"@"<<named_branch.str()
+	    //<<"*"<<gid_times[g_id][i]
+		      <<"|";
+    }
+  int last_i=(int)gid_branches[g_id].size()-1;
+  if (not (gid_events[g_id][last_i]==">PRESENT" or gid_events[g_id][last_i]==">S"))
+    {
+      return vertical_string(gid_gidp[g_id][last_i],event_stream.str(),t_0);
+    }
+  else
+    {
+      scalar_type bnorm=ale_pointer->Bip_counts[g_id];
+      if (bnorm==0)
+	bnorm=ale_pointer->observations;
+      event_stream<<" "<<t_0<< " " << gid_times[g_id][last_i] << " " << ale_pointer->Bip_bls[g_id]/bnorm <<"\t"<< gid_gidp[g_id][last_i] << "\t" << gid_gidpp[g_id][last_i];
+      return ancestral_string+event_stream.str();
+    }
+}
+
+string exODT_model::gid_string(long int g_id)
+{
+  stringstream event_stream;
+  scalar_type t_0=gid_times[g_id][0];
+  for (int i = 0; i < (int)gid_branches[g_id].size(); i++)
+    {
+	  int branch = gid_branches[g_id][i];
+	  stringstream named_branch;
+	  if (branch==alpha)
+	    named_branch<<-1;
+	  else if (id_ranks[branch]==0)
+	    {
+	      named_branch<<extant_species[branch];
+	    }
+	  else
+	    named_branch<<id_ranks[branch];
+
+	  event_stream<<gid_events[g_id][i]
+	    //<<"@"<<named_branch.str()<<"*"<<gid_times[g_id][i]
+		      <<"|";
+    }
+  int last_i=(int)gid_branches[g_id].size()-1;
+  scalar_type bnorm=ale_pointer->Bip_counts[g_id];
+  if (bnorm==0)
+    bnorm=ale_pointer->observations;
+  event_stream<<" "<<t_0<< " " << gid_times[g_id][last_i] << " " << ale_pointer->Bip_bls[g_id]/bnorm <<"\t"<< gid_gidp[g_id][last_i] << "\t" << gid_gidpp[g_id][last_i];
+  return event_stream.str();
 }
 
 //ad hoc function should be moved to a future exODT_util.cpp 

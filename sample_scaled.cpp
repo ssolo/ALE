@@ -850,10 +850,17 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 
   if (back_step.t==0 and size == 1 and e!=-1)
     {
-      register_leaf(e);
+      register_leaf(e);	 
       stringstream branch_string;
       if (scalar_parameter["leaf_events"]==1) branch_string<<branch_events;
       branch_string <<":"<<new_branch_length;
+
+      gid_events[g_id].push_back(">PRESENT");
+      gid_times[g_id].push_back(0);
+      gid_branches[g_id].push_back(e);
+      gid_gidp[g_id].push_back(g_id);
+      gid_gidpp[g_id].push_back(g_id);
+
       return ale_pointer->set2name(ale_pointer->id_sets[g_id])+branch_string.str();
     }
 
@@ -866,6 +873,25 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
       if (back_step.event=="S")
 	{
 	  register_S(e);
+
+	  gid_events[g_id].push_back(">S");
+	  gid_times[g_id].push_back(t);
+	  gid_branches[g_id].push_back(e);
+	  gid_gidp[g_id].push_back(back_step.gp_id);
+	  gid_gidpp[g_id].push_back(back_step.gpp_id);
+
+	  gid_events[back_step.gp_id].push_back("S<");
+	  gid_times[back_step.gp_id].push_back(t);
+	  gid_branches[back_step.gp_id].push_back(back_step.ep);
+	  gid_gidp[back_step.gp_id].push_back(back_step.gp_id);
+	  gid_gidpp[back_step.gp_id].push_back(back_step.gp_id);
+
+	  gid_events[back_step.gpp_id].push_back("S<");
+	  gid_times[back_step.gpp_id].push_back(t);
+	  gid_branches[back_step.gpp_id].push_back(back_step.epp);
+	  gid_gidp[back_step.gpp_id].push_back(back_step.gpp_id);
+	  gid_gidpp[back_step.gpp_id].push_back(back_step.gpp_id);
+	  
 	  branch_string<< branch_events
 		       <<"."<<id_ranks[e]<<":"<<max(new_branch_length,(scalar_type)0.0); 
 	}
@@ -875,16 +901,54 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	    {
 	      int this_e,this_gid;
 
+	      gid_events[g_id].push_back(">T");
+	      gid_times[g_id].push_back(t);
+	      gid_branches[g_id].push_back(e);
+
+
 	      if (back_step.ep==alpha)
 		{
 		  this_e=back_step.epp;
 		  this_gid=back_step.gpp_id;
+
+		  gid_gidp[g_id].push_back(back_step.gpp_id);
+		  gid_gidpp[g_id].push_back(back_step.gp_id);
+
+		  gid_events[back_step.gp_id].push_back("Tto<");
+		  gid_times[back_step.gp_id].push_back(t);
+		  gid_branches[back_step.gp_id].push_back(back_step.ep);
+		  gid_gidp[back_step.gp_id].push_back(back_step.gp_id);
+		  gid_gidpp[back_step.gp_id].push_back(back_step.gp_id);
+		  
+		  gid_events[back_step.gpp_id].push_back("Tfrom<");
+		  gid_times[back_step.gpp_id].push_back(t);
+		  gid_branches[back_step.gpp_id].push_back(back_step.epp);
+		  gid_gidp[back_step.gpp_id].push_back(back_step.gpp_id);
+		  gid_gidpp[back_step.gpp_id].push_back(back_step.gpp_id);
+
 		}
 	      else
 		{
 		  this_e=back_step.ep;
 		  this_gid=back_step.gp_id;
+
+		  gid_gidp[g_id].push_back(back_step.gp_id);
+		  gid_gidpp[g_id].push_back(back_step.gpp_id);
+
+		  gid_events[back_step.gp_id].push_back("Tfrom<");
+		  gid_times[back_step.gp_id].push_back(t);
+		  gid_branches[back_step.gp_id].push_back(back_step.ep);
+		  gid_gidp[back_step.gp_id].push_back(back_step.gp_id);
+		  gid_gidpp[back_step.gp_id].push_back(back_step.gp_id);
+
+		  gid_events[back_step.gpp_id].push_back("Tto<");
+		  gid_times[back_step.gpp_id].push_back(t);
+		  gid_branches[back_step.gpp_id].push_back(back_step.epp);
+		  gid_gidp[back_step.gpp_id].push_back(back_step.gpp_id);
+		  gid_gidpp[back_step.gpp_id].push_back(back_step.gpp_id);
+		  
 		}
+	      
 	      stringstream named_branch;	      
 	      if (this_e==alpha)
 		named_branch<<-1;
@@ -894,6 +958,8 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		named_branch<<id_ranks[this_e];
 	      // Tto
 	      register_Tto(this_e);
+
+
 	      stringstream tmp;
 	      tmp<<back_step.rank<<"|"<<t<<"|"<<named_branch.str()<<"|"<<this_gid;
 	      register_Ttoken(transfer_token+"|"+tmp.str());
@@ -905,11 +971,52 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	    {
 	      int this_e;
 	      if (back_step.ep==alpha)
-		this_e=back_step.epp;
+		{
+		  this_e=back_step.epp;
+
+		  gid_gidp[g_id].push_back(back_step.gpp_id);
+		  gid_gidpp[g_id].push_back(back_step.gp_id);
+
+		  gid_events[back_step.gp_id].push_back("Sto<");
+		  gid_times[back_step.gp_id].push_back(t);
+		  gid_branches[back_step.gp_id].push_back(back_step.ep);
+		  gid_gidp[back_step.gp_id].push_back(back_step.gp_id);
+		  gid_gidpp[back_step.gp_id].push_back(back_step.gp_id);
+		  
+		  gid_events[back_step.gpp_id].push_back("Sfrom<");
+		  gid_times[back_step.gpp_id].push_back(t);
+		  gid_branches[back_step.gpp_id].push_back(back_step.epp);
+		  gid_gidp[back_step.gpp_id].push_back(back_step.gpp_id);
+		  gid_gidpp[back_step.gpp_id].push_back(back_step.gpp_id);
+
+		}
 	      else
-		this_e=back_step.ep;
+		{
+		  this_e=back_step.ep;
+
+		  gid_gidp[g_id].push_back(back_step.gp_id);
+		  gid_gidpp[g_id].push_back(back_step.gpp_id);
+
+		  gid_events[back_step.gp_id].push_back("Sfrom<");
+		  gid_times[back_step.gp_id].push_back(t);
+		  gid_branches[back_step.gp_id].push_back(back_step.ep);
+		  gid_gidp[back_step.gp_id].push_back(back_step.gp_id);
+		  gid_gidpp[back_step.gp_id].push_back(back_step.gp_id);
+		  
+		  gid_events[back_step.gpp_id].push_back("Sto<");
+		  gid_times[back_step.gpp_id].push_back(t);
+		  gid_branches[back_step.gpp_id].push_back(back_step.epp);
+		  gid_gidp[back_step.gpp_id].push_back(back_step.gpp_id);
+		  gid_gidpp[back_step.gpp_id].push_back(back_step.gpp_id);
+
+		}
 	      // Tfrom
 	      register_Tfrom(this_e);
+
+	      gid_events[g_id].push_back(">Sfrom");
+	      gid_times[g_id].push_back(t);
+	      gid_branches[g_id].push_back(this_e);
+
 	      // Tfrom
 	      stringstream named_branch;
 	      if (this_e==alpha)
@@ -922,6 +1029,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		transfer_token_stream<< transfer_token;
 	      else
 		transfer_token_stream<< rank<<"|"<<t<<"|"<<named_branch.str()<<"|"<<g_id;
+	      
 	      branch_string<< branch_events<<"T@"<<rank<<"|"<<named_branch.str()<<":"<<max(new_branch_length,(scalar_type)0.0); 	    
 	    }
 	  else
@@ -935,6 +1043,18 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		named_branch<<extant_species[e];
 	      else
 		named_branch<<id_ranks[e];
+
+	      gid_events[g_id].push_back(">D");
+	      gid_times[g_id].push_back(t);
+	      gid_branches[g_id].push_back(e);
+
+	      gid_events[back_step.gp_id].push_back("Dto<");
+	      gid_times[back_step.gp_id].push_back(t);
+	      gid_branches[back_step.gp_id].push_back(back_step.ep);
+	      
+	      gid_events[back_step.gpp_id].push_back("Dfrom<");
+	      gid_times[back_step.gpp_id].push_back(t);
+	      gid_branches[back_step.gpp_id].push_back(back_step.epp);
 
 	      Dtoken_stream    << "D|" << rank << "|" <<named_branch.str() << "|"<< g_id;
 	      register_Ttoken(Dtoken_stream.str());
@@ -985,12 +1105,27 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		register_L(f);
 	      branch_string<<"."
 			   <<id_ranks[e];
+
+	      gid_events[g_id].push_back("SL");
+	      gid_times[g_id].push_back(t);
+	      gid_branches[g_id].push_back(back_step.e);
+	      gid_gidp[g_id].push_back(g_id);
+	      gid_gidpp[g_id].push_back(g_id);
+
+
 	    }
 	  else
 	    {
 	      if (back_step.event=="TLb")
 		{
 		  register_Tto(back_step.e);
+
+		  gid_events[g_id].push_back("TL");
+		  gid_times[g_id].push_back(t);
+		  gid_branches[g_id].push_back(back_step.e);
+		  gid_gidp[g_id].push_back(g_id);
+		  gid_gidpp[g_id].push_back(g_id);
+
 		  stringstream tmp;
 
 		  stringstream named_branch;
@@ -1012,6 +1147,13 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		{
 		  register_L(e);
 		  register_Tfrom(e);
+
+		  gid_events[g_id].push_back("SLb");
+		  gid_times[g_id].push_back(t);
+		  gid_branches[g_id].push_back(e);
+		  gid_gidp[g_id].push_back(g_id);
+		  gid_gidpp[g_id].push_back(g_id);
+
 		  stringstream named_branch;
 		  if (e==alpha)
 		    named_branch<<-1;

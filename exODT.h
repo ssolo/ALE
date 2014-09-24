@@ -101,6 +101,13 @@ class exODT_model
   std::map <std::string,scalar_type> MLRec_events;                            //del-loc  
   std::map<std::string, std::vector<scalar_type> > branch_counts;             //del-loc
   std::vector<std::string> Ttokens;                                           //del-loc
+
+  std::map<long int, std::vector<std::string> > gid_events;             //del-loc
+  std::map<long int, std::vector<scalar_type> > gid_times;             //del-loc
+  std::map<long int, std::vector<int> > gid_branches;             //del-loc
+  std::map<long int, std::vector<long int> > gid_gidp;             //del-loc
+  std::map<long int, std::vector<long int> > gid_gidpp;             //del-loc
+
   //implemented in exODT.cpp
   void construct(std::string Sstring,scalar_type N=1e6); //Constructs an object given a species tree and population size.
   exODT_model();
@@ -161,6 +168,20 @@ class exODT_model
       for (std::map<std::string, std::vector<scalar_type> >::iterator it=branch_counts.begin();it!=branch_counts.end();it++)//del_loc
 	(*it).second.clear();
       branch_counts.clear();
+
+      for (std::map<long int, std::vector<std::string> >::iterator it=gid_events.begin();it!=gid_events.end();it++)//del_loc
+	(*it).second.clear();
+      gid_events.clear();
+
+      for (std::map<long int, std::vector<scalar_type> >::iterator it=gid_times.begin();it!=gid_times.end();it++)//del_loc
+	(*it).second.clear();
+      gid_times.clear();
+
+      for (std::map<long int, std::vector<int> >::iterator it=gid_branches.begin();it!=gid_branches.end();it++)//del_loc
+	(*it).second.clear();
+      gid_branches.clear();
+
+
       Ttokens.clear();
     };
 
@@ -197,6 +218,8 @@ class exODT_model
   std::string counts_string();
 
   void show_rates(std::string name);
+  std::string gid_string(long int g_id);
+  std::string vertical_string(long int g_id,std::string ancestral_string="",scalar_type t_0=-1);
 
  private:
   ;
