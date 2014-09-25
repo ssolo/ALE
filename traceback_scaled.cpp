@@ -730,7 +730,7 @@ string exODT_model::vertical_string(long int g_id, string ancestral_string,scala
 		      <<"|";
     }
   int last_i=(int)gid_branches[g_id].size()-1;
-  if (not (gid_events[g_id][last_i]==">PRESENT" or gid_events[g_id][last_i]==">S"))
+  if (not (gid_events[g_id][last_i]==">PRESENT" or gid_events[g_id][last_i]==">S" or gid_events[g_id][last_i]==">Sfrom" or gid_events[g_id][last_i]==">D"))
     {
       return vertical_string(gid_gidp[g_id][last_i],event_stream.str(),t_0);
     }
