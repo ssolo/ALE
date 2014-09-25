@@ -1047,14 +1047,21 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	      gid_events[g_id].push_back(">D");
 	      gid_times[g_id].push_back(t);
 	      gid_branches[g_id].push_back(e);
+	      gid_gidp[g_id].push_back(back_step.gp_id);
+	      gid_gidpp[g_id].push_back(back_step.gpp_id);
 
 	      gid_events[back_step.gp_id].push_back("Dto<");
 	      gid_times[back_step.gp_id].push_back(t);
 	      gid_branches[back_step.gp_id].push_back(back_step.ep);
+	      gid_gidp[back_step.gp_id].push_back(back_step.gp_id);
+	      gid_gidpp[back_step.gp_id].push_back(back_step.gp_id);
 	      
 	      gid_events[back_step.gpp_id].push_back("Dfrom<");
 	      gid_times[back_step.gpp_id].push_back(t);
 	      gid_branches[back_step.gpp_id].push_back(back_step.epp);
+	      gid_gidp[back_step.gpp_id].push_back(back_step.gpp_id);
+	      gid_gidpp[back_step.gpp_id].push_back(back_step.gpp_id);
+
 
 	      Dtoken_stream    << "D|" << rank << "|" <<named_branch.str() << "|"<< g_id;
 	      register_Ttoken(Dtoken_stream.str());
