@@ -5,6 +5,7 @@ using namespace bpp;
 exODT_model::exODT_model()
 {
   //some default parameters
+  string_parameter["BOOTSTRAP_LABLES"]="no";
   string_parameter["gene_name_separators"]="_@";
   scalar_parameter["species_field"]=0;
   scalar_parameter["event_node"]=0;
@@ -55,7 +56,9 @@ void exODT_model::construct(string Sstring,scalar_type N)
   //virtual branch
   alpha=-1;
   last_branch=0;
-  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_in"],false);//del-loc
+  
+  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_in"],  (string_parameter["BOOT_STRAP_LABLES"]=="yes")
+);//del-loc
 
   S_root = S->getRootNode();//del-loc
   vector <Node*> leaves = TreeTemplateTools::getLeaves(*S_root);//del-loc

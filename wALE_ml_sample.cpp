@@ -44,7 +44,6 @@ public:
     double delta = getParameterValue("delta");
     double tau = getParameterValue("tau");
     double lambda = getParameterValue("lambda");
-        
     model_pointer->set_model_parameter("delta",delta);
     model_pointer->set_model_parameter("tau",tau);
     model_pointer->set_model_parameter("lambda",lambda);
@@ -85,6 +84,7 @@ int main(int argc, char ** argv)
 
   int D=4;
   model->set_model_parameter("gene_name_separators", ".");
+  model->set_model_parameter("BOOT_STRAP_LABLES","yes");
 
   model->set_model_parameter("min_D",D);
   model->set_model_parameter("grid_delta_t",0.05);
@@ -204,7 +204,7 @@ int main(int argc, char ** argv)
   for (int i =0; i < 10000; i++ )
     {
       string sample_tree=model->sample(false);
-      cout << sample_tree << endl;
+      //cout << sample_tree << endl;
       samples_in_histogram++;
       for (vector<string>::iterator et=event_types.begin();et!=event_types.end();++et )		
 	for (int branch=0;branch<model->last_branch;branch++)
