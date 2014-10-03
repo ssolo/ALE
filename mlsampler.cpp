@@ -48,39 +48,122 @@ int main(int argc, char ** argv)
   exODT_model* model=new exODT_model();
 
 
-  model->set_model_parameter("min_D",4);
-  model->set_model_parameter("grid_delta_t",0.005);
-  model->set_model_parameter("DD",10);
+  model->set_model_parameter("min_D",3);
+  model->set_model_parameter("grid_delta_t",0.05);
+
+  model->construct(Sstring);
+  model->set_model_parameter("event_node",0);
+  model->set_model_parameter("leaf_events",1);
+  model->set_model_parameter("N",1);
 
   model->construct(Sstring);
 
-  model->set_model_parameter("event_node",0);  
   model->set_model_parameter("delta",delta);
   model->set_model_parameter("tau", tau);
   model->set_model_parameter("lambda", lambda);
+  model->set_model_parameter("sigma_hat", 1);
   model->set_model_parameter("leaf_events",1);
 
   model->calculate_EGb();
+  scalar_type old_p=model->p(ale);
 
   boost::timer * t = new boost::timer();
-  cout <<"LL: " << model->p(ale) << endl;
+  cout <<"LL: " << log(model->p(ale)) << endl;
   cout <<"time: " << t->elapsed() << endl;
   cout << ".."<<endl; 
   vector<Tree*> sample_trees;
-  string outname=ale_file+".samples";
+  string outname=ale_file+".rate_sample.samples";
   ofstream fout( outname.c_str() );
-  string outname2=ale_file+".Ttokens";
+  string outname2=ale_file+".rate_sample.Ttokens";
   ofstream fout2( outname2.c_str() );
 
   int subsamples=atoi(argv[3]);
   boost::progress_display pd( subsamples );
 
+  for (int i=0;i<90;i++) 
+    {
+      vector<scalar_type> ds;
+      //rate proposal
+      for (int i=0;i<3;i++)
+	{
+	  scalar_type r=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);
+	  scalar_type d;
+	  if (r<1./3.) d=RandomTools::randExponential(0.001)*2*(0.5-RandomTools::giveRandomNumberBetweenZeroAndEntry(1));
+	  else if (r<2./3.) d=RandomTools::randExponential(0.01)*2*(0.5-RandomTools::giveRandomNumberBetweenZeroAndEntry(1));
+	  else d=RandomTools::randExponential(0.1)*2*(0.5-RandomTools::giveRandomNumberBetweenZeroAndEntry(1));
+	  ds.push_back(d);
+	}
+      scalar_type new_delta=delta+ds[0];
+      scalar_type new_tau=tau+ds[1];
+      scalar_type new_lambda=lambda+ds[2];
+      
+      //boundaries
+      if (new_delta<1e-6) new_delta=1e-6;
+      if (new_delta>10-1e-6) new_delta=10-1e-6;
+      if (new_tau<1e-6) new_tau=1e-6;
+      if (new_tau>10-1e-6) new_tau=10-1e-6;
+      if (new_lambda<1e-6) new_lambda=1e-6;
+      if (new_lambda>10-1e-6) new_lambda=10-1e-6;
+
+      //likelihood
+      model->set_model_parameter("delta",new_delta);
+      model->set_model_parameter("tau",new_tau);
+      model->set_model_parameter("lambda",new_lambda);
+      model->calculate_EGb();
+      scalar_type new_p=model->p(ale);
+      if (new_p>=old_p or new_p/old_p>RandomTools::giveRandomNumberBetweenZeroAndEntry(1))
+	{
+	  old_p=new_p;
+	  delta=new_delta; tau=new_tau; lambda=new_lambda;
+	}
+      cout << delta << " " << tau << " " << lambda << " " << log(old_p) << endl;
+
+    }
   for (int i=0;i<subsamples;i++) 
-    {		  
+    {		
+
+      for (int i=0;i<10;i++) 
+	{
+	  vector<scalar_type> ds;
+	  //rate proposal
+	  for (int i=0;i<3;i++)
+	    {
+	      scalar_type r=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);
+	      scalar_type d;
+	      if (r<1./3.) d=RandomTools::randExponential(0.001)*2*(0.5-RandomTools::giveRandomNumberBetweenZeroAndEntry(1));
+	      else if (r<2./3.) d=RandomTools::randExponential(0.01)*2*(0.5-RandomTools::giveRandomNumberBetweenZeroAndEntry(1));
+	      else d=RandomTools::randExponential(0.1)*2*(0.5-RandomTools::giveRandomNumberBetweenZeroAndEntry(1));
+	      ds.push_back(d);
+	    }
+	  scalar_type new_delta=delta+ds[0];
+	  scalar_type new_tau=tau+ds[1];
+	  scalar_type new_lambda=lambda+ds[2];
+      
+	  //boundaries
+	  if (new_delta<1e-6) new_delta=1e-6;
+	  if (new_delta>10-1e-6) new_delta=10-1e-6;
+	  if (new_tau<1e-6) new_tau=1e-6;
+	  if (new_tau>10-1e-6) new_tau=10-1e-6;
+	  if (new_lambda<1e-6) new_lambda=1e-6;
+	  if (new_lambda>10-1e-6) new_lambda=10-1e-6;
+
+	  //likelihood
+	  model->set_model_parameter("delta",new_delta);
+	  model->set_model_parameter("tau",new_tau);
+	  model->set_model_parameter("lambda",new_lambda);
+	  model->calculate_EGb();
+	  scalar_type new_p=model->p(ale);
+	  if (new_p>=old_p or new_p/old_p>RandomTools::giveRandomNumberBetweenZeroAndEntry(1))
+	    {
+	      old_p=new_p;
+	      delta=new_delta; tau=new_tau; lambda=new_lambda;
+	    }
+	  cout << delta << " " << tau << " " << lambda << " " << log(old_p) << endl;
+	}
       ++pd;
       string sample_tree=model->sample(false);
       fout << sample_tree << endl;
-      for (vector<string>::iterator it=model->Ttokens.begin();it!=model->Ttokens.end();it++) fout2<< i << " " <<(*it)<<endl;
+      for (vector<string>::iterator it=model->Ttokens.begin();it!=model->Ttokens.end();it++) fout << i << " " <<(*it)<<endl;
 
       tree_type * G=TreeTemplateTools::parenthesisToTree(sample_tree,false);
       vector<Node*> leaves = G->getLeaves();
@@ -120,16 +203,16 @@ int main(int argc, char ** argv)
 
 
   /*  
-  approx_posterior * sale=observe_ALE_from_strings(sample_strings);
-  pair<string,scalar_type> mpp_res=sale->mpp_tree();
-  Tree* mpp_T = TreeTemplateTools::parenthesisToTree(mpp_res.first,false);
-  TreeTools::computeBootstrapValues(*mpp_T,sample_trees);
-  cout << endl;
-  cout << "mpp: "<<endl;
-  cout << mpp_res.first << endl;
-  //cout << TreeTools::treeToParenthesis(*mpp_T);
-  cout << endl;
-  approx_posterior * cale=observe_ALE_from_string(con_str);
+      approx_posterior * sale=observe_ALE_from_strings(sample_strings);
+      pair<string,scalar_type> mpp_res=sale->mpp_tree();
+      Tree* mpp_T = TreeTemplateTools::parenthesisToTree(mpp_res.first,false);
+      TreeTools::computeBootstrapValues(*mpp_T,sample_trees);
+      cout << endl;
+      cout << "mpp: "<<endl;
+      cout << mpp_res.first << endl;
+      //cout << TreeTools::treeToParenthesis(*mpp_T);
+      cout << endl;
+      approx_posterior * cale=observe_ALE_from_string(con_str);
   */
 
   pair<string, scalar_type> res = model->p_MLRec(ale);    
@@ -138,7 +221,16 @@ int main(int argc, char ** argv)
   cout << res.first << endl;
   cout << endl;
 
-  
+  string voutname=ale_file+".rate_sample.vstrings"; 
+  ofstream vout( voutname.c_str() );
+
+  for (std::map<long int, std::vector<int> >::iterator it=model->gid_branches.begin();it!=model->gid_branches.end();it++)
+    {
+      long int g_id=(*it).first;
+      vout << g_id << " " << model->vertical_string(g_id) << endl;
+
+    };
+
   return 1;
   
 
