@@ -115,6 +115,9 @@ libexODT_legacy.a: ALE.o ALE_util.o exODT.o model.o traceback.o sample.o Makefil
 ALEml:	libexODT.a ALEml.cpp Makefile
 	$(CC) ALEml.cpp -o ALEml $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
+ALEml-verbose:	libexODT.a ALEml-verbose.cpp Makefile
+	$(CC) ALEml-verbose.cpp -o ALEml-verbose $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
 ALEml_scaled:	libexODT_scaled.a ALEml_scaled.cpp Makefile
 	$(CC) ALEml_scaled.cpp -o ALEml_scaled $(FLAGS) $(INCLUDE) $(STATIC_SCALED) $(LINK)
 
@@ -173,6 +176,13 @@ simulation: simulation.cpp Makefile
 
 wol_tree: wol_tree.cpp Makefile
 	$(CC) wol_tree.cpp -o wol_tree $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+wol_host: wol_host.cpp Makefile
+	$(CC) wol_host.cpp -o wol_host $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+wol_paras: wol_paras.cpp Makefile
+	$(CC) wol_paras.cpp -o wol_paras $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
 
 simulation_cp: simulation_cp.cpp Makefile
 	$(CC) simulation_cp.cpp -o simulation_cp $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
