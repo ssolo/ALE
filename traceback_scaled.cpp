@@ -736,9 +736,14 @@ string exODT_model::vertical_string(long int g_id, string ancestral_string,scala
     }
   else
     {
-      scalar_type bnorm=ale_pointer->Bip_counts[g_id];
+      scalar_type bnorm;//=ale_pointer->Bip_counts[g_id];
+      if (ale_pointer->Bip_counts.count(g_id)==0 )
+	bnorm=ale_pointer->observations;
+      else
+	bnorm=ale_pointer->Bip_counts[g_id];
       if (bnorm==0)
 	bnorm=ale_pointer->observations;
+	
       event_stream<<" "<<t_0<< " " << gid_times[g_id][last_i] << " " << ale_pointer->Bip_bls[g_id]/bnorm <<"\t"<< gid_gidp[g_id][last_i] << "\t" << gid_gidpp[g_id][last_i];
       return ancestral_string+event_stream.str();
     }
