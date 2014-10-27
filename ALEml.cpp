@@ -85,17 +85,21 @@ int main(int argc, char ** argv)
   cout << "Read summary of tree sample for "<<ale->observations<<" trees from: " << ale_file <<".."<<endl;
 
   //we initialise a coarse grained reconciliation model for calculating the sum
+  cout << "model.." << endl;
   exODT_model* model=new exODT_model();
+  cout << "..model" << endl;
 
   int D=3;
   if (argc>3)
     model->set_model_parameter("gene_name_separators", argv[3]);
-
+  model->set_model_parameter("BOOT_STRAP_LABLES","yes");
 
   model->set_model_parameter("min_D",D);
   model->set_model_parameter("grid_delta_t",0.05);
-
+  cout << "construct.." << endl;
   model->construct(Sstring);
+  cout << "..construct" << endl;
+
   model->set_model_parameter("event_node",0);
   model->set_model_parameter("leaf_events",1);
   model->set_model_parameter("N",1);
@@ -111,8 +115,9 @@ int main(int argc, char ** argv)
 
   //calculate_EGb() must always be called after changing rates to calculate E-s and G-s
   //cf. http://arxiv.org/abs/1211.4606
+  cout << "EGb.." << endl;
   model->calculate_EGb();
-
+  cout << "..EGb" << endl;
   cout << "Reconciliation model initialised, starting DTL rate optimisation" <<".."<<endl;
 
   //we use the Nelder–Mead method implemented in Bio++
