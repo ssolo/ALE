@@ -514,13 +514,11 @@ scalar_type approx_posterior::p_dip(long int g_id,long int gp_id,long int gpp_id
       parts.first = gp_id;
       parts.second = gpp_id;
       Bip_count=Bip_counts.at(g_id);
+      Dip_count=Dip_counts.at(g_id).at(parts);
       if (!gp_id or !gpp_id or Dip_count==0)
 	{
 	  //never saw gammap-gammapp partition in sample
 	  Dip_count=0;
-	}
-	else {
-	  Dip_count=Dip_counts.at(g_id).at(parts);
 	}
     }
   if (set_sizes.at(g_id)==1 or set_sizes.at(g_id)==Gamma_size-1) Bip_count=observations;
