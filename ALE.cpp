@@ -447,8 +447,12 @@ scalar_type approx_posterior::p_dip(set<int> gamma,set<int> gammap,set<int> gamm
 scalar_type approx_posterior::p_bip(boost::dynamic_bitset<> gamma) const
 {
     if (Gamma_size<4)
-        return 1;
-    long int g_id=set_ids.at(gamma);
+        return 1;   
+    long int g_id;
+    if (set_ids.count(gamma))
+      g_id=set_ids.at(gamma);
+    else
+      g_id=-10;
 //    std::cout << "g_id: "<< g_id << " TO "<< p_bip(g_id) <<std::endl;
     return p_bip(g_id);
 }
@@ -458,11 +462,29 @@ scalar_type approx_posterior::p_dip(boost::dynamic_bitset<>  gamma, boost::dynam
 {
     if (Gamma_size<4)
         return 1;
-    long int g_id=set_ids.at(gamma);
-    long int gp_id=set_ids.at(gammap);
-    long int gpp_id=set_ids.at(gammapp);
- //   std::cout << "g_id: "<< g_id << " AND "<< gp_id << " AND "<<gpp_id << " TO: "<< p_dip(g_id, gp_id, gpp_id) <<std::endl;
-    return p_dip( g_id, gp_id, gpp_id);
+    long int g_id;
+    if (set_ids.count(gamma))
+      g_id=set_ids.at(gamma);
+    else
+      g_id=-10;
+
+    long int gp_id;
+    if (set_ids.count(gammap))
+      gp_id=set_ids.at(gammap);
+    else
+      gp_id=-10;
+
+    long int gpp_id;
+    if (set_ids.count(gammapp))
+      gpp_id=set_ids.at(gammapp);
+    else
+      gpp_id=-10;
+
+    //std::cout << "g_id: "<< g_id << " AND "<< gp_id << " AND "<< gpp_id << " TO: "<< p_dip(g_id, gp_id, gpp_id) <<" " << p_dip( g_id, gpp_id, gp_id) <<std::endl;
+    if (gpp_id>gp_id)
+      return p_dip( g_id, gp_id, gpp_id);
+    else
+      return p_dip( g_id, gpp_id, gp_id);
 }
 
 
@@ -473,7 +495,7 @@ scalar_type approx_posterior::p_bip(long int g_id) const
 
   scalar_type Bip_count=0;
 
-  if (!g_id)
+  if (Bip_counts.count(g_id)==0 or g_id==-10 or !g_id)
     {
       //never saw gamma in sample
       Bip_count=0;
@@ -483,13 +505,14 @@ scalar_type approx_posterior::p_bip(long int g_id) const
       Bip_count=Bip_counts.at(g_id);
     }
   //if ( gamma.size()==1 or (int)gamma.size()==Gamma_size-1) Bip_count=observations;
-  if ( set_sizes.at(g_id)==1 or set_sizes.at(g_id)==Gamma_size-1) Bip_count=observations;
-
-    if ( alpha>0 )
-        return Bip_count / ( observations+alpha ) + ( alpha/N_Gamma*Bi ( set_sizes.at ( g_id ) ) ) / ( observations+alpha );
-    else
-        return Bip_count / observations;
-    }
+  if (set_sizes.count(g_id)==0 or g_id==-10) Bip_count=0;
+  else if (  set_sizes.at(g_id)==1 or set_sizes.at(g_id)==Gamma_size-1) Bip_count=observations;
+  
+  if ( alpha>0 )
+    return Bip_count / ( observations+alpha ) + ( alpha/N_Gamma*Bi ( set_sizes.at ( g_id ) ) ) / ( observations+alpha );
+  else
+    return Bip_count / observations;
+}
 
 
 scalar_type approx_posterior::p_dip(long int g_id,long int gp_id,long int gpp_id) const
@@ -498,7 +521,7 @@ scalar_type approx_posterior::p_dip(long int g_id,long int gp_id,long int gpp_id
     return 1;
   scalar_type beta_switch=1;
   scalar_type Dip_count=0,Bip_count=0;
-  if (!g_id)
+  if (Bip_counts.count(g_id)==0  or g_id==-10 or !g_id)
     {
       //never saw gamma in sample
       beta_switch=0.;
@@ -511,19 +534,33 @@ scalar_type approx_posterior::p_dip(long int g_id,long int gp_id,long int gpp_id
       //parts.insert(gp_id);
       //parts.insert(gpp_id);
       pair <long int, long int> parts;
-      parts.first = gp_id;
-      parts.second = gpp_id;
+      if (gpp_id>gp_id)
+	{
+	  parts.first = gp_id;
+	  parts.second = gpp_id;
+	}
+      else
+	{
+	  parts.first = gpp_id;
+	  parts.second = gp_id;
+	}
+	
       Bip_count=Bip_counts.at(g_id);
-      Dip_count=Dip_counts.at(g_id).at(parts);
-      if (!gp_id or !gpp_id or Dip_count==0)
+      //Dip_count=Dip_counts.at(g_id).at(parts);
+      if (gp_id==-10 or gpp_id==-10 or Dip_counts.at(g_id).count(parts)==0 or !gp_id or !gpp_id)
 	{
 	  //never saw gammap-gammapp partition in sample
 	  Dip_count=0;
 	}
+      else
+	{
+	  Dip_count=Dip_counts.at(g_id).at(parts);
+	}
     }
-  if (set_sizes.at(g_id)==1 or set_sizes.at(g_id)==Gamma_size-1) Bip_count=observations;
-
-    if ( alpha>0 or beta>0 )
+  if (set_sizes.count(g_id)==0 or set_sizes.at(g_id)==1 or set_sizes.at(g_id)==Gamma_size-1) Bip_count=observations;
+  // ? above is correct or not ?
+  //cout << "Dip:"<<Dip_count << "  Bip:" << Bip_count << endl;
+  if ( alpha>0 or beta>0 )
         return ( Dip_count + ( alpha/N_Gamma*Tri ( set_sizes.at ( gp_id ),set_sizes.at ( gpp_id ) ) ) + beta_switch*beta/ ( pow ( 2.,set_sizes.at ( g_id )-1 )-1 ) ) / ( Bip_count + ( alpha/N_Gamma*Bi ( set_sizes.at ( g_id ) ) ) + beta_switch*beta );
     else
         return Dip_count/Bip_count;
@@ -669,7 +706,9 @@ map < boost::dynamic_bitset<> ,scalar_type > approx_posterior::recompose(string 
 	      //dip.first=set2id(flat_names[dedge]);
 	      //dip.second.insert(set2id(leaf_set_in_1));
 	      //dip.second.insert(set2id(leaf_set_in_2));
-	      
+	      //XX
+	    //cout << set2name(leaf_set_in_1) << " | "<< set2name(leaf_set_in_2) << endl;
+	    //cout << q[dedges_in[0]] << " " << q[dedges_in[1]]<< " " << p_dip(flat_names[dedge],leaf_set_in_1,leaf_set_in_2) << endl;
 	      q[dedge]=q[dedges_in[0]]*q[dedges_in[1]]*p_dip(flat_names[dedge],leaf_set_in_1,leaf_set_in_2);
 	      return_map[flat_names[dedge]]=q[dedge];
 
@@ -1021,8 +1060,9 @@ scalar_type approx_posterior::p(string tree_string) const
       //std::cout << "p: "<< p << std::endl;
       boost::dynamic_bitset<> gamma=(*it).first;
       boost::dynamic_bitset<> not_gamma = ~gamma;
-        not_gamma[0] = 0;
-        
+
+      not_gamma[0] = 0;
+      
 /*        for (auto i=0; i< Gamma_size; ++i) {
             not_gamma[i] = 0;
         }
@@ -1030,6 +1070,7 @@ scalar_type approx_posterior::p(string tree_string) const
    /*   for (set<int>::iterator st=Gamma.begin();st!=Gamma.end();st++)
 	if (gamma.count(*st)==0)
 	  not_gamma.insert(*st);*/
+      
       p*=rec_map[not_gamma]*p_bip(gamma);
       if (std::isnan(p) ) p = 0;//NumConstants::VERY_TINY ();
       //std::cout << "rec_map[not_gamma]: "<<rec_map[not_gamma] <<" p_bip(gamma) "<< p_bip(gamma) <<std::endl;
@@ -1281,8 +1322,17 @@ string approx_posterior::random_split(boost::dynamic_bitset<> gamma) const
             gpp_id=set_ids.at(gammapp);
             
             pair <long int, long int> parts;
-            parts.first=gp_id;
-            parts.second = gpp_id;
+	    if (gpp_id>gp_id)
+	      {
+		parts.first = gp_id;
+		parts.second = gpp_id;
+	      }
+	    else
+	      {
+		parts.first = gpp_id;
+		parts.second = gp_id;
+	      }
+
             
             if (Dip_counts.at(g_id).at(parts)==0) stop=true;
 	    }
