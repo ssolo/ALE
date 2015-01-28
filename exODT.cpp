@@ -338,7 +338,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
       if ( node->hasBranchProperty("bootstrap") )
 	{
 	  rank2label[rank]=node->getBootstrapValue();
-	  cout <<rank2label[rank]<<"->"<<rank<< endl;
+	  //cout <<rank2label[rank]<<"->"<<rank<< endl;
 	}
       else
 	{

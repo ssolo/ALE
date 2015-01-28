@@ -98,6 +98,7 @@ string exODT_model::sample(bool max_rec)
 //(this could be made more clear)
 string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,int e,scalar_type branch_length,string branch_events, string transfer_token,bool max_rec)
 {
+  //cout << "iti " << t_i <<" " << rank<<" " << S_node << endl; 
   // it could be nice to implemant a sampling temperature ?  
   //scalar_type beta=1;
   stringstream topptmp;
@@ -393,6 +394,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		    long int gpp_id=gpp_ids[i];	    
 		    scalar_type pp=p_part[i];
 		    scalar_type Sb=2*sigma_hat*Delta_t*(qvec[gp_id+1][rank][t_i][alpha]*qvec[gpp_id+1][rank][t_i][alpha])*pp;
+		    //cout << "Sb2: "<<2*sigma_hat*Delta_t<<"*"<<qvec[gp_id+1][rank][t_i][alpha]<<"*"<<qvec[gpp_id+1][rank][t_i][alpha]<<"*"<<pp<<endl;
 		    //S_bar EVENT
 		    resum+=Sb;
 		    if (1)
@@ -558,7 +560,9 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 			    scalar_type pp=p_part[i];
 			    scalar_type S_pf_ppg=qvec[gp_id+1][rank][t_i][f]*qvec[gpp_id+1][rank][t_i][g]*pp;
 			    scalar_type S_ppf_pg=qvec[gpp_id+1][rank][t_i][f]*qvec[gp_id+1][rank][t_i][g]*pp;
-			    //S EVENT
+			    //cout << "S: " << S_pf_ppg << " " << S_ppf_pg << " " << endl;
+			    //cout << rank<< " " << t_i << " " << time_slice_times[rank][t_i] <<  endl;
+ 			    //S EVENT
 			    //qvec[g_id+1][rank][t_i][e]+=qvec[gp_id+1][rank][t_i][f]*qvec[gpp_id+1][rank][t_i][g] +qvec[gpp_id+1][rank][t_i][f]*qvec[gp_id+1][rank][t_i][g];
 			    resum+=S_pf_ppg;
 			    if(1)
@@ -649,6 +653,10 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		    scalar_type qppe=qvec[gpp_id+1][rank][t_i][e];
 		    scalar_type Sb_pa_ppe= sigma_hat*Delta_t*qvec[gp_id+1][rank][t_i][alpha]*qppe*pp;
 		    scalar_type Sb_pe_ppa= sigma_hat*Delta_t*qpe*qvec[gpp_id+1][rank][t_i][alpha]*pp;
+		    //cout << "Sb: " << sigma_hat*Delta_t<<"*"<<qvec[gp_id+1][rank][t_i][alpha]<<"*"<<qppe<<"*"<<pp<<endl;
+		    //cout << "  : " << sigma_hat*Delta_t<<"*"<<qpe<<"*"<<qvec[gpp_id+1][rank][t_i][alpha]<<"*"<<pp<<endl;
+		    //cout << " t_i:"<<t_i<<" rank:"<<rank<<endl;
+
 		    //S_bar EVENT
 		    resum+=Sb_pa_ppe;
 		    if(1)
@@ -734,7 +742,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		}
 	      //q_suml+=SLb;
 
-	      //qvec[g_id+1][tpdt_rank][tpdt_t_i][e]+=p_Delta_bar*Eet*qvec[g_id+1][rank][t_i][alpha];
+	      //qvec[g_id+1][tpdt_rank][tpdt_t_i][e]+=p_Delta_bgar*Eet*qvec[g_id+1][rank][t_i][alpha];
 	      //SL_bar.
 
 
@@ -790,6 +798,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   int max_i=0;
   for (int i=0;i<(int)sample_ps.size();i++)
     {
+      //cout <<i << " " << sample_ps[i] << " " << sample_steps[i].event << endl;;
       if (max_resum<sample_ps[i])
 	{
 	  max_resum=sample_ps[i];
@@ -810,9 +819,9 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
   sample_ps.clear();
   /*
     if (back_step.e==-1)
-    cout  <<  back_step.event << "\t" << back_step.rank << "\tid_rank:" << id_ranks[back_step.ep] << "\text_sp:" << extant_species[back_step.ep] << "\te:" << back_step.ep<< "\tg_id:" << ale_pointer->set2name(ale_pointer->id_sets[g_id]) << "\t" << back_step.t << " t_i:" << t_i << endl;
+      cout  <<  back_step.event << "\t" << back_step.rank << "\tid_rank:" << id_ranks[back_step.ep] << "\text_sp:" << extant_species[back_step.ep] << "\te:" << back_step.ep<< "\tg_id:" << ale_pointer->set2name(ale_pointer->id_sets[g_id]) << "\t" << back_step.t << " t_i:" << t_i << " " << time_slice_times[back_step.rank][t_i]<< endl;
     else
-    cout  <<  back_step.event << "\t" << back_step.rank << "\tid_rank:" << id_ranks[back_step.e] << "\text_sp:" << extant_species[back_step.e] << "\te:" << back_step.e<< "\tg_id:" << ale_pointer->set2name(ale_pointer->id_sets[g_id]) << "\t" << back_step.t << " t_i:" << t_i << endl;
+      cout  <<  back_step.event << "\t" << back_step.rank << "\tid_rank:" << id_ranks[back_step.e] << "\text_sp:" << extant_species[back_step.e] << "\te:" << back_step.e<< "\tg_id:" << ale_pointer->set2name(ale_pointer->id_sets[g_id]) << "\t" << back_step.t << " t_i:" << t_i  << " " << time_slice_times[back_step.rank][t_i]<<  endl;
   */
   stringstream toptmp;
   if (back_step.e==alpha)
@@ -1071,22 +1080,28 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	}
       if ( transfer_token_stream.str()=="")
 	return "("+
-	  sample(S_node,back_step.gp_id, t_i,rank,back_step.ep,0,"",transfer_token,max_rec)
+	  sample(S_node,back_step.gp_id, t_i+(back_step.event=="S"
+		 ),rank,back_step.ep,0,"",transfer_token,max_rec)
 	  +","+
-	  sample(S_node,back_step.gpp_id, t_i,rank,back_step.epp,0,"",transfer_token,max_rec)
+	  sample(S_node,back_step.gpp_id, t_i+(back_step.event=="S"
+		 ),rank,back_step.epp,0,"",transfer_token,max_rec)
 	  +")"+branch_string.str();
       else
 	if(back_step.ep==alpha)
 	  return "("+
-	    sample(S_node,back_step.gp_id, t_i,rank,back_step.ep,0,"",transfer_token_stream.str(),max_rec)
+	    sample(S_node,back_step.gp_id, t_i+(back_step.event=="S"
+		 ),rank,back_step.ep,0,"",transfer_token_stream.str(),max_rec)
 	    +","+
-	    sample(S_node,back_step.gpp_id, t_i,rank,back_step.epp,0,"",transfer_token,max_rec)
+	    sample(S_node,back_step.gpp_id, t_i+(back_step.event=="S"
+		 ),rank,back_step.epp,0,"",transfer_token,max_rec)
 	    +")"+branch_string.str();
 	else
 	  return "("+
-	    sample(S_node,back_step.gp_id, t_i,rank,back_step.ep,0,"",transfer_token)
+	    sample(S_node,back_step.gp_id, t_i+(back_step.event=="S"
+		 ),rank,back_step.ep,0,"",transfer_token)
 	    +","+
-	    sample(S_node,back_step.gpp_id, t_i,rank,back_step.epp,0,"",transfer_token_stream.str(),max_rec)
+	    sample(S_node,back_step.gpp_id, t_i+(back_step.event=="S"
+		 ),rank,back_step.epp,0,"",transfer_token_stream.str(),max_rec)
 	    +")"+branch_string.str();
 	  
     }
@@ -1178,11 +1193,11 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	}
       if (transfer_token_stream.str()=="")
 	{	  
-	  return sample(S_node,back_step.g_id, t_i,rank, back_step.e, new_branch_length, branch_string.str(),transfer_token,max_rec);
+	  return sample(S_node,back_step.g_id, t_i+(back_step.event=="SL"),rank, back_step.e, new_branch_length, branch_string.str(),transfer_token,max_rec);
 	}
       else
 	{
-	  return sample(S_node,back_step.g_id, t_i,rank, back_step.e, new_branch_length, branch_string.str(),transfer_token_stream.str(),max_rec);	
+	  return sample(S_node,back_step.g_id, t_i+(back_step.event=="SL"),rank, back_step.e, new_branch_length, branch_string.str(),transfer_token_stream.str(),max_rec);	
 	}
     }
   else

@@ -222,7 +222,12 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 	      scalar_type lambda_avg=scalar_parameter["lambda_avg"]; 
 	      scalar_type sigma_hat=scalar_parameter["sigma_hat"];
 	      scalar_type H_hat=Ee[-1][t];
-		    
+
+	      //boundary at present
+	      if (t==0)
+		qvec[g_id+1][rank][t_i][alpha]=0;
+
+	      
 	      if(1)
 		{
 		  for (int branch_i=0;branch_i<n;branch_i++)
@@ -315,8 +320,8 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 		{
 		  //boundaries for branch alpha virtual branch  
 		  //boundary at present
-		  if (t==0)
-		    qvec[g_id+1][rank][t_i][alpha]=0;
+		  //if (t==0)
+		  //  qvec[g_id+1][rank][t_i][alpha]=0;
 		  //boundary between slice rank and rank-1 slice is trivial	
 		  ;//qvec[g_id+1][rank][t_i][alpha]=qvec[g_id+1][rank][t_i][alpha];	  
 		  //boundaries for branch alpha virtual branch.  
@@ -556,13 +561,25 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
       int n=time_slices[rank].size();
       for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++)
 	{
-	  //scalar_type t=time_slice_times[rank][t_i];
+	  scalar_type t=time_slice_times[rank][t_i];			  
+	  scalar_type tpdt;
+	  if ( t_i < (int)time_slice_times[rank].size()-1 )
+	      tpdt=time_slice_times[rank][t_i+1];
+	  else if (rank<last_rank-1)
+	      tpdt=time_slice_times[rank+1][0];
+	  else
+	    //top of root stem
+	      tpdt=t_begin[time_slices[rank][0]];
+	  
+	  //root
+	  scalar_type Delta_t=(tpdt-t)*1;
+	  
 	  for (int branch_i=0;branch_i<n;branch_i++)
 	    {	    
 	      int e = time_slices[rank][branch_i];
 	      if (max_term<qvec[0][rank][t_i][e]) 
 		{
-		  max_term=qvec[0][rank][t_i][e];
+		  max_term=qvec[0][rank][t_i][e]/(1-Ee[e][ time_slice_times[rank][t_i] ]);//*Delta_t;
 		  max_e=e;
 		  max_t=t_i;
 		  max_rank=rank;
@@ -570,7 +587,7 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
 	    }
 	  if (max_term<qvec[0][rank][t_i][alpha]) 
 	    {
-	      max_term=qvec[0][rank][t_i][alpha];
+	      max_term=qvec[0][rank][t_i][alpha]/(1-Ee[alpha][ time_slice_times[rank][t_i] ]);//*Delta_t;
 	      max_e=alpha;
 	      max_t=t_i;
 	      max_rank=rank;
@@ -581,8 +598,11 @@ pair<string,scalar_type> exODT_model::p_MLRec(approx_posterior *ale, bool lowmem
   MLRec_events.clear();
   Ttokens.clear();
   register_O(max_e);
+  
+  //  cout << max_t << " " << max_rank << " " << max_e << " " << log(max_term) << endl;
+
   return_pair.first=sample(false,-1,max_t,max_rank,max_e,0,"","",true)+";\n";
-  return_pair.second=max_term/root_norm;	
+  return_pair.second=max_term/(1-Ee[max_e][ time_slice_times[max_rank][max_t] ]);	
   return return_pair;
 }
 

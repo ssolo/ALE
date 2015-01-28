@@ -247,9 +247,8 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		      //boundary at present
 		      if (t==0)
 			{
-                if (is_a_leaf && extant_species[e]==gid_sps[g_id])	{
-			    qvec[g_id+1][rank][t_i][e]=1;
-                }
+			  if (is_a_leaf && extant_species[e]==gid_sps[g_id])
+			    qvec[g_id+1][rank][t_i][e]=1;			 
 			  else
 			    qvec[g_id+1][rank][t_i][e]=0;
 			}
