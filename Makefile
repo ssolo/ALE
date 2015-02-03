@@ -151,6 +151,13 @@ test_qvec:	libexODT_qvec.a test.cpp Makefile
 test:	libexODT.a test.cpp Makefile
 	$(CC) test.cpp -o test $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
+times:	libexODT.a times.cpp Makefile
+	$(CC) times.cpp -o times $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+times_undated:	libexODT.a times_undated.cpp Makefile
+	$(CC) times_undated.cpp -o times_undated $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+
 test_scaled:	libexODT_scaled.a test_scaled.cpp Makefile
 	$(CC) test_scaled.cpp -o test_scaled $(FLAGS) $(INCLUDE) $(STATIC_SCALED)  $(LINK)
 

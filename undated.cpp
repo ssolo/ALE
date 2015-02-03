@@ -166,7 +166,7 @@ void exODT_model::calculate_undatedEs()
 	  newmPTE+=(PT[e]/(float)last_branch) *uE[e];
 	}
       mPTE=newmPTE;
-      cout << i << " " <<mPTE << endl;
+      //cout << i << " " <<mPTE << endl;
     }
 }
 
@@ -394,7 +394,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	  survive+=(1-uE[e]);
 	}	     
       
-      cout << root_sum/survive << endl;
+      //cout << root_sum/survive << endl;
     }
   return root_sum/survive;
   
