@@ -67,6 +67,9 @@ class exODT_model
 
   std::map<int,int> father;                                  //del-loc. Map between node id and id of its father.
   std::map<int,std::vector<int> > daughters;                 //del-loc. Map between node id and ids of its daughters (-1 if node is a leaf).
+  std::map<int,int> daughter;              
+  std::map<int,int> son;              
+ 
   std::map<int,std::string> extant_species;                  //del-loc. Map between leaf id (0 to # of leaves) and leaf name.
   std::map <int,std::string> extant_taxa;                    // extant_taxa map for id-ing branches across trees
 
@@ -90,6 +93,20 @@ class exODT_model
 
   //Variables used for computing.
   std::map<int,std::map <scalar_type,scalar_type> > Ee;                       //del-loc. Probability (scalar value) that a gene present at a given time slice (whose rank is the int key) at time the first scalar key is getting extinct before reaching extant species.
+  std::map <std::string,bpp::Node *> name_node;
+  std::map <bpp::Node *,std::string> node_name; 
+
+  std::vector<scalar_type> uE;
+  scalar_type mPTE;
+  int root_i;
+  std::vector < std::vector <scalar_type> > uq;
+  std::vector < scalar_type > mPTuq;
+
+  std::vector<scalar_type> PD;
+  std::vector<scalar_type> PT;
+  std::vector<scalar_type> PL;
+  std::vector<scalar_type> PS;
+  int last_leaf;
   std::map<int,std::map <scalar_type,scalar_type> > Ge;                       //del-loc. Probability (scalar value) that a gene present at a given time slice (whose rank is the int key) actually reaches extant species.
   std::map<long int, std::map< scalar_type, std::map<int, scalar_type> > > q; //del-loc. Map between clade id (from the approx_posterior object) and a map between the time of a subslice and a map between branch id and probability of the clade given the ODTL model.
   
@@ -108,7 +125,17 @@ class exODT_model
   std::map<long int, std::vector<long int> > gid_gidp;             //del-loc
   std::map<long int, std::vector<long int> > gid_gidpp;             //del-loc
 
+  void construct_undated(std::string Sstring);
+  void calculate_undatedEs();
+  scalar_type pun(approx_posterior *ale);
+  std::string sample_undated();
+  std::string sample_undated(int e,int i,std::string branch_string="");
+  std::vector <long int>  g_ids;
+  std::vector <long int>  g_id_sizes;
+  std::map <long int,int> g_id2i;
+
   //implemented in exODT.cpp
+
   void construct(std::string Sstring,scalar_type N=1e6); //Constructs an object given a species tree and population size.
   exODT_model();
   ~exODT_model()
@@ -204,6 +231,8 @@ class exODT_model
   void register_Tfrom(int e);
   void register_L(int e);
   void register_S(int e);
+  void register_Su(int e);
+
   void register_leaf(int e);
   void register_Ttoken(std::string token);
   //implemented in traceback_lowmem.cpp - not done
@@ -216,6 +245,7 @@ class exODT_model
 
   void show_counts(std::string name);
   std::string counts_string();
+  std::string counts_string_undated();
 
   void show_rates(std::string name);
   std::string gid_string(long int g_id);

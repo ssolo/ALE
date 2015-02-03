@@ -646,6 +646,7 @@ void exODT_model::register_S(int e)
       branch_counts["count"].at(g)+=1;  
     }
 }
+
 void exODT_model::register_leaf(int e)
 {
   if (e>-1) branch_counts["copies"].at(e)+=1;

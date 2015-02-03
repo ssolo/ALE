@@ -97,8 +97,11 @@ traceback_scaled.o: ALE.h exODT.h traceback_scaled.cpp Makefile
 sample_scaled.o: ALE.h exODT.h sample_scaled.cpp Makefile 
 	$(CC) $(FLAGS) $(INCLUDE)  -c -o sample_scaled.o sample_scaled.cpp	
 
-libexODT.a: ALE.o ALE_util.o exODT.o model_scaled.o traceback_scaled.o sample_scaled.o Makefile
-	ar rcs libexODT.a ALE.o exODT.o model_scaled.o traceback_scaled.o  ALE_util.o  sample_scaled.o
+undated.o: ALE.h exODT.h undated.cpp Makefile 
+	$(CC) $(FLAGS) $(INCLUDE)  -c -o undated.o undated.cpp	
+
+libexODT.a: ALE.o ALE_util.o exODT.o model_scaled.o traceback_scaled.o sample_scaled.o undated.o Makefile
+	ar rcs libexODT.a ALE.o exODT.o model_scaled.o traceback_scaled.o  ALE_util.o  sample_scaled.o undated.o
 
 libexODT_scaled.a: ALE.o ALE_util.o exODT.o model_scaled.o traceback_scaled.o sample_scaled.o Makefile
 	ar rcs libexODT_scaled.a ALE.o exODT.o model_scaled.o traceback_scaled.o  ALE_util.o  sample_scaled.o
@@ -114,6 +117,9 @@ libexODT_legacy.a: ALE.o ALE_util.o exODT.o model.o traceback.o sample.o Makefil
 
 ALEml:	libexODT.a ALEml.cpp Makefile
 	$(CC) ALEml.cpp -o ALEml $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+ALEml_undated:	libexODT.a ALEml_undated.cpp Makefile
+	$(CC) ALEml_undated.cpp -o ALEml_undated $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
 ALEml-verbose:	libexODT.a ALEml-verbose.cpp Makefile
 	$(CC) ALEml-verbose.cpp -o ALEml-verbose $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
