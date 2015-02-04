@@ -5,6 +5,61 @@ using namespace std;
 using namespace bpp;
 using namespace boost::mpi;
 
+void mpi_tree::load_distributed_ales(string fname)
+{
+  client_fnames.clear();
+  vector<vector<string> > scatter_fnames;//del-loc
+  if (rank==server)
+    {
+      ifstream file_stream (fname.c_str());
+      int tree_i=0;
+      set <string> verify;
+
+      if (file_stream.is_open())  //  ########## read trees ############
+	{
+	  while (! file_stream.eof())
+	    {
+	      string line;
+	      getline (file_stream,line);
+	      vector <string> tokens;
+	      boost::trim(line);	    
+	      boost::split(tokens,line,boost::is_any_of("\t "),boost::token_compress_on);
+	      int client_i=atoi(tokens[1].c_str());
+	      string ale_file=tokens[0];
+	      if (not (client_i<scatter_fnames.size())) {vector<string> tmp; scatter_fnames.push_back(tmp);}
+	      scatter_fnames[client_i].push_back(ale_file);
+	      verify.insert(ale_file);
+
+	    }
+	}
+      cout << "# Scattering: " << verify.size() << " ale files.."<<endl;
+      N_ales=verify.size() ;
+      verify.clear();
+    }
+  scatter(world,scatter_fnames,client_fnames,server);
+
+  if (rank==server) cout << "#..loading.." << endl;
+  
+  for ( vector<string>::iterator it=client_fnames.begin();it!=client_fnames.end();it++)
+    {
+      approx_posterior * ale;//del-loc
+      ale = load_ALE_from_file((*it));      
+      ale_pointers.push_back(ale);      
+    }
+
+  //del-locs
+  for ( vector<vector<string> >::iterator jt=scatter_fnames.begin();jt!=scatter_fnames.end();jt++) 
+    (*jt).clear();
+
+  scatter_fnames.clear();
+
+  if (rank==server) cout << "# done." <<endl;
+  scalar_type tmp=N_ales;
+  broadcast(world,tmp,server);
+  N_ales=tmp;
+
+
+}
 void mpi_tree::distribute_ales(vector<string> fnames,bool list_of_trees)
 {
 
@@ -384,6 +439,33 @@ scalar_type mpi_tree::calculate_p()
       if (tmpp==0) cout << client_fnames[i] << " is 0 !!"<<endl;
       cout <<"#LL " << client_fnames[i] << " " << log(tmpp) << endl;
 
+      ll +=log(tmpp);
+    }
+  //cout << rank << " "<<t->elapsed() <<endl;
+  gather(world,ll,gather_ll,server);
+
+  scalar_type sum_ll=0;
+  if (rank==server) for (int i=0;i<size;i++) sum_ll+=gather_ll[i];
+  broadcast(world,sum_ll,server);
+  if (rank==server) cout << model->scalar_parameter["delta_avg"] <<  " " << model->vector_parameter["N"][0]*model->scalar_parameter["tau_avg"] << " " << model->scalar_parameter["lambda_avg"] << " " << model->vector_parameter["Delta_bar"][0] <<" " << sum_ll<<endl;
+
+  return sum_ll;
+}
+
+scalar_type mpi_tree::calculate_pun()
+{  
+  scalar_type ll=0;
+  model->calculate_undatedEs();
+  vector<scalar_type> gather_ll;
+
+  boost::timer * t = new boost::timer();
+  for (int i=0;i<(int)ale_pointers.size();i++)
+    {
+      //cout << rank <<" at " <<round(i/(float)ale_pointers.size()*100.)<<" %, strats "<< client_fnames[i] << endl;
+      scalar_type tmpp=model->pun(ale_pointers[i]);
+      if (tmpp==0) cout << client_fnames[i] << " is 0 !!"<<endl;
+      cout <<"#LL " << client_fnames[i] << " " << log(tmpp) << endl;
+      
       ll +=log(tmpp);
     }
   //cout << rank << " "<<t->elapsed() <<endl;
