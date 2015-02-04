@@ -387,11 +387,17 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	}
       survive=0;
       root_sum=0;
-      
+      T_to_from.clear();
       for (int e=0;e<last_branch;e++)
 	{
+	  map <int,scalar_type> tmp;
+	  T_to_from[e]=tmp;
 	  root_sum+=uq[root_i][e];
 	  survive+=(1-uE[e]);
+	  for (int f=0;f<last_branch;f++)
+	    {
+	      T_to_from[e][f]=0;
+	    }
 	}	     
       
       //cout << root_sum/survive << endl;
@@ -631,7 +637,8 @@ string exODT_model::sample_undated(int e, int i,string branch_string)
 	      if (r*uq_sum<uq_resum)
 		{
 		  register_Tfrom(e);
-		  register_Tto(f);			  
+		  register_Tto(f);
+		  register_T_to_from(e,f);
 		  return "("+sample_undated(e,gpp_i)+","+sample_undated(f,gp_i)+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
 		}		  
 		  
@@ -676,6 +683,7 @@ string exODT_model::sample_undated(int e, int i,string branch_string)
 	{
 	  register_Tfrom(e);
 	  register_Tto(f);
+	  register_T_to_from(e,f);
 	  register_L(e); 
 	  return sample_undated(f,i,".T@"+estr+"->"+fstr);
 	}		  
@@ -729,4 +737,9 @@ void exODT_model::register_Su(int e)
       branch_counts["count"].at(f)+=1;
       branch_counts["count"].at(g)+=1;  
     }
+}
+
+void exODT_model::register_T_to_from(int e,int f)
+{
+  T_to_from[e][f]+=1;
 }

@@ -83,6 +83,8 @@ class mpi_tree
 
   //implimented in mpi_tree.cpp
   void distribute_ales(std::vector<std::string>,bool list_of_trees=false);
+  void load_distributed_ales(std::string fname);
+
   void gather_counts();
   void clear_counts();
   std::string branch_counts_string();
@@ -91,6 +93,7 @@ class mpi_tree
 
   scalar_type calculate_MLRecs(bool estimate=false,bool branchwise=false);
   scalar_type calculate_p();
+  scalar_type calculate_pun();
 
   //implimented in rae_estimate.cpp
   std::vector<scalar_type> dtl_estimate(int branch,scalar_type N_ales_norm);

@@ -232,6 +232,8 @@ class exODT_model
   void register_L(int e);
   void register_S(int e);
   void register_Su(int e);
+  void register_T_to_from(int e,int f);
+  std::map <int, std::map<int , scalar_type> > T_to_from;
 
   void register_leaf(int e);
   void register_Ttoken(std::string token);
@@ -255,3 +257,4 @@ class exODT_model
   ;
   
 };
+

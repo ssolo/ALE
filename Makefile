@@ -219,6 +219,9 @@ mpi_tree.o: ALE.h exODT.h mpi_tree.h mpi_tree.cpp Makefile
 
 mpi_ml:	libexODT.a mpi_tree.o mpi_ml.cpp Makefile
 	$(mCC) mpi_ml.cpp -o mpi_ml $(FLAGS) $(INCLUDE)   $(LINK) $(MPI_LINK) mpi_tree.o $(STATIC)
+mpi_ml_undated:	libexODT.a mpi_tree.o mpi_ml_undated.cpp Makefile
+	$(mCC) mpi_ml_undated.cpp -o mpi_ml_undated $(FLAGS) $(INCLUDE)   $(LINK) $(MPI_LINK) mpi_tree.o $(STATIC)
+
 #WTF 
 #mpic++ mpi_ml.cpp -o mpi_ml -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall -std=gnu++11 -I/usr/include -I/home/ssolo/newest_bpp/include -I/usr/include/mpich2/   -L. -L/home/ssolo/newest_bpp/lib -lbpp-core -lbpp-seq -lbpp-phyl   -L/home/ssolo/lib -lboost_mpi -lboost_serialization  mpi_tree.o libexODT.a
 #mpic++ mpi_ml.cpp -o mpi_ml -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall -std=gnu++11 -I/usr/include -I/home/ssolo/newest_bpp/include -I/usr/include/mpich2/   -L. -L/home/ssolo/newest_bpp/lib -lbpp-core -lbpp-seq -lbpp-phyl   -L/usr/lib -lboost_mpi -lboost_serialization  mpi_tree.o libexODT.a
