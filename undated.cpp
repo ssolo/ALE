@@ -10,6 +10,7 @@ void exODT_model::construct_undated(string Sstring)
   S_root = S->getRootNode();
   vector <Node*> nodes = TreeTemplateTools::getNodes(*S_root);
 
+  for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ ) (*it)->setDistanceToFather(1);
   
   for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
     if ((*it)->isLeaf())
@@ -742,4 +743,85 @@ void exODT_model::register_Su(int e)
 void exODT_model::register_T_to_from(int e,int f)
 {
   T_to_from[e][f]+=1;
+}
+
+string exODT_model::feSPR(int e, int f)
+{
+  tree_type * newS=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  (string_parameter["BOOT_STRAP_LABLES"]=="yes"));
+  Node * newS_root = newS->getRootNode();
+  vector <Node*> nodes = TreeTemplateTools::getNodes(*newS_root);
+
+  string e_name=node_name[id_nodes[e]];
+  string f_name=node_name[id_nodes[f]];;
+  
+  Node *e_node, *f_node;
+
+  
+  for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
+    {
+      string name_it;
+      if ((*it)->isLeaf())
+	{
+	  name_it=(*it)->getName();
+	}
+      else
+	{
+	  vector<string> leafnames=TreeTemplateTools::getLeavesNames(*(*it));
+	  sort(leafnames.begin(),leafnames.end());
+	  stringstream name;
+	  for (vector <string >::iterator st=leafnames.begin();st!=leafnames.end();st++ )
+	    name<<(*st)<<".";
+	  
+	  name_it=name.str();	  
+	}
+      if (name_it==e_name) e_node=(*it);
+      if (name_it==f_name) f_node=(*it);	
+    }
+
+  if (e==f or ( e_node->hasFather() and f_node->hasFather() and (e_node->getFather()==f_node->getFather()) ) or ( e_node->hasFather() and e_node->getFather()==f_node) or ( f_node->hasFather() and f_node->getFather()==e_node) ) return string_parameter["S_un"]; 
+
+  bool e_below_f=false;
+  Node * node;
+  node=e_node;
+  while (node->hasFather())
+    {
+      node=node->getFather();
+      if (node==f_node) e_below_f=true; 
+    }
+  if (e_below_f)
+    {
+      Node * swap_tmp=e_node;
+      e_node=f_node;
+      f_node=swap_tmp;
+    }
+  
+  Node * f_father=f_node->getFather();
+  vector <Node *> f_sons=f_father->getSons();
+  Node * f_sister;
+  if (f_sons[0]==f_node) f_sister=f_sons[1]; else f_sister=f_sons[0];
+  f_father->removeSon(f_sister);      
+  if (f_father->hasFather())
+    {
+      Node * f_grand_father=f_father->getFather();
+      f_grand_father->removeSon(f_father);
+      f_grand_father->addSon(f_sister);      
+    }
+  else
+    {
+      newS->setRootNode(e_node->getFather());
+    }
+  if (e_node->hasFather())
+    {
+      Node * e_father=e_node->getFather();
+      e_father->removeSon(e_node);
+      e_father->addSon(f_father);
+    }
+  else
+    newS->setRootNode(f_father);
+
+  f_father->addSon(e_node);
+  
+  for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ ) (*it)->setDistanceToFather(1);
+  cout << newS->getNodes().size();
+  return TreeTemplateTools::treeToParenthesis(*newS,false,"ID");
 }
