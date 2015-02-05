@@ -27,9 +27,11 @@ void mpi_tree::load_distributed_ales(string fname)
 	      int client_i=atoi(tokens[1].c_str());
 	      string ale_file=tokens[0];
 	      if (not (client_i<scatter_fnames.size())) {vector<string> tmp; scatter_fnames.push_back(tmp);}
-	      scatter_fnames[client_i].push_back(ale_file);
-	      verify.insert(ale_file);
-
+	      if (ale_file.size()>1)
+		{
+		  scatter_fnames[client_i].push_back(ale_file);
+		  verify.insert(ale_file);
+		}
 	    }
 	}
       cout << "# Scattering: " << verify.size() << " ale files.."<<endl;
@@ -42,6 +44,7 @@ void mpi_tree::load_distributed_ales(string fname)
   
   for ( vector<string>::iterator it=client_fnames.begin();it!=client_fnames.end();it++)
     {
+      //cout << rank << " has " << (*it) << endl;
       approx_posterior * ale;//del-loc
       ale = load_ALE_from_file((*it));      
       ale_pointers.push_back(ale);      
@@ -464,7 +467,7 @@ scalar_type mpi_tree::calculate_pun()
       //cout << rank <<" at " <<round(i/(float)ale_pointers.size()*100.)<<" %, strats "<< client_fnames[i] << endl;
       scalar_type tmpp=model->pun(ale_pointers[i]);
       if (tmpp==0) cout << client_fnames[i] << " is 0 !!"<<endl;
-      cout <<"#LL " << client_fnames[i] << " " << log(tmpp) << endl;
+      //cout <<"#LL " << client_fnames[i] << " " << log(tmpp) << endl;
       
       ll +=log(tmpp);
     }
@@ -474,7 +477,7 @@ scalar_type mpi_tree::calculate_pun()
   scalar_type sum_ll=0;
   if (rank==server) for (int i=0;i<size;i++) sum_ll+=gather_ll[i];
   broadcast(world,sum_ll,server);
-  if (rank==server) cout << model->scalar_parameter["delta_avg"] <<  " " << model->vector_parameter["N"][0]*model->scalar_parameter["tau_avg"] << " " << model->scalar_parameter["lambda_avg"] << " " << model->vector_parameter["Delta_bar"][0] <<" " << sum_ll<<endl;
+  if (rank==server) cout <<" " << sum_ll<<endl;
 
   return sum_ll;
 }

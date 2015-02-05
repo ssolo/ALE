@@ -66,15 +66,17 @@ public:
 
 int main(int argc, char ** argv)
 {
+
   environment env(argc, argv);
   communicator world;
   int done=1;
 
   ifstream file_stream_S (argv[1]);
   string Sstring;
+  
   getline (file_stream_S,Sstring);
-  mpi_tree * infer_tree = new mpi_tree(Sstring,world);
-
+  map<string,scalar_type> parameters;
+  mpi_tree * infer_tree = new mpi_tree(Sstring,world,parameters,true);
   infer_tree->load_distributed_ales(argv[2]);
   scalar_type ll = infer_tree->calculate_pun();
   if (world.rank()==0) cout << "LL = " <<ll<<endl;   

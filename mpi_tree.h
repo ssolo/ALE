@@ -32,35 +32,56 @@ class mpi_tree
   std::vector<scalar_type> delta_branch_avg,tau_branch_avg,lambda_branch_avg;//del-loc
   std::vector<scalar_type> delta_branch_norm,tau_branch_norm,lambda_branch_norm;//del-loc
 
-  mpi_tree(std::string Sstring,const boost::mpi::communicator mpi_world,std::map<std::string,scalar_type> set_parameters=std::map<std::string,scalar_type>())
+  mpi_tree(std::string Sstring,const boost::mpi::communicator mpi_world,std::map<std::string,scalar_type> set_parameters=std::map<std::string,scalar_type>(),bool undated=false)
     {
-      set_parameter("use_mpp_trees",0);
-      set_parameter("min_delta",1e-6);
-      set_parameter("min_tau",1e-6);
-      set_parameter("min_lambda",1e-6);
+      if (undated)
+	{
+	  set_parameter("min_delta",1e-6);
+	  set_parameter("min_tau",1e-6);
+	  set_parameter("min_lambda",1e-6);
 
-      set_parameter("inital_delta",0.01);
-      set_parameter("inital_tau",0.01);
-      set_parameter("inital_lambda",0.02);      
+	  set_parameter("inital_delta",0.01);
+	  set_parameter("inital_tau",0.01);
+	  set_parameter("inital_lambda",0.02);      
+	  model=new exODT_model();
+	  model->construct_undated(Sstring);//del-loc
 
-      model=new exODT_model();      
-      model->set_model_parameter("min_D",3);
-      model->set_model_parameter("grid_delta_t",0.005);
-      model->set_model_parameter("event_node",0);
-      model->set_model_parameter("DD",10);
-      for (std::map<std::string,scalar_type>::iterator it=set_parameters.begin();it!=set_parameters.end();it++)
-	model->set_model_parameter((*it).first,(*it).second);
-      model->construct(Sstring);//del-loc
-      scalar_type N=1e6;
-      model->set_model_parameter("N",1e6);//we can almost scale out N assuming height from coalescent..
-      model->set_model_parameter("Delta_bar",N);
-      model->set_model_parameter("Lambda_bar",N);
-      model->set_model_parameter("delta",scalar_parameter["inital_delta"]);
-      model->set_model_parameter("tau",scalar_parameter["inital_tau"]);
-      model->set_model_parameter("lambda",scalar_parameter["inital_lambda"]);
+	  model->set_model_parameter("delta",scalar_parameter["inital_delta"]);
+	  model->set_model_parameter("tau",scalar_parameter["inital_tau"]);
+	  model->set_model_parameter("lambda",scalar_parameter["inital_lambda"]);
+	  for (std::map<std::string,scalar_type>::iterator it=set_parameters.begin();it!=set_parameters.end();it++)
+	    model->set_model_parameter((*it).first,(*it).second);
 
-      model->calculate_EGb();//with default parameters
-
+	}
+      else
+	{
+	  set_parameter("use_mpp_trees",0);
+	  set_parameter("min_delta",1e-6);
+	  set_parameter("min_tau",1e-6);
+	  set_parameter("min_lambda",1e-6);
+	  
+	  set_parameter("inital_delta",0.01);
+	  set_parameter("inital_tau",0.01);
+	  set_parameter("inital_lambda",0.02);      
+	  
+	  model=new exODT_model();      
+	  model->set_model_parameter("min_D",3);
+	  model->set_model_parameter("grid_delta_t",0.005);
+	  model->set_model_parameter("event_node",0);
+	  model->set_model_parameter("DD",10);
+	  for (std::map<std::string,scalar_type>::iterator it=set_parameters.begin();it!=set_parameters.end();it++)
+	    model->set_model_parameter((*it).first,(*it).second);
+	  model->construct(Sstring);//del-loc
+	  scalar_type N=1e6;
+	  model->set_model_parameter("N",1e6);//we can almost scale out N assuming height from coalescent..
+	  model->set_model_parameter("Delta_bar",N);
+	  model->set_model_parameter("Lambda_bar",N);
+	  model->set_model_parameter("delta",scalar_parameter["inital_delta"]);
+	  model->set_model_parameter("tau",scalar_parameter["inital_tau"]);
+	  model->set_model_parameter("lambda",scalar_parameter["inital_lambda"]);
+	  
+	  model->calculate_EGb();//with default parameters
+	}
       world = mpi_world;      
       server=0;
       rank = world.rank();
