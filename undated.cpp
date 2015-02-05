@@ -105,6 +105,13 @@ void exODT_model::construct_undated(string Sstring)
 	//cout << node_name[node] << " => " << node_name[sons[0]] << " & " << node_name[sons[1]] << endl;  
 
       }
+  branch_counts["Os"].clear();
+  branch_counts["Ds"].clear();
+  branch_counts["Ts"].clear();
+  branch_counts["Tfroms"].clear();
+  branch_counts["Ls"].clear();
+  branch_counts["count"].clear();
+  branch_counts["copies"].clear();
   for (int e=0;e<last_branch;e++)	
     {
       branch_counts["Os"].push_back(0);
@@ -115,8 +122,16 @@ void exODT_model::construct_undated(string Sstring)
       branch_counts["count"].push_back(0);    
       branch_counts["copies"].push_back(0);
     }
+  T_to_from.clear();
+  for (int e=0;e<last_branch;e++)
+    {
+      vector <scalar_type> tmp;
+      T_to_from.push_back(tmp);
+      for (int f=0;f<last_branch;f++)
+	T_to_from[e].push_back(0);
+    }	     
   
-
+  
   last_rank=last_branch;
   set_model_parameter("N",1);
 
@@ -388,17 +403,10 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	}
       survive=0;
       root_sum=0;
-      T_to_from.clear();
       for (int e=0;e<last_branch;e++)
 	{
-	  map <int,scalar_type> tmp;
-	  T_to_from[e]=tmp;
 	  root_sum+=uq[root_i][e];
 	  survive+=(1-uE[e]);
-	  for (int f=0;f<last_branch;f++)
-	    {
-	      T_to_from[e][f]=0;
-	    }
 	}	     
       
       //cout << root_sum/survive << endl;
@@ -409,7 +417,6 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 
 string exODT_model::sample_undated()
 {
-  MLRec_events.clear();
 
   scalar_type r=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);
   
@@ -423,7 +430,10 @@ string exODT_model::sample_undated()
     {
       root_resum+=uq[root_i][e];
       if (r*root_sum<root_resum)
-	return sample_undated(e,root_i)+";";
+	{
+	  register_O(e);
+	  return sample_undated(e,root_i)+";";
+	}
     }
   return "-!=-";
 }

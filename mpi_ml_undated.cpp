@@ -78,8 +78,12 @@ int main(int argc, char ** argv)
   map<string,scalar_type> parameters;
   mpi_tree * infer_tree = new mpi_tree(Sstring,world,parameters,true);
   infer_tree->load_distributed_ales(argv[2]);
-  scalar_type ll = infer_tree->calculate_pun();
-  if (world.rank()==0) cout << "LL = " <<ll<<endl;   
+  scalar_type ll = infer_tree->calculate_pun(1);
+
+  
+  if (world.rank()==0) cout << infer_tree->model->string_parameter["S_with_ranks"] << endl;
+  infer_tree->gather_counts();
+  infer_tree->gather_T_to_from();
   broadcast(world,done,0);
 
   
@@ -118,4 +122,7 @@ int main(int argc, char ** argv)
       cout <<endl<< delta << " " << tau << " " << lambda// << " " << sigma
 	   << endl;
     }
+  infer_tree->gather_counts();
+  infer_tree->gather_T_to_from();
+
 }

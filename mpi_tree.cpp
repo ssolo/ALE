@@ -258,7 +258,64 @@ void mpi_tree::clear_counts()
   int done=1;
   broadcast(world,done,server);
 }
-
+void mpi_tree::gather_T_to_from()
+{
+  if (rank==server)
+    {      
+      gathered_T_to_from.clear();
+      for (int e=0;e<model->last_branch;e++)
+	{
+	  vector <scalar_type> tmp;
+	  gathered_T_to_from.push_back(tmp);
+	  for (int f=0;f<model->last_branch;f++)
+	    gathered_T_to_from[e].push_back(0);
+	}
+    }
+  vector< vector < vector<scalar_type> > >  gather_vector;
+  gather(world,model->T_to_from,gather_vector,server);
+  if (rank==server)
+    {
+      scalar_type Tsum=0;
+      for (vector< vector < vector<scalar_type> > > ::iterator it=gather_vector.begin();it!=gather_vector.end();it++)
+	for (int e=0;e<model->last_branch;e++)
+	  for (int f=0;f<model->last_branch;f++)
+	    {
+	      gathered_T_to_from[e][f]+=(*it)[e][f];
+	      Tsum+=(*it)[e][f];
+	    }
+      cout << "TOTAL Ts = "<< Tsum << endl;
+      map <scalar_type, vector< int > >sort_e;
+      map <scalar_type, vector< int > >sort_f;
+      for (int e=0;e<model->last_branch;e++)
+	for (int f=0;f<model->last_branch;f++)
+	  {
+	    sort_e[-gathered_T_to_from[e][f]].push_back(e);
+	    sort_f[-gathered_T_to_from[e][f]].push_back(f);	      
+	  }
+      for (map <scalar_type, vector< int > >::iterator it=sort_e.begin();it!=sort_e.end();it++)
+	{
+	  scalar_type Ts=(*it).first;
+	  for (int i=0;i<(*it).second.size();i++)
+	    {
+	      int e=sort_e[Ts][i];
+	      int f=sort_f[Ts][i];
+	      if (Ts< -0.01*Tsum*0.1)
+		{
+		  cout << Ts;	      
+		  if (e<model->last_leaf)
+		    cout << " " << model->node_name[model->id_nodes[e]];
+		  else
+		    cout << " " << e;
+		  if (f<model->last_leaf)
+		    cout << " " << model->node_name[model->id_nodes[f]];	      
+		  else
+		    cout << " " << f;
+		  cout << endl;
+		}
+	    }
+	}
+    }
+}
 void mpi_tree::gather_counts()
 {
   map< string ,vector <vector <scalar_type> > > gathered_branch_counts;//del-loc
@@ -454,18 +511,104 @@ scalar_type mpi_tree::calculate_p()
 
   return sum_ll;
 }
-
+void mpi_tree::estimate_rates()
+{
+  scalar_type delta,tau,lambda;
+  map< string ,vector <vector <scalar_type> > > gathered_branch_counts;//del-loc
+  for (map<string,vector<scalar_type> >::iterator it=model->branch_counts.begin();it!=model->branch_counts.end();it++)
+    {
+      string count_name=(*it).first;
+      if (rank==server)
+	{
+	  vector <vector <scalar_type> > tmp;
+	  gathered_branch_counts[count_name]=tmp;
+	}
+      gather(world,model->branch_counts[count_name],gathered_branch_counts[count_name],server);
+      if (rank==server)
+	{
+	  for (int branch=0;branch<model->last_branch;branch++)	
+	    {
+	      for (int i=1;i<size;i++)
+		model->branch_counts[count_name][branch]+=gathered_branch_counts[count_name][i][branch];
+	    }    
+	  //model->show_counts(count_name);
+	}  
+    }  
+  if (rank==server)
+    {
+      
+      scalar_type Tsum=0;
+      for (int e=0;e<model->last_branch;e++)	
+	{
+	  Tsum+=model->branch_counts["Ts"][e];
+	}
+      scalar_type P_D_avg=0;
+      scalar_type P_T_avg=0;
+      scalar_type P_L_avg=0;
+  
+      for (int e=0;e<model->last_branch;e++)	
+	{
+	  scalar_type N_S=model->branch_counts["count"][e];
+	  scalar_type P_D=model->branch_counts["Ds"][e]/N_S;
+	  scalar_type P_T=Tsum/(float)model->last_branch/N_S;
+	  scalar_type P_L=model->branch_counts["Ls"][e]/N_S;
+	  for (int i=0;i<10;i++)
+	    {
+	      P_L=P_L/(1+P_D+P_T+P_L);	      
+	      P_L=model->branch_counts["Ls"][e]/N_S+P_L*(P_T+P_D+1*P_L);
+	    }
+	  P_D_avg+=P_D/(1+P_D+P_T+P_L);
+	  P_T_avg+=P_T/(1+P_D+P_T+P_L);
+	  P_L_avg+=P_L/(1+P_D+P_T+P_L);
+	}
+      delta=P_D_avg/(float)model->last_branch;
+      tau=P_T_avg/(float)model->last_branch;
+      lambda=P_L_avg/(float)model->last_branch;
+      cout << " rate estimates " << delta << " " << tau << " " << lambda << endl;
+    }
+  broadcast(world,delta,server);
+  broadcast(world,tau,server);
+  broadcast(world,lambda,server);  
+  model->set_model_parameter("delta",delta);
+  model->set_model_parameter("tau",tau);
+  model->set_model_parameter("lambda",lambda);
+}
+scalar_type mpi_tree::calculate_pun(int n)
+{
+  scalar_type ll=calculate_pun();
+  for (int i=0;i<n;i++)
+    {
+      estimate_rates();
+      ll=calculate_pun();
+    }
+  return ll;
+}
 scalar_type mpi_tree::calculate_pun()
 {  
   scalar_type ll=0;
   model->calculate_undatedEs();
   vector<scalar_type> gather_ll;
+  model->MLRec_events.clear();
+  for (int e=0;e<model->last_branch;e++)	
+    {
+      model->branch_counts["Os"][e]=0;
+      model->branch_counts["Ds"][e]=0;
+      model->branch_counts["Ts"][e]=0;
+      model->branch_counts["Tfroms"][e]=0;     
+      model->branch_counts["Ls"][e]=0;
+      model->branch_counts["count"][e]=0;
+      model->branch_counts["copies"][e]=0;
+    }
+  for (int e=0;e<model->last_branch;e++)
+      for (int f=0;f<model->last_branch;f++)
+	model->T_to_from[e][f]=0;
 
   boost::timer * t = new boost::timer();
   for (int i=0;i<(int)ale_pointers.size();i++)
     {
       //cout << rank <<" at " <<round(i/(float)ale_pointers.size()*100.)<<" %, strats "<< client_fnames[i] << endl;
       scalar_type tmpp=model->pun(ale_pointers[i]);
+      for (int i=0;i<10;i++) model->sample_undated();
       if (tmpp==0) cout << client_fnames[i] << " is 0 !!"<<endl;
       //cout <<"#LL " << client_fnames[i] << " " << log(tmpp) << endl;
       
