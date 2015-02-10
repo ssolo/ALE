@@ -14,7 +14,6 @@ void mpi_tree::load_distributed_ales(string fname)
       ifstream file_stream (fname.c_str());
       int tree_i=0;
       set <string> verify;
-
       if (file_stream.is_open())  //  ########## read trees ############
 	{
 	  while (! file_stream.eof())
@@ -26,9 +25,9 @@ void mpi_tree::load_distributed_ales(string fname)
 	      boost::split(tokens,line,boost::is_any_of("\t "),boost::token_compress_on);
 	      int client_i=atoi(tokens[1].c_str());
 	      string ale_file=tokens[0];
-	      if (not (client_i<scatter_fnames.size())) {vector<string> tmp; scatter_fnames.push_back(tmp);}
 	      if (ale_file.size()>1)
 		{
+		  if (not (client_i<scatter_fnames.size())) {vector<string> tmp; scatter_fnames.push_back(tmp);}
 		  scatter_fnames[client_i].push_back(ale_file);
 		  verify.insert(ale_file);
 		}
@@ -284,8 +283,10 @@ void mpi_tree::gather_T_to_from()
 	      Tsum+=(*it)[e][f];
 	    }
       cout << "TOTAL Ts = "<< Tsum << endl;
-      map <scalar_type, vector< int > >sort_e;
-      map <scalar_type, vector< int > >sort_f;
+      //map <scalar_type, vector< int > >sort_e;
+      //map <scalar_type, vector< int > >sort_f;
+      sort_e.clear();
+      sort_f.clear();
       for (int e=0;e<model->last_branch;e++)
 	for (int f=0;f<model->last_branch;f++)
 	  {
@@ -299,7 +300,7 @@ void mpi_tree::gather_T_to_from()
 	    {
 	      int e=sort_e[Ts][i];
 	      int f=sort_f[Ts][i];
-	      if (Ts< -0.01*Tsum*0.1)
+	      if (Ts< -0.01*Tsum*0.1 and false)
 		{
 		  cout << Ts;	      
 		  if (e<model->last_leaf)
@@ -471,7 +472,7 @@ scalar_type mpi_tree::calculate_MLRecs(bool estimate,bool branchwise)
       MLRec_res.push_back(res);      
     }
 
-  cout << rank << " "<<t->elapsed() <<endl;
+ cout << rank << " "<<t->elapsed() <<endl;
 
   
   
@@ -564,7 +565,7 @@ void mpi_tree::estimate_rates()
       delta=P_D_avg/(float)model->last_branch;
       tau=P_T_avg/(float)model->last_branch;
       lambda=P_L_avg/(float)model->last_branch;
-      cout << " rate estimates " << delta << " " << tau << " " << lambda << endl;
+      //cout << " rate estimates " << delta << " " << tau << " " << lambda << endl;
     }
   broadcast(world,delta,server);
   broadcast(world,tau,server);
@@ -620,7 +621,7 @@ scalar_type mpi_tree::calculate_pun()
   scalar_type sum_ll=0;
   if (rank==server) for (int i=0;i<size;i++) sum_ll+=gather_ll[i];
   broadcast(world,sum_ll,server);
-  if (rank==server) cout <<" " << sum_ll<<endl;
+  //if (rank==server) cout <<" " << sum_ll<<endl;
 
   return sum_ll;
 }

@@ -129,6 +129,8 @@ class exODT_model
   void calculate_undatedEs();
   scalar_type pun(approx_posterior *ale);
   std::string feSPR(int e, int f);
+  std::vector<std::string> NNIs(int e);
+
   std::string sample_undated();
   std::string sample_undated(int e,int i,std::string branch_string="");
   std::vector <long int>  g_ids;

@@ -119,6 +119,8 @@ class mpi_tree
   scalar_type calculate_p();
   scalar_type calculate_pun();
   scalar_type calculate_pun(int n);
+  std::map <scalar_type, std::vector< int > >sort_e;
+  std::map <scalar_type, std::vector< int > >sort_f;
 
   void estimate_rates();
   
