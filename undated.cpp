@@ -806,6 +806,7 @@ string exODT_model::feSPR(int e, int f)
       e_node=f_node;
       f_node=swap_tmp;
     }
+  if (f_node->hasFather() and f_node->getFather()==e_node ) return string_parameter["S_un"]; 
   
   Node * f_father=f_node->getFather();
   vector <Node *> f_sons=f_father->getSons();
