@@ -31,11 +31,12 @@ class mpi_tree
   scalar_type delta_norm,tau_norm,lambda_norm;
   std::vector<scalar_type> delta_branch_avg,tau_branch_avg,lambda_branch_avg;//del-loc
   std::vector<scalar_type> delta_branch_norm,tau_branch_norm,lambda_branch_norm;//del-loc
-
+  std::string S_string;
   mpi_tree(std::string Sstring,const boost::mpi::communicator mpi_world,std::map<std::string,scalar_type> set_parameters=std::map<std::string,scalar_type>(),bool undated=false)
     {
       if (undated)
 	{
+	  S_string=Sstring;
 	  set_parameter("min_delta",1e-6);
 	  set_parameter("min_tau",1e-6);
 	  set_parameter("min_lambda",1e-6);
@@ -118,6 +119,7 @@ class mpi_tree
   scalar_type calculate_MLRecs(bool estimate=false,bool branchwise=false);
   scalar_type calculate_p();
   scalar_type calculate_pun();
+  scalar_type calculate_punt(std::string S);
   scalar_type calculate_pun(int n);
   std::map <scalar_type, std::vector< int > >sort_e;
   std::map <scalar_type, std::vector< int > >sort_f;

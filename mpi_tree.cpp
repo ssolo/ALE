@@ -625,3 +625,51 @@ scalar_type mpi_tree::calculate_pun()
 
   return sum_ll;
 }
+
+scalar_type mpi_tree::calculate_punt(string S)
+{  
+  scalar_type ll=0;
+  model->calculate_undatedEs();
+  vector<scalar_type> gather_ll;
+  model->MLRec_events.clear();
+  for (int e=0;e<model->last_branch;e++)	
+    {
+      model->branch_counts["Os"][e]=0;
+      model->branch_counts["Ds"][e]=0;
+      model->branch_counts["Ts"][e]=0;
+      model->branch_counts["Tfroms"][e]=0;     
+      model->branch_counts["Ls"][e]=0;
+      model->branch_counts["count"][e]=0;
+      model->branch_counts["copies"][e]=0;
+    }
+  for (int e=0;e<model->last_branch;e++)
+      for (int f=0;f<model->last_branch;f++)
+	model->T_to_from[e][f]=0;
+
+  boost::timer * t = new boost::timer();
+  for (int i=0;i<(int)ale_pointers.size();i++)
+    {
+      //cout << rank <<" at " <<round(i/(float)ale_pointers.size()*100.)<<" %, strats "<< client_fnames[i] << endl;
+      exODT_model * alt_model=new exODT_model();
+      alt_model->construct_undated(S);//del-loc
+      alt_model->set_model_parameter("delta",scalar_parameter["inital_delta"]);
+      alt_model->set_model_parameter("tau",scalar_parameter["inital_tau"]);
+      alt_model->set_model_parameter("lambda",scalar_parameter["inital_lambda"]);
+      alt_model->calculate_undatedEs();
+      scalar_type tmpp=alt_model->pun(ale_pointers[i]);
+      for (int i=0;i<10;i++) model->sample_undated();
+      if (tmpp==0) cout << client_fnames[i] << " is 0 !!"<<endl;
+      //cout <<"#LL " << client_fnames[i] << " " << log(tmpp) << endl;
+      
+      ll +=log(tmpp);
+    }
+  //cout << rank << " "<<t->elapsed() <<endl;
+  gather(world,ll,gather_ll,server);
+
+  scalar_type sum_ll=0;
+  if (rank==server) for (int i=0;i<size;i++) sum_ll+=gather_ll[i];
+  broadcast(world,sum_ll,server);
+  //if (rank==server) cout <<" " << sum_ll<<endl;
+
+  return sum_ll;
+}

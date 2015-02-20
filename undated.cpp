@@ -5,6 +5,13 @@ static double EPSILON = numeric_limits< double >::min();
 
 void exODT_model::construct_undated(string Sstring)
 {
+  daughter.clear();
+  son.clear();
+  name_node.clear();
+  node_name.clear();
+  node_ids.clear();
+  id_nodes.clear();
+  
   string_parameter["S_un"]=Sstring;
   S=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  (string_parameter["BOOT_STRAP_LABLES"]=="yes")
 					 );
@@ -36,7 +43,6 @@ void exODT_model::construct_undated(string Sstring)
   last_leaf=0;
 
   set <Node*> saw;
-  
   for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ )
     if ((*it).second->isLeaf())
       {
@@ -140,6 +146,7 @@ void exODT_model::construct_undated(string Sstring)
 
 void exODT_model::calculate_undatedEs()
 {
+  uE.clear();
   PD.clear();
   PT.clear();
   PL.clear();
@@ -183,7 +190,6 @@ void exODT_model::calculate_undatedEs()
 	  newmPTE+=(PT[e]/(float)last_branch) *uE[e];
 	}
       mPTE=newmPTE;
-      //cout << i << " " <<mPTE << endl;
     }
 }
 
@@ -191,7 +197,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 {
   scalar_type survive=0;
   scalar_type root_sum=0;
-
+  uq.clear();mPTuq.clear();//XX
   ale_pointer=ale;
 
   for (std::map<long int, std::map< scalar_type, std::map<int, scalar_type> > >::iterator it=q.begin();it!=q.end();it++)
