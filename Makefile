@@ -170,6 +170,12 @@ computeALEcomplexity: libexODT.a computeALEcomplexity.cpp Makefile
 mlsampler:	libexODT.a mlsampler.cpp Makefile
 	$(CC) mlsampler.cpp -o mlsampler $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
+mlsample:	libexODT.a mlsample.cpp Makefile
+	$(CC) mlsample.cpp -o mlsample $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+mlsample_undated:	libexODT.a mlsample_undated.cpp Makefile
+	$(CC) mlsample_undated.cpp -o mlsample_undated $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
 wALE_ml_sample:	libexODT.a wALE_ml_sample.cpp Makefile
 	$(CC) wALE_ml_sample.cpp -o wALE_ml_sample $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
@@ -221,6 +227,8 @@ mpi_ml:	libexODT.a mpi_tree.o mpi_ml.cpp Makefile
 	$(mCC) mpi_ml.cpp -o mpi_ml $(FLAGS) $(INCLUDE)   $(LINK) $(MPI_LINK) mpi_tree.o $(STATIC)
 mpi_ml_undated:	libexODT.a mpi_tree.o mpi_ml_undated.cpp Makefile
 	$(mCC) mpi_ml_undated.cpp -o mpi_ml_undated $(FLAGS) $(INCLUDE)   $(LINK) $(MPI_LINK) mpi_tree.o $(STATIC)
+mpi_S_ml:	libexODT.a mpi_tree.o mpi_S_ml.cpp Makefile
+	$(mCC) mpi_S_ml.cpp -o mpi_S_ml $(FLAGS) $(INCLUDE)   $(LINK) $(MPI_LINK) mpi_tree.o $(STATIC)
 
 #WTF 
 #mpic++ mpi_ml.cpp -o mpi_ml -O3  -fmerge-all-constants -funroll-loops -DNDEBUG -Wall -std=gnu++11 -I/usr/include -I/home/ssolo/newest_bpp/include -I/usr/include/mpich2/   -L. -L/home/ssolo/newest_bpp/lib -lbpp-core -lbpp-seq -lbpp-phyl   -L/home/ssolo/lib -lboost_mpi -lboost_serialization  mpi_tree.o libexODT.a
