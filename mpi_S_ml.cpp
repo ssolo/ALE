@@ -59,7 +59,8 @@ int main(int argc, char ** argv)
   environment env(argc, argv);
   communicator world;
   int done=1;
-  int it_num=0;
+  int it_num=2;
+  bool bw=1;
   int N_SPR=50;
   ifstream file_stream_S (argv[1]);
 
@@ -77,10 +78,14 @@ int main(int argc, char ** argv)
   string old_S=Rstring;
   string max_S=Rstring;
   infer_tree->model->construct_undated(max_S);
-  scalar_type max_ll = infer_tree->calculate_pun(it_num);
+  scalar_type max_ll = infer_tree->calculate_pun(it_num,bw);
   scalar_type new_ll;
-
   infer_tree->gather_T_to_from();
+
+  //infer_tree->model->construct_undated(max_S);
+  //infer_tree->calculate_pun(it_num,1);
+  //infer_tree->gather_T_to_from();
+  
   bool changed=true;
   bool last=false;
   while (changed)
@@ -120,7 +125,7 @@ int main(int argc, char ** argv)
 	  if (ll_cache.count(new_S)==0)
 	    {
 	      infer_tree->model->construct_undated(new_S);	  
-	      new_ll= infer_tree->calculate_pun(it_num);
+	      new_ll= infer_tree->calculate_pun(it_num,bw);
 	      ll_cache[new_S]=new_ll;
 	    }
 	  else
@@ -167,7 +172,7 @@ int main(int argc, char ** argv)
 		if (ll_cache.count(new_S)==0)
 		  {
 		    infer_tree->model->construct_undated(new_S);	  
-		    new_ll= infer_tree->calculate_pun(it_num);
+		    new_ll= infer_tree->calculate_pun(it_num,bw);
 		    ll_cache[new_S]=new_ll;
 		  }
 		else
@@ -203,7 +208,7 @@ int main(int argc, char ** argv)
 		  if (ll_cache.count(new_S)==0)
 		    {
 		      infer_tree->model->construct_undated(new_S);	  
-		      new_ll= infer_tree->calculate_pun(it_num);
+		      new_ll= infer_tree->calculate_pun(it_num,bw);
 		      ll_cache[new_S]=new_ll;
 		    }
 		  else
