@@ -119,6 +119,8 @@ void exODT_model::construct_undated(string Sstring)
   branch_counts["Ls"].clear();
   branch_counts["count"].clear();
   branch_counts["copies"].clear();
+  branch_counts["singleton"].clear();
+
   for (int e=0;e<last_branch;e++)	
     {
       branch_counts["Os"].push_back(0);
@@ -128,6 +130,8 @@ void exODT_model::construct_undated(string Sstring)
       branch_counts["Ls"].push_back(0);
       branch_counts["count"].push_back(0);    
       branch_counts["copies"].push_back(0);
+      branch_counts["singleton"].push_back(0);
+
     }
   T_to_from.clear();
   for (int e=0;e<last_branch;e++)
@@ -440,13 +444,13 @@ string exODT_model::sample_undated()
       if (r*root_sum<root_resum)
 	{
 	  register_O(e);
-	  return sample_undated(e,root_i)+";";
+	  return sample_undated(e,root_i,"S")+";";
 	}
     }
   return "-!=-";
 }
 
-string exODT_model::sample_undated(int e, int i,string branch_string)
+string exODT_model::sample_undated(int e, int i,string branch_string,string last_event)
 {
 
   
@@ -620,14 +624,14 @@ string exODT_model::sample_undated(int e, int i,string branch_string)
 	      uq_resum+=PS[e]*uq[gp_i][f]*uq[gpp_i][g]*pp+EPSILON;
 	      if (r*uq_sum<uq_resum)
 		{
-		  register_Su(e);			  
-		  return "("+sample_undated(f,gp_i)+","+sample_undated(g,gpp_i)+")."+estr+branch_string+":"+branch_length;
+		  register_Su(e,last_event);			  
+		  return "("+sample_undated(f,gp_i,"S")+","+sample_undated(g,gpp_i,"S")+")."+estr+branch_string+":"+branch_length;
 		}		  
 	      uq_resum+=PS[e]*uq[gp_i][g]*uq[gpp_i][f]*pp+EPSILON;
 	      if (r*uq_sum<uq_resum)
 		{
-		  register_Su(e);			  
-		  return "("+sample_undated(g,gp_i)+","+sample_undated(f,gpp_i)+")."+estr+branch_string+":"+branch_length;
+		  register_Su(e,last_event);			  
+		  return "("+sample_undated(g,gp_i,"S")+","+sample_undated(f,gpp_i,"S")+")."+estr+branch_string+":"+branch_length;
 		}
 	    }
 	  // D event
@@ -635,7 +639,7 @@ string exODT_model::sample_undated(int e, int i,string branch_string)
 	  if (r*uq_sum<uq_resum)
 	    {
 	      register_D(e);			 
-	      return "("+sample_undated(e,gp_i)+","+sample_undated(e,gpp_i)+").D@"+estr+branch_string+":"+branch_length;
+	      return "("+sample_undated(e,gp_i,"D")+","+sample_undated(e,gpp_i,"D")+").D@"+estr+branch_string+":"+branch_length;
 	    }		  
 	      
 	  // T event
@@ -650,7 +654,7 @@ string exODT_model::sample_undated(int e, int i,string branch_string)
 		{
 		  register_Tfrom(e);
 		  register_Tto(f);			  
-		  return "("+sample_undated(e,gp_i)+","+sample_undated(f,gpp_i)+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
+		  return "("+sample_undated(e,gp_i,"T")+","+sample_undated(f,gpp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
 		}		  	     
 	      uq_resum+=uq[gpp_i][e]*(PT[f]/(float)last_branch)*uq[gp_i][f]*pp+EPSILON;
 	      if (r*uq_sum<uq_resum)
@@ -658,7 +662,7 @@ string exODT_model::sample_undated(int e, int i,string branch_string)
 		  register_Tfrom(e);
 		  register_Tto(f);
 		  register_T_to_from(e,f);
-		  return "("+sample_undated(e,gpp_i)+","+sample_undated(f,gp_i)+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
+		  return "("+sample_undated(e,gpp_i,"T")+","+sample_undated(f,gp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
 		}		  
 		  
 	    }
@@ -672,23 +676,23 @@ string exODT_model::sample_undated(int e, int i,string branch_string)
       uq_resum+=PS[e]*uq[i][f]*uE[g]+EPSILON;
       if (r*uq_sum<uq_resum)
 	{
-	  register_Su(e);
+	  register_Su(e,last_event);
 	  register_L(g);			  
-	  return sample_undated(f,i,"."+estr);
+	  return sample_undated(f,i,"."+estr,"S");
 	}		  
       uq_resum+=PS[e]*uq[i][g]*uE[f]+EPSILON;
       if (r*uq_sum<uq_resum)
 	{
-	  register_Su(e);
+	  register_Su(e,last_event);
 	  register_L(f);			  
-	  return sample_undated(g,i,"."+estr);
+	  return sample_undated(g,i,"."+estr,"S");
 	}		  
     }
   // DL event
   uq_resum+=PD[e]*(uq[i][e]*uE[e]*2)+EPSILON;
   if (r*uq_sum<uq_resum)
     {
-      return sample_undated(e,i);
+      return sample_undated(e,i,"S");
     }		  
   // TL event
   for (int f=0;f<last_branch;f++)
@@ -704,12 +708,12 @@ string exODT_model::sample_undated(int e, int i,string branch_string)
 	  register_Tto(f);
 	  register_T_to_from(e,f);
 	  register_L(e); 
-	  return sample_undated(f,i,".T@"+estr+"->"+fstr);
+	  return sample_undated(f,i,".T@"+estr+"->"+fstr,"T");
 	}		  
       uq_resum+=(PT[f]/(float)last_branch)*uE[f]*uq[i][e]+EPSILON;
       if (r*uq_sum<uq_resum)
 	{
-	  return sample_undated(e,i);
+	  return sample_undated(e,i,"S");
 	}		  
     }
   //######################################################################################################################
@@ -733,25 +737,28 @@ string exODT_model::counts_string_undated()
 	   << branch_counts["Ds"][e] << "\t"
 	   << branch_counts["Ts"][e] << "\t"
 	   << branch_counts["Ls"][e] << "\t"
+	   << branch_counts["singleton"][e] << "\t"
 	   << branch_counts["copies"][e] << "\n";
       else
 	out<< "S_terminal_branch\t"<< named_branch.str() << "\t" 
 	   << branch_counts["Ds"][e] << "\t"
 	   << branch_counts["Ts"][e] << "\t"
 	   << branch_counts["Ls"][e] << "\t"
+	   << branch_counts["singleton"][e] << "\t"
 	   << branch_counts["copies"][e] << "\n";
 	
     }  
   return out.str();
 }
 
-void exODT_model::register_Su(int e)
+void exODT_model::register_Su(int e,string last_event)
 {
   MLRec_events["S"]+=1;
   if (e>-1) 
     {
       int f=daughter[e];
       int g=son[e];
+      if (last_event=="S") branch_counts["singleton"].at(e)+=1;
       branch_counts["copies"].at(e)+=1;
       branch_counts["count"].at(f)+=1;
       branch_counts["count"].at(g)+=1;  

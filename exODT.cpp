@@ -384,6 +384,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
       branch_counts["Ls"].push_back(0);
       branch_counts["count"].push_back(0);    
       branch_counts["copies"].push_back(0);
+      branch_counts["singleton"].push_back(0);
     }
   
   //del-locs
