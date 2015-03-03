@@ -574,13 +574,79 @@ void mpi_tree::estimate_rates()
   model->set_model_parameter("tau",tau);
   model->set_model_parameter("lambda",lambda);
 }
-scalar_type mpi_tree::calculate_pun(int n)
+
+void mpi_tree::estimate_rates_bw()
+{
+  vector<scalar_type> delta,tau,lambda;
+  map< string ,vector <vector <scalar_type> > > gathered_branch_counts;//del-loc
+  for (map<string,vector<scalar_type> >::iterator it=model->branch_counts.begin();it!=model->branch_counts.end();it++)
+    {
+      string count_name=(*it).first;
+      if (rank==server)
+	{
+	  vector <vector <scalar_type> > tmp;
+	  gathered_branch_counts[count_name]=tmp;
+	}
+      gather(world,model->branch_counts[count_name],gathered_branch_counts[count_name],server);
+      if (rank==server)
+	{
+	  for (int branch=0;branch<model->last_branch;branch++)	
+	    {
+	      for (int i=1;i<size;i++)
+		model->branch_counts[count_name][branch]+=gathered_branch_counts[count_name][i][branch];
+	    }    
+	  //model->show_counts(count_name);
+	}  
+    }  
+  if (rank==server)
+    {
+      
+      scalar_type Tsum=0;
+      for (int e=0;e<model->last_branch;e++)	
+	{
+	  Tsum+=model->branch_counts["Ts"][e];
+	}
+      scalar_type P_D_avg=0;
+      scalar_type P_T_avg=0;
+      scalar_type P_L_avg=0;
+  
+      for (int e=0;e<model->last_branch;e++)	
+	{
+	  scalar_type N_S=model->branch_counts["count"][e];
+	  scalar_type P_D=model->branch_counts["Ds"][e]/N_S;
+	  scalar_type P_T=Tsum/(float)model->last_branch/N_S;
+	  scalar_type P_L=model->branch_counts["Ls"][e]/N_S;
+	  for (int i=0;i<10;i++)
+	    {
+	      P_L=P_L/(1+P_D+P_T+P_L);	      
+	      P_L=model->branch_counts["Ls"][e]/N_S+P_L*(P_T+P_D+1*P_L);
+	    }
+	  delta.push_back( P_D/(1+P_D+P_T+P_L) );
+	  tau.push_back( P_T/(1+P_D+P_T+P_L) );
+	  lambda.push_back( P_L/(1+P_D+P_T+P_L) );
+	  //cout << " rate estimates " << e <<" " << delta[e] << " " << tau[e] << " " << lambda[e] << endl;
+	}
+      //delta=P_D_avg/(float)model->last_branch;
+      //tau=P_T_avg/(float)model->last_branch;
+      //lambda=P_L_avg/(float)model->last_branch;
+      //cout << " rate estimates " << delta << " " << tau << " " << lambda << endl;
+    }
+  broadcast(world,delta,server);
+  broadcast(world,tau,server);
+  broadcast(world,lambda,server);  
+  model->set_model_parameter("delta",delta);
+  model->set_model_parameter("tau",tau);
+  model->set_model_parameter("lambda",lambda);
+}
+
+scalar_type mpi_tree::calculate_pun(int n, bool bw)
 {
   scalar_type ll=calculate_pun();
   for (int i=0;i<n;i++)
     {
-      estimate_rates();
+      if (bw) estimate_rates_bw(); else estimate_rates();
       ll=calculate_pun();
+      //if (rank==server) cout << ll << " " << bw << endl;
     }
   return ll;
 }

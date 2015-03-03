@@ -120,11 +120,12 @@ class mpi_tree
   scalar_type calculate_p();
   scalar_type calculate_pun();
   scalar_type calculate_punt(std::string S);
-  scalar_type calculate_pun(int n);
+  scalar_type calculate_pun(int n,bool bw=false);
   std::map <scalar_type, std::vector< int > >sort_e;
   std::map <scalar_type, std::vector< int > >sort_f;
 
   void estimate_rates();
+  void estimate_rates_bw();
   
   //implimented in rae_estimate.cpp
   std::vector<scalar_type> dtl_estimate(int branch,scalar_type N_ales_norm);
