@@ -132,7 +132,7 @@ class exODT_model
   std::vector<std::string> NNIs(int e);
 
   std::string sample_undated();
-  std::string sample_undated(int e,int i,std::string branch_string="",std::string last_event);
+  std::string sample_undated(int e,int i,std::string last_event,std::string branch_string="");
   std::vector <long int>  g_ids;
   std::vector <long int>  g_id_sizes;
   std::map <long int,int> g_id2i;
@@ -234,7 +234,7 @@ class exODT_model
   void register_Tfrom(int e);
   void register_L(int e);
   void register_S(int e);
-  void register_Su(int e,string last_event);
+  void register_Su(int e,std::string last_event);
   void register_T_to_from(int e,int f);
   std::vector < std::vector<scalar_type> > T_to_from;
 

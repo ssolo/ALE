@@ -450,7 +450,7 @@ string exODT_model::sample_undated()
   return "-!=-";
 }
 
-string exODT_model::sample_undated(int e, int i,string branch_string,string last_event)
+string exODT_model::sample_undated(int e, int i,string last_event,string branch_string)
 {
 
   
@@ -678,14 +678,14 @@ string exODT_model::sample_undated(int e, int i,string branch_string,string last
 	{
 	  register_Su(e,last_event);
 	  register_L(g);			  
-	  return sample_undated(f,i,"."+estr,"S");
+	  return sample_undated(f,i,"S","."+estr);
 	}		  
       uq_resum+=PS[e]*uq[i][g]*uE[f]+EPSILON;
       if (r*uq_sum<uq_resum)
 	{
 	  register_Su(e,last_event);
 	  register_L(f);			  
-	  return sample_undated(g,i,"."+estr,"S");
+	  return sample_undated(g,i,"S","."+estr);
 	}		  
     }
   // DL event
@@ -708,7 +708,7 @@ string exODT_model::sample_undated(int e, int i,string branch_string,string last
 	  register_Tto(f);
 	  register_T_to_from(e,f);
 	  register_L(e); 
-	  return sample_undated(f,i,".T@"+estr+"->"+fstr,"T");
+	  return sample_undated(f,i,"T",".T@"+estr+"->"+fstr);
 	}		  
       uq_resum+=(PT[f]/(float)last_branch)*uE[f]*uq[i][e]+EPSILON;
       if (r*uq_sum<uq_resum)
