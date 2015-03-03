@@ -550,14 +550,11 @@ void mpi_tree::estimate_rates()
       for (int e=0;e<model->last_branch;e++)	
 	{
 	  scalar_type N_S=model->branch_counts["count"][e];
-	  scalar_type P_D=model->branch_counts["Ds"][e]/N_S;
+	  scalar_type Ee=model->branch_counts["Ls"][e]/N_S;
+	  scalar_type Ge=model->branch_counts["singleton"][e]/N_S;
+	  scalar_type P_D=-1*((1 - Ee - Ge)/((-1 + Ee)*(-2*Ee + Ge + Ee*Ge)));
+	  scalar_type P_L=-1*((Ee - 3*Ee*Ee + Ee*Ee*Ge)/((-1 + Ee)*(-2*Ee + Ge + Ee*Ge)));	    
 	  scalar_type P_T=Tsum/(float)model->last_branch/N_S;
-	  scalar_type P_L=model->branch_counts["Ls"][e]/N_S;
-	  for (int i=0;i<10;i++)
-	    {
-	      P_L=P_L/(1+P_D+P_T+P_L);	      
-	      P_L=model->branch_counts["Ls"][e]/N_S+P_L*(P_T+P_D+1*P_L);
-	    }
 	  P_D_avg+=P_D/(1+P_D+P_T+P_L);
 	  P_T_avg+=P_T/(1+P_D+P_T+P_L);
 	  P_L_avg+=P_L/(1+P_D+P_T+P_L);

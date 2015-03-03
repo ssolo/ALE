@@ -78,7 +78,7 @@ int main(int argc, char ** argv)
   map<string,scalar_type> parameters;
   mpi_tree * infer_tree = new mpi_tree(Sstring,world,parameters,true);
   infer_tree->load_distributed_ales(argv[2]);
-  scalar_type ll = infer_tree->calculate_pun(1);
+  scalar_type ll = infer_tree->calculate_pun(10);
 
   
   if (world.rank()==0) cout << infer_tree->model->string_parameter["S_with_ranks"] << endl;
