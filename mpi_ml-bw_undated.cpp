@@ -19,13 +19,13 @@ private:
   mpi_tree* model_pointer;
   int last_branch;
 public:
-  p_fun(mpi_tree* model, double delta_start=0.01,double tau_start=0.01,double lambda_start=0.01,int last_branch_in) : AbstractParametrizable(""), fval_(0), model_pointer(model) 
+  p_fun(mpi_tree* model, int last_branch_in,double delta_start=0.01,double tau_start=0.01,double lambda_start=0.01) : AbstractParametrizable(""), fval_(0), model_pointer(model) 
   {
     last_branch=last_branch_in;
     //We declare parameters here:
     //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
     IntervalConstraint* constraint = new IntervalConstraint ( 1e-6, 10-1e-6, true, true );
-    for (e=0;e<last_branch;e++)
+    for (int e=0;e<last_branch;e++)
 	{
 	  stringstream deltae;
 	  deltae<<"delta"<<"_"<<e;
@@ -52,10 +52,10 @@ public:
     double getValue() const throw (Exception) { return fval_; }
     void fireParameterChanged(const ParameterList& pl)
     {
-      vector<float> delta;
-      vector<float> tau;
-      vector<float> lambda;
-      for (e=0;e<last_branch;e++)
+      vector<double> delta;
+      vector<double> tau;
+      vector<double> lambda;
+      for (int e=0;e<last_branch;e++)
 	{
 	  stringstream deltae;
 	  deltae<<"delta"<<"_"<<e;
@@ -63,12 +63,12 @@ public:
 	  taue<<"tau"<<"_"<<e;	  
 	  stringstream lambdae;
 	  lambdae<<"lambda"<<"_"<<e;
-	  double deltae = getParameterValue(deltae.str());
-	  double taue = getParameterValue(taue.str());
-	  double lambdae = getParameterValue(lambdae.str());
-	  delta.push_back(deltae);
-	  tau.push_back(taue);
-	  lambda.push_back(lambdae);	  
+	  double delta_e = getParameterValue(deltae.str());
+	  double tau_e = getParameterValue(taue.str());
+	  double lambda_e = getParameterValue(lambdae.str());
+	  delta.push_back(delta_e);
+	  tau.push_back(tau_e);
+	  lambda.push_back(lambda_e);	  
 	}
         //double sigma = getParameterValue("sigma");
         
@@ -106,7 +106,7 @@ int main(int argc, char ** argv)
   broadcast(world,done,0);
 
   
-  Function* f = new p_fun(infer_tree);
+  Function* f = new p_fun(infer_tree,infer_tree->model->last_branch);
   Optimizer* optimizer = new DownhillSimplexMethod(f);
 
   optimizer->setProfiler(0);

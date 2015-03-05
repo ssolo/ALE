@@ -227,6 +227,9 @@ mpi_ml:	libexODT.a mpi_tree.o mpi_ml.cpp Makefile
 	$(mCC) mpi_ml.cpp -o mpi_ml $(FLAGS) $(INCLUDE)   $(LINK) $(MPI_LINK) mpi_tree.o $(STATIC)
 mpi_ml_undated:	libexODT.a mpi_tree.o mpi_ml_undated.cpp Makefile
 	$(mCC) mpi_ml_undated.cpp -o mpi_ml_undated $(FLAGS) $(INCLUDE)   $(LINK) $(MPI_LINK) mpi_tree.o $(STATIC)
+mpi_ml-bw_undated:	libexODT.a mpi_tree.o mpi_ml-bw_undated.cpp Makefile
+	$(mCC) mpi_ml-bw_undated.cpp -o mpi_ml-bw_undated $(FLAGS) $(INCLUDE)   $(LINK) $(MPI_LINK) mpi_tree.o $(STATIC)
+
 mpi_S_ml:	libexODT.a mpi_tree.o mpi_S_ml.cpp Makefile
 	$(mCC) mpi_S_ml.cpp -o mpi_S_ml $(FLAGS) $(INCLUDE)   $(LINK) $(MPI_LINK) mpi_tree.o $(STATIC)
 
