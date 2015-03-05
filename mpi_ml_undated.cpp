@@ -93,7 +93,7 @@ int main(int argc, char ** argv)
   optimizer->setProfiler(0);
   optimizer->setMessageHandler(0);
   optimizer->setVerbose(0);
-  if (world.rank()==0)   optimizer->setVerbose(0);
+  if (world.rank()==0)   optimizer->setVerbose(1);
 
 
   optimizer->setConstraintPolicy(AutoParameter::CONSTRAINTS_AUTO);

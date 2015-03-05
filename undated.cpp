@@ -444,7 +444,7 @@ string exODT_model::sample_undated()
       if (r*root_sum<root_resum)
 	{
 	  register_O(e);
-	  return sample_undated(e,root_i,"S")+";";
+	  return sample_undated(e,root_i,"O")+";";
 	}
     }
   return "-!=-";
@@ -603,7 +603,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
       uq_resum+=PS[e]*1+EPSILON;
       if (r*uq_sum<uq_resum)
 	{
-	  register_leaf(e);
+	  register_leafu(e,last_event);
 	  return ale_pointer->set2name(ale_pointer->id_sets[g_id])+branch_string+":"+branch_length;
 	}
     }
@@ -758,11 +758,21 @@ void exODT_model::register_Su(int e,string last_event)
     {
       int f=daughter[e];
       int g=son[e];
-      if (last_event=="S") branch_counts["singleton"].at(e)+=1;
+      if (last_event=="S" or last_event=="T" or last_event=="O") branch_counts["singleton"].at(e)+=1;
       branch_counts["copies"].at(e)+=1;
       branch_counts["count"].at(f)+=1;
       branch_counts["count"].at(g)+=1;  
     }
+}
+
+void exODT_model::register_leafu(int e,string last_event)
+{
+  if (e>-1)
+    {
+      branch_counts["copies"].at(e)+=1;
+      if (last_event=="S" or last_event=="T" or last_event=="O") branch_counts["singleton"].at(e)+=1;
+    }
+  //MLRec_events["genes"]+=1;
 }
 
 void exODT_model::register_T_to_from(int e,int f)

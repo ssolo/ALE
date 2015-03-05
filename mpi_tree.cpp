@@ -538,31 +538,36 @@ void mpi_tree::estimate_rates()
   if (rank==server)
     {
       
-      scalar_type Tsum=0;
+      scalar_type Csum=0;
       for (int e=0;e<model->last_branch;e++)	
 	{
-	  Tsum+=model->branch_counts["Ts"][e];
+	  Csum+=model->branch_counts["count"][e];
 	}
       scalar_type P_D_avg=0;
       scalar_type P_T_avg=0;
       scalar_type P_L_avg=0;
+      scalar_type w_sum=0;
   
       for (int e=0;e<model->last_branch;e++)	
 	{
 	  scalar_type N_S=model->branch_counts["count"][e];
 	  scalar_type Ee=model->branch_counts["Ls"][e]/N_S;
 	  scalar_type Ge=model->branch_counts["singleton"][e]/N_S;
-	  scalar_type P_D=-1*((1 - Ee - Ge)/((-1 + Ee)*(-2*Ee + Ge + Ee*Ge)));
-	  scalar_type P_L=-1*((Ee - 3*Ee*Ee + Ee*Ee*Ge)/((-1 + Ee)*(-2*Ee + Ge + Ee*Ge)));	    
-	  scalar_type P_T=Tsum/(float)model->last_branch/N_S;
-	  P_D_avg+=P_D/(1+P_D+P_T+P_L);
-	  P_T_avg+=P_T/(1+P_D+P_T+P_L);
-	  P_L_avg+=P_L/(1+P_D+P_T+P_L);
+	  //cout << Ee << " " << Ge << endl;
+	  scalar_type P_D=max(1e-6,-1*((1 - Ee - Ge)/((-1 + Ee)*(-2*Ee + Ge + Ee*Ge))));
+	  scalar_type P_L=max(1e-6,-1*((Ee - 3*Ee*Ee + Ee*Ee*Ge)/((-1 + Ee)*(-2*Ee + Ge + Ee*Ge))));	    
+	  scalar_type P_T=max(1e-6,model->branch_counts["Ts"][e]/Csum/(float)model->last_branch);
+	  //cout << e<<" "<< P_D << " " << P_L << " " << P_T << " " << " "<< model->branch_counts["count"][e] << endl;
+	  scalar_type w=1;//model->branch_counts["count"][e];
+	  P_D_avg+=( P_D ) * w;
+	  P_T_avg+=( P_T ) * w;
+	  P_L_avg+=( P_L ) * w;
+	  w_sum+=w;
 	}
-      delta=P_D_avg/(float)model->last_branch;
-      tau=P_T_avg/(float)model->last_branch;
-      lambda=P_L_avg/(float)model->last_branch;
-      //cout << " rate estimates " << delta << " " << tau << " " << lambda << endl;
+      delta=P_D_avg/w_sum;
+      tau=P_T_avg/w_sum;
+      lambda=P_L_avg/w_sum;
+      cout << " rate estimates " << delta << " " << tau << " " << lambda << endl;
     }
   broadcast(world,delta,server);
   broadcast(world,tau,server);
@@ -598,35 +603,30 @@ void mpi_tree::estimate_rates_bw()
   if (rank==server)
     {
       
-      scalar_type Tsum=0;
+      scalar_type Csum=0;
       for (int e=0;e<model->last_branch;e++)	
 	{
-	  Tsum+=model->branch_counts["Ts"][e];
+	  Csum+=model->branch_counts["count"][e];
 	}
       scalar_type P_D_avg=0;
       scalar_type P_T_avg=0;
       scalar_type P_L_avg=0;
+      scalar_type w_sum=0;
   
       for (int e=0;e<model->last_branch;e++)	
 	{
 	  scalar_type N_S=model->branch_counts["count"][e];
-	  scalar_type P_D=model->branch_counts["Ds"][e]/N_S;
-	  scalar_type P_T=Tsum/(float)model->last_branch/N_S;
-	  scalar_type P_L=model->branch_counts["Ls"][e]/N_S;
-	  for (int i=0;i<10;i++)
-	    {
-	      P_L=P_L/(1+P_D+P_T+P_L);	      
-	      P_L=model->branch_counts["Ls"][e]/N_S+P_L*(P_T+P_D+1*P_L);
-	    }
-	  delta.push_back( P_D/(1+P_D+P_T+P_L) );
-	  tau.push_back( P_T/(1+P_D+P_T+P_L) );
-	  lambda.push_back( P_L/(1+P_D+P_T+P_L) );
-	  //cout << " rate estimates " << e <<" " << delta[e] << " " << tau[e] << " " << lambda[e] << endl;
+	  scalar_type Ee=model->branch_counts["Ls"][e]/N_S;
+	  scalar_type Ge=model->branch_counts["singleton"][e]/N_S;
+	  //cout << Ee << " " << Ge << endl;
+	  scalar_type P_D=max(1e-6,-1*((1 - Ee - Ge)/((-1 + Ee)*(-2*Ee + Ge + Ee*Ge))));
+	  scalar_type P_L=max(1e-6,-1*((Ee - 3*Ee*Ee + Ee*Ee*Ge)/((-1 + Ee)*(-2*Ee + Ge + Ee*Ge))));	    
+	  scalar_type P_T=max(1e-6,model->branch_counts["Ts"][e]/Csum/(float)model->last_branch);
+	  delta.push_back( P_D );
+	  tau.push_back( P_T);
+	  lambda.push_back( P_L );
+	  cout << " rate estimates " << e <<" " << delta[e] << " " << tau[e] << " " << lambda[e] << endl;
 	}
-      //delta=P_D_avg/(float)model->last_branch;
-      //tau=P_T_avg/(float)model->last_branch;
-      //lambda=P_L_avg/(float)model->last_branch;
-      //cout << " rate estimates " << delta << " " << tau << " " << lambda << endl;
     }
   broadcast(world,delta,server);
   broadcast(world,tau,server);
@@ -639,11 +639,12 @@ void mpi_tree::estimate_rates_bw()
 scalar_type mpi_tree::calculate_pun(int n, bool bw)
 {
   scalar_type ll=calculate_pun();
+  
   for (int i=0;i<n;i++)
     {
       if (bw) estimate_rates_bw(); else estimate_rates();
       ll=calculate_pun();
-      //if (rank==server) cout << ll << " " << bw << endl;
+      if (rank==server) cout << ll << " " << bw << endl;
     }
   return ll;
 }
@@ -662,6 +663,7 @@ scalar_type mpi_tree::calculate_pun()
       model->branch_counts["Ls"][e]=0;
       model->branch_counts["count"][e]=0;
       model->branch_counts["copies"][e]=0;
+      model->branch_counts["singleton"][e]=0;
     }
   for (int e=0;e<model->last_branch;e++)
       for (int f=0;f<model->last_branch;f++)
@@ -672,7 +674,7 @@ scalar_type mpi_tree::calculate_pun()
     {
       //cout << rank <<" at " <<round(i/(float)ale_pointers.size()*100.)<<" %, strats "<< client_fnames[i] << endl;
       scalar_type tmpp=model->pun(ale_pointers[i]);
-      for (int i=0;i<10;i++) model->sample_undated();
+      for (int i=0;i<100;i++) model->sample_undated();
       if (tmpp==0) cout << client_fnames[i] << " is 0 !!"<<endl;
       //cout <<"#LL " << client_fnames[i] << " " << log(tmpp) << endl;
       

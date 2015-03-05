@@ -239,6 +239,8 @@ class exODT_model
   std::vector < std::vector<scalar_type> > T_to_from;
 
   void register_leaf(int e);
+  void register_leafu(int e,std::string last_event);
+
   void register_Ttoken(std::string token);
   //implemented in traceback_lowmem.cpp - not done
   std::pair<std::string,scalar_type> p_MLRec_lowmem(approx_posterior *ale);
