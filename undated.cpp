@@ -654,7 +654,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 		{
 		  register_Tfrom(e);
 		  register_Tto(f);			  
-		  return "("+sample_undated(e,gp_i,"T")+","+sample_undated(f,gpp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
+		  return "("+sample_undated(e,gp_i,"S")+","+sample_undated(f,gpp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
 		}		  	     
 	      uq_resum+=uq[gpp_i][e]*(PT[f]/(float)last_branch)*uq[gp_i][f]*pp+EPSILON;
 	      if (r*uq_sum<uq_resum)
@@ -662,7 +662,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 		  register_Tfrom(e);
 		  register_Tto(f);
 		  register_T_to_from(e,f);
-		  return "("+sample_undated(e,gpp_i,"T")+","+sample_undated(f,gp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
+		  return "("+sample_undated(e,gpp_i,"S")+","+sample_undated(f,gp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
 		}		  
 		  
 	    }
@@ -758,7 +758,7 @@ void exODT_model::register_Su(int e,string last_event)
     {
       int f=daughter[e];
       int g=son[e];
-      if (last_event=="S" or last_event=="T" or last_event=="O") branch_counts["singleton"].at(e)+=1;
+      if (last_event=="S" or last_event=="O") branch_counts["singleton"].at(e)+=1;
       branch_counts["copies"].at(e)+=1;
       branch_counts["count"].at(f)+=1;
       branch_counts["count"].at(g)+=1;  
@@ -770,7 +770,7 @@ void exODT_model::register_leafu(int e,string last_event)
   if (e>-1)
     {
       branch_counts["copies"].at(e)+=1;
-      if (last_event=="S" or last_event=="T" or last_event=="O") branch_counts["singleton"].at(e)+=1;
+      if (last_event=="S" or  last_event=="O") branch_counts["singleton"].at(e)+=1;
     }
   //MLRec_events["genes"]+=1;
 }
