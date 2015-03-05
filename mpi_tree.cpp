@@ -556,7 +556,7 @@ void mpi_tree::estimate_rates()
 	  //cout << Ee << " " << Ge << endl;
 	  scalar_type P_D=max(1e-6,-1*((1 - Ee - Ge)/((-1 + Ee)*(-2*Ee + Ge + Ee*Ge))));
 	  scalar_type P_L=max(1e-6,-1*((Ee - 3*Ee*Ee + Ee*Ee*Ge)/((-1 + Ee)*(-2*Ee + Ge + Ee*Ge))));	    
-	  scalar_type P_T=max(1e-6,model->branch_counts["Ts"][e]/Csum/(float)model->last_branch);
+	  scalar_type P_T=max(1e-6,model->branch_counts["Ts"][e]/Csum*(float)model->last_branch);
 	  //cout << e<<" "<< P_D << " " << P_L << " " << P_T << " " << " "<< model->branch_counts["count"][e] << endl;
 	  scalar_type w=1;//model->branch_counts["count"][e];
 	  P_D_avg+=( P_D ) * w;
@@ -621,7 +621,7 @@ void mpi_tree::estimate_rates_bw()
 	  //cout << Ee << " " << Ge << endl;
 	  scalar_type P_D=max(1e-6,-1*((1 - Ee - Ge)/((-1 + Ee)*(-2*Ee + Ge + Ee*Ge))));
 	  scalar_type P_L=max(1e-6,-1*((Ee - 3*Ee*Ee + Ee*Ee*Ge)/((-1 + Ee)*(-2*Ee + Ge + Ee*Ge))));	    
-	  scalar_type P_T=max(1e-6,model->branch_counts["Ts"][e]/Csum/(float)model->last_branch);
+	  scalar_type P_T=max(1e-6,model->branch_counts["Ts"][e]/Csum*(float)model->last_branch);
 	  delta.push_back( P_D );
 	  tau.push_back( P_T);
 	  lambda.push_back( P_L );
