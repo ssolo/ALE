@@ -32,22 +32,28 @@ int main(int argc, char ** argv)
   //we initialise the model 
   exODT_model* model=new exODT_model();
   //
+  model->set_model_parameter("BOOT_STRAP_LABLES","yes");
+
   model->set_model_parameter("min_D",3);
   model->set_model_parameter("grid_delta_t",0.05);
-  model->set_model_parameter("DD",10);
-
   model->construct(Sstring);
 
   model->set_model_parameter("event_node",0);
   model->set_model_parameter("leaf_events",1);
+  model->set_model_parameter("N",1);
 
-  //a set of inital rates 
-  scalar_type delta=0.01,tau=0.01,lambda=0.02;
-  model->set_model_parameter("delta",delta);
-  model->set_model_parameter("tau",tau);
-  model->set_model_parameter("lambda",lambda);
-  //calculate_EGb() must always be called after chaging rates to calculate E-s and G-s 
-  //cf. http://arxiv.org/abs/1211.4606
+  //a set of inital rates
+  scalar_type delta=0.01,tau=0.01,lambda=0.1;
+  string append="";
+  if (argc>4)
+    append=argv[4];
+  if (argc>7)
+    delta=atof(argv[5]),tau=atof(argv[6]),lambda=atof(argv[7]);  
+  model->set_model_parameter("delta", delta);
+  model->set_model_parameter("tau", tau);
+  model->set_model_parameter("lambda", lambda);
+  model->set_model_parameter("sigma_hat", 1);
+
   model->calculate_EGb();
 
   //p(ale) calculates the probability of the obsorved set of gene trees, i.e. Pi(Gamma) 
@@ -67,9 +73,9 @@ int main(int argc, char ** argv)
 
   cout << "Starting burnin.."  << endl;
 
-  string rate_name=ale_file+".ratelist";
-  string event_name=ale_file+".eventlist";
-  string sample_name=ale_file+".treelist";
+  string rate_name=ale_file+append+".ratelist";
+  string event_name=ale_file+append+".eventlist";
+  string sample_name=ale_file+append+".treelist";
 
   ofstream rate_out( rate_name.c_str() );
   ofstream event_out( event_name.c_str() );
@@ -165,7 +171,7 @@ int main(int argc, char ** argv)
   cout << "Calculating consensus tree."<<endl;
   Tree* con_tree= TreeTools::thresholdConsensus(sample_trees,0.5);
 
-  string con_name=ale_file+".cons_tree";
+  string con_name=ale_file+append+".cons_tree";
 
   ofstream con_out( con_name.c_str() );
 
