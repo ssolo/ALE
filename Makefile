@@ -170,6 +170,9 @@ computeALEcomplexity: libexODT.a computeALEcomplexity.cpp Makefile
 mlsampler:	libexODT.a mlsampler.cpp Makefile
 	$(CC) mlsampler.cpp -o mlsampler $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
+mlresampler:	libexODT.a mlresampler.cpp Makefile
+	$(CC) mlresampler.cpp -o mlresampler $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
 mlsample:	libexODT.a mlsample.cpp Makefile
 	$(CC) mlsample.cpp -o mlsample $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
@@ -208,6 +211,15 @@ simulation_cp: simulation_cp.cpp Makefile
 
 GEsim: GEsim.cpp Makefile
 	$(CC) GEsim.cpp -o GEsim $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+pln: pln.cpp Makefile
+	$(CC) pln.cpp -o pln $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+RF: RF.cpp Makefile
+	$(CC) RF.cpp -o RF $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
+ls: ls.cpp Makefile
+	$(CC) ls.cpp -o ls $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
 simulateSpAndGeneTrees: libexODT.a simulateSpAndGeneTrees.cpp  exODT_sim.cpp Makefile
 	$(CC)  simulateSpAndGeneTrees.cpp  exODT_sim.cpp -o simulateSpAndGeneTrees  $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
