@@ -62,7 +62,7 @@ IMPROVED_FIND_LIBRARY(BPP_LIBRARIES bpp-core Bpp/Clonable.h)
 
 SET(Boost_USE_STATIC_LIBS ${BUILD_STATIC})
 
-find_package(Boost COMPONENTS mpi REQUIRED)
+find_package(Boost COMPONENTS mpi serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 # Require MPI for this project:
