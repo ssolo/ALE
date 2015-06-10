@@ -133,3 +133,24 @@ target_link_libraries(mpi_S_ml exODT
   ${MPI_LIBRARIES}
   ${BPP_LIBRARIES}
 )
+
+add_executable(wol_host wol_host.cpp)
+target_link_libraries(wol_host exODT
+  ${Boost_MPI_LIBRARY}
+  ${MPI_LIBRARIES}
+  ${BPP_LIBRARIES}
+)
+
+add_executable(wol_paras wol_paras.cpp)
+target_link_libraries(wol_paras exODT
+  ${Boost_MPI_LIBRARY}
+  ${MPI_LIBRARIES}
+  ${BPP_LIBRARIES}
+)
+
+add_executable(wol_tree wol_tree.cpp)
+target_link_libraries(wol_tree exODT
+  ${Boost_MPI_LIBRARY}
+  ${MPI_LIBRARIES}
+  ${BPP_LIBRARIES}
+)
