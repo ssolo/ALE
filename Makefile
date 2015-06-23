@@ -182,6 +182,9 @@ mlsample_undated:	libexODT.a mlsample_undated.cpp Makefile
 wALE_ml_sample:	libexODT.a wALE_ml_sample.cpp Makefile
 	$(CC) wALE_ml_sample.cpp -o wALE_ml_sample $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
+wALE_ml_sample_undated:	libexODT.a wALE_ml_sample_undated.cpp Makefile
+	$(CC) wALE_ml_sample_undated.cpp -o wALE_ml_sample_undated $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
 summary:	libexODT.a summary.cpp Makefile
 	$(CC) summary.cpp -o summary $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
