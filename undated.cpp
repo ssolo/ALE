@@ -660,11 +660,9 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 		  register_Tfrom(e);
 		  register_Tto(f);
 		  register_T_to_from(e,f);
-
 		  stringstream Ttoken;
-		  Ttoken<<estr<<">"<<fstr<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[gpp_i]);
+		  Ttoken<<estr<<">"<<fstr<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[g_ids[gpp_i]]);
 		  Ttokens.push_back(Ttoken.str());
-
 		  
 		  return "("+sample_undated(e,gp_i,"S")+","+sample_undated(f,gpp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
 		}		  	     
@@ -674,11 +672,9 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 		  register_Tfrom(e);
 		  register_Tto(f);
 		  register_T_to_from(e,f);
-
 		  stringstream Ttoken;
-		  Ttoken<<estr<<">"<<fstr<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[gp_i]);
+		  Ttoken<<estr<<">"<<fstr<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[g_ids[gp_i]]);
 		  Ttokens.push_back(Ttoken.str());
-
 		  return "("+sample_undated(e,gpp_i,"S")+","+sample_undated(f,gp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
 		}		  
 		  
@@ -724,11 +720,11 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	  register_Tfrom(e);
 	  register_Tto(f);
 	  register_T_to_from(e,f);
-	  
+	  /*
 	  stringstream Ttoken;
 	  Ttoken<<estr<<">"<<fstr<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[g_id]);
 	  Ttokens.push_back(Ttoken.str());
-	  
+	  */
 	  register_L(e); 
 	  return sample_undated(f,i,"T",".T@"+estr+"->"+fstr);
 	}		  
