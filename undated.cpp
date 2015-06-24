@@ -734,7 +734,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	  register_T_to_from(e,f);
 	  
 	  stringstream Ttoken;
-	  Ttoken<<estr<<">"<<fstr"|"<<ale_pointer->set2name(ale_pointer->id_sets[g_id]);
+	  Ttoken<<estr<<">"<<fstr<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[g_id]);
 	  Ttokens.push_back(Ttoken.str());
 	  
 	  register_L(e); 
