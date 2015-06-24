@@ -87,6 +87,11 @@ string exODT_model::sample(bool max_rec)
       root_t_i=max_root_t_i;      
     }
   register_O(root_e);
+  if (root_e==-1)
+    cout <<"c+O "<< time_slice_times[root_rank][root_t_i] << " " << 0 << endl;
+  else
+    cout <<"c+O "<< time_slice_times[root_rank][root_t_i] << " " << 1 << endl;
+    
   return sample(false,-1,root_t_i,root_rank,root_e,0,"","",max_rec)+";";
   //del-locs
 }
@@ -859,6 +864,8 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 
   if (back_step.t==0 and size == 1 and e!=-1)
     {
+      cout <<"c+P "<< back_step.t << " " << 0 << endl;
+
       register_leaf(e);	 
       stringstream branch_string;
       if (scalar_parameter["leaf_events"]==1) branch_string<<branch_events;
@@ -881,6 +888,8 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
       stringstream branch_string;
       if (back_step.event=="S")
 	{
+	  cout <<"c+S "<< back_step.t << " " << 1 << endl;
+	  
 	  register_S(e);
 
 	  gid_events[g_id].push_back(">S");
@@ -908,6 +917,8 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	{
 	  if (back_step.event=="Tb")
 	    {
+	      cout <<"c+Tb "<< back_step.t << " " << 1 << endl;
+
 	      int this_e,this_gid;
 
 	      gid_events[g_id].push_back(">T");
@@ -1043,6 +1054,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	    }
 	  else
 	    {
+	      cout <<"c+D "<< back_step.t << " " << 1 << endl;
 	      register_D(e);	  
 	      stringstream Dtoken_stream;
 	      stringstream named_branch;
@@ -1140,6 +1152,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	    {
 	      if (back_step.event=="TLb")
 		{
+		  cout <<"c+TLb "<< back_step.t << " " << (back_step.e!=-1) << endl;
 		  register_Tto(back_step.e);
 
 		  gid_events[g_id].push_back("TL");
@@ -1167,6 +1180,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		}
 	      else  if (back_step.event=="SLb")
 		{
+		  cout <<"c+TLb "<< back_step.t << " " << -1 << endl;
 		  register_L(e);
 		  register_Tfrom(e);
 

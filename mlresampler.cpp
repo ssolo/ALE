@@ -71,9 +71,15 @@ int main(int argc, char ** argv)
   cout <<"time: " << t->elapsed() << endl;
   cout << ".."<<endl; 
   vector<Tree*> sample_trees;
+<<<<<<< HEAD
   string outname=ml_rec_file+".rate_resample.samples";
   ofstream fout( outname.c_str() );
   string outname2=ml_rec_file+".rate_resample.Ttokens";
+=======
+  string outname=ale_file+".rate_resample.samples";
+  ofstream fout( outname.c_str() );
+  string outname2=ale_file+".rate_resample.Ttokens";
+>>>>>>> 474d82cc0794533095baad28e4c97d06f7545120
   ofstream fout2( outname2.c_str() );
 
   int samples=atoi(argv[3]);
@@ -157,7 +163,11 @@ int main(int argc, char ** argv)
   cout << res.first << endl;
   cout << endl;
 
+<<<<<<< HEAD
   string voutname=ml_rec_file+".rate_resample.vstrings"; 
+=======
+  string voutname=ale_file+".rate_resample.vstrings"; 
+>>>>>>> 474d82cc0794533095baad28e4c97d06f7545120
   ofstream vout( voutname.c_str() );
 
   for (std::map<long int, std::vector<int> >::iterator it=model->gid_branches.begin();it!=model->gid_branches.end();it++)
