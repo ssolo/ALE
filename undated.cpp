@@ -252,7 +252,12 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	  boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_separators"]),boost::token_compress_on);
 	  string species_name;
 	  if ((int)scalar_parameter["species_field"]==-1)
-	    species_name=tokens[tokens.size()-1];	  
+	    {
+	      species_name=tokens[1];
+	      for (int fi=2;fi<tokens.size();fi++)
+		species_name+="_"+tokens[fi];
+	    }	  
+	  //	    species_name=tokens[tokens.size()-1];	  
 	  else
 	    species_name=tokens[(int)scalar_parameter["species_field"]];	  
 	  gid_sps[g_id]=species_name;
@@ -662,6 +667,19 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 		  register_Tfrom(e);
 		  register_Tto(f);
 		  register_T_to_from(e,f);
+
+		  stringstream Ttoken;
+		  if (e<last_leaf)
+		    Ttoken<< extant_species[e];
+		  else
+		    Ttoken<< e;
+		  if (f<last_leaf)
+		    Ttoken<<"|"<<extant_species[f];
+		  else
+		    Ttoken<<"|"<<f;
+		  Ttoken<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[gp_i]);
+		  Ttokens.push_back(Ttoken.str());
+
 		  return "("+sample_undated(e,gpp_i,"S")+","+sample_undated(f,gp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
 		}		  
 		  
@@ -778,6 +796,7 @@ void exODT_model::register_leafu(int e,string last_event)
 void exODT_model::register_T_to_from(int e,int f)
 {
   T_to_from[e][f]+=1;
+
 }
 
 string exODT_model::feSPR(int e, int f)
