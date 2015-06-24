@@ -658,7 +658,22 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	      if (r*uq_sum<uq_resum)
 		{
 		  register_Tfrom(e);
-		  register_Tto(f);			  
+		  register_Tto(f);
+		  register_T_to_from(e,f);
+
+		  stringstream Ttoken;
+		  if (e<last_leaf)
+		    Ttoken<< extant_species[e];
+		  else
+		    Ttoken<< e;
+		  if (f<last_leaf)
+		    Ttoken<<"|"<<extant_species[f];
+		  else
+		    Ttoken<<"|"<<f;
+		  Ttoken<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[gp_i]);
+		  Ttokens.push_back(Ttoken.str());
+
+		  
 		  return "("+sample_undated(e,gp_i,"S")+","+sample_undated(f,gpp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
 		}		  	     
 	      uq_resum+=uq[gpp_i][e]*(PT[f]/(float)last_branch)*uq[gp_i][f]*pp+EPSILON;
@@ -725,6 +740,19 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	  register_Tfrom(e);
 	  register_Tto(f);
 	  register_T_to_from(e,f);
+	  
+	  stringstream Ttoken;
+	  if (e<last_leaf)
+	    Ttoken<< extant_species[e];
+	  else
+	    Ttoken<< e;
+	  if (f<last_leaf)
+	    Ttoken<<"|"<<extant_species[f];
+	  else
+	    Ttoken<<"|"<<f;
+	  Ttoken<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[gp_i]);
+	  Ttokens.push_back(Ttoken.str());
+	  
 	  register_L(e); 
 	  return sample_undated(f,i,"T",".T@"+estr+"->"+fstr);
 	}		  
