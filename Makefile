@@ -173,6 +173,9 @@ mlsampler:	libexODT.a mlsampler.cpp Makefile
 mlresampler:	libexODT.a mlresampler.cpp Makefile
 	$(CC) mlresampler.cpp -o mlresampler $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
+mlresampler_undated:	libexODT.a mlresampler_undated.cpp Makefile
+	$(CC) mlresampler_undated.cpp -o mlresampler_undated $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
+
 mlsample:	libexODT.a mlsample.cpp Makefile
 	$(CC) mlsample.cpp -o mlsample $(FLAGS) $(INCLUDE) $(STATIC) $(LINK)
 
