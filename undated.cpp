@@ -676,15 +676,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 		  register_T_to_from(e,f);
 
 		  stringstream Ttoken;
-		  if (e<last_leaf)
-		    Ttoken<< extant_species[e];
-		  else
-		    Ttoken<< e;
-		  if (f<last_leaf)
-		    Ttoken<<"|"<<extant_species[f];
-		  else
-		    Ttoken<<"|"<<f;
-		  Ttoken<<fstr<<">"<<estr<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[gp_i]);
+		  Ttoken<<estr<<">"<<fstr<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[gp_i]);
 		  Ttokens.push_back(Ttoken.str());
 
 		  return "("+sample_undated(e,gpp_i,"S")+","+sample_undated(f,gp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
