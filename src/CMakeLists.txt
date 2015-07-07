@@ -78,8 +78,23 @@ target_link_libraries(computeALEcomplexity exODT
 #   ${BPP_LIBRARIES}
 # )
 
+add_executable(mlresampler_undated mlresampler_undated.cpp)
+target_link_libraries(mlresampler_undated exODT
+  ${Boost_MPI_LIBRARY}
+  ${MPI_LIBRARIES}
+  ${BPP_LIBRARIES}
+)
+
 add_executable(wALE_ml_sample wALE_ml_sample.cpp)
 target_link_libraries(wALE_ml_sample exODT
+  ${Boost_MPI_LIBRARY}
+  ${Boost_SERIALIZATION_LIBRARY}
+  ${MPI_LIBRARIES}
+  ${BPP_LIBRARIES}
+)
+
+add_executable(wALE_ml_sample_undated wALE_ml_sample_undated.cpp)
+target_link_libraries(wALE_ml_sample_undated exODT
   ${Boost_MPI_LIBRARY}
   ${Boost_SERIALIZATION_LIBRARY}
   ${MPI_LIBRARIES}
