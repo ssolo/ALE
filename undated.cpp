@@ -98,6 +98,30 @@ void exODT_model::construct_undated(string Sstring)
       for (vector<Node*>::iterator  it=new_generation.begin();it!=new_generation.end();it++ )
 	next_generation.push_back((*it));
     }
+  
+    for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
+    {
+      Node * node = (*it).first;     
+      int branch = (*it).second;
+      stringstream out;
+      stringstream out1;
+      stringstream out2;
+      out1<<t_begin[branch];
+      out2<< t_end[branch];
+      int rank=branch;
+      out<<rank;
+      if ( node->hasBranchProperty("bootstrap") )
+	{
+	  rank2label[rank]=node->getBootstrapValue();
+	  cout <<rank2label[rank]<<"->"<<rank<< endl;
+	}
+      else
+	{
+	  rank2label[rank]=-1;
+	}
+      node->setBranchProperty("ID",BppString(out.str()));
+    }  
+
   string_parameter["S_with_ranks"]=TreeTemplateTools::treeToParenthesis(*S,false,"ID");
 
 
