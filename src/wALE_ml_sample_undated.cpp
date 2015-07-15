@@ -196,7 +196,7 @@ int main(int argc, char ** argv)
 
   cout << model->pun(ale) << endl;
   
-  for (int i =0; i < 10000; i++ )
+  for (int i =0; i < 1000; i++ )
     {
       string sample_tree=model->sample_undated();    
       //cout << sample_tree << endl;
@@ -225,12 +225,12 @@ int main(int argc, char ** argv)
 	  stringstream named_branch;
 	  if (branch==model->alpha)
 	    named_branch<<-1;
-	  else if (model->id_ranks[branch]==0)
+	  else if (branch<model->last_leaf)
 	    named_branch<<model->extant_species[branch];
 	  else
 	    {
-	      if (model->rank2label[model->id_ranks[branch]]!=-1)
-		named_branch<<model->rank2label[model->id_ranks[branch]];
+	      if (model->rank2label[branch]!=-1)
+		named_branch<<model->rank2label[branch];
 	      else
 		named_branch<<"ROOT";
 	    }
