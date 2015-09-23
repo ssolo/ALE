@@ -691,14 +691,14 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	{
 	  register_Su(e,last_event);
 	  register_L(g);			  
-	  return sample_undated(f,i,"S","."+estr);
+	  return sample_undated(f,i,"S","."+estr+branch_string);
 	}		  
       uq_resum+=PS[e]*uq[i][g]*uE[f]+EPSILON;
       if (r*uq_sum<uq_resum)
 	{
 	  register_Su(e,last_event);
 	  register_L(f);			  
-	  return sample_undated(g,i,"S","."+estr);
+	  return sample_undated(g,i,"S","."+estr+branch_string);
 	}		  
     }
   // DL event
