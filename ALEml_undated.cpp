@@ -145,6 +145,7 @@ int main(int argc, char ** argv)
 
   cout << "Sampling a reconciled gene tree.."<<endl;
  
+  //for(int i=0;i<1;i++) model->sample_undated();    
 
   string sample = model->sample_undated();    
   //and output it..
