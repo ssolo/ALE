@@ -100,9 +100,11 @@ class exODT_model
 
   std::vector<scalar_type> uE;
   scalar_type mPTE;
+  std::vector<scalar_type> mPTE_ancestral_correction;
   int root_i;
   std::vector < std::vector <scalar_type> > uq;
   std::vector < scalar_type > mPTuq;
+  std::vector < std::vector <scalar_type> > mPTuq_ancestral_correction;
 
   std::vector<scalar_type> PD;
   std::vector<scalar_type> PT;
