@@ -42,8 +42,8 @@ class mpi_tree
 	  set_parameter("min_lambda",1e-6);
 
 	  set_parameter("inital_delta",0.01);
-	  set_parameter("inital_tau",0.01);
-	  set_parameter("inital_lambda",0.02);      
+	  set_parameter("inital_tau",0.02);
+	  set_parameter("inital_lambda",0.1);      
 	  model=new exODT_model();
 	  model->construct_undated(Sstring);//del-loc
 
@@ -106,6 +106,7 @@ class mpi_tree
   //implimented in mpi_tree.cpp
   void distribute_ales(std::vector<std::string>,bool list_of_trees=false);
   void load_distributed_ales(std::string fname);
+  void prune_distributed_ales(std::string fname,std::string Sstring);
 
   std::vector < std::vector<scalar_type> > gathered_T_to_from;
   void gather_T_to_from();
@@ -118,9 +119,9 @@ class mpi_tree
 
   scalar_type calculate_MLRecs(bool estimate=false,bool branchwise=false);
   scalar_type calculate_p();
-  scalar_type calculate_pun();
+  scalar_type calculate_pun(int n=0);
   scalar_type calculate_punt(std::string S);
-  scalar_type calculate_pun(int n,bool bw=false);
+  scalar_type calculate_pun(int n,bool bw);
   std::map <scalar_type, std::vector< int > >sort_e;
   std::map <scalar_type, std::vector< int > >sort_f;
 

@@ -1,6 +1,6 @@
 #Please change to reflect your Bio++ and Boost installation:
 bpp_DIR= /home/ssolo/newest_bpp/
-boost_DIR=/usr/
+boost_DIR=/home/ssolo/
 #works:
 # for Bio++ v2.0.3 (maybe works for 2.0.x)
 # for Boost v1.51 (should work for other versions) 

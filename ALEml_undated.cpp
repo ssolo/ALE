@@ -93,7 +93,7 @@ int main(int argc, char ** argv)
   model->set_model_parameter("BOOT_STRAP_LABLES","yes");
 
   model->construct_undated(Sstring);
-
+  
 
   //a set of inital rates
   scalar_type delta=0.01,tau=0.01,lambda=0.1;  
@@ -144,13 +144,20 @@ int main(int argc, char ** argv)
   cout << "LL=" << mlll << endl;
 
   cout << "Sampling a reconciled gene tree.."<<endl;
- 
-  //for(int i=0;i<1;i++) model->sample_undated();    
-
-  string sample = model->sample_undated();    
+  //string sample = model->sample_undated();    
   //and output it..
-  string outname=ale_file+".uml_rec"; 
+  string ale_name=ale_file;
+  vector <string> tokens;
+  boost::trim(ale_name);	    
+  boost::split(tokens,ale_name,boost::is_any_of("/"),boost::token_compress_on);
+  string outname=tokens[tokens.size()-1]+".uml_rec"; 
   ofstream fout( outname.c_str() );
+ 
+  for(int i=0;i<100;i++)
+    {
+      string sample = model->sample_undated();
+      fout << "reconciled G:\t"<< sample <<endl;
+    }
   fout <<  "#ALEml using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl<<endl;
   fout << "S:\t"<<model->string_parameter["S_with_ranks"] <<endl;
   fout << endl;
@@ -159,15 +166,29 @@ int main(int argc, char ** argv)
   fout << "ML \t"<< delta << "\t" << tau << "\t" << lambda //<< "'t" << sigma_hat
        << endl;
   fout << endl;
+  fout << "LL=" << mlll << endl;
 
-  fout << "reconciled G:\t"<< sample <<endl;
   fout << endl;
   fout << "# of\t Duplications\tTransfers\tLosses\tSpeciations" <<endl; 
   fout <<"Total \t"<< model->MLRec_events["D"] << "\t" << model->MLRec_events["T"] << "\t" << model->MLRec_events["L"]<< "\t" << model->MLRec_events["S"] <<endl;    
   fout << endl;
   fout << "# of\t Duplications\tTransfers\tLosses\tgene copies" <<endl; 
   fout << model->counts_string_undated();
-  
+  for (int e=0;e<model->last_branch;e++)
+    for (int f=0;f<model->last_branch;f++)
+      if  (model->T_to_from[e][f]>0)
+	{
+	  fout <<">T";
+	  if (e<model->last_leaf)
+	    fout << "\t" << model->node_name[model->id_nodes[e]];
+	  else
+	    fout << "\t" << e;
+	  if (f<model->last_leaf)
+	    fout << "\t" << model->node_name[model->id_nodes[f]];	      
+	  else
+	    fout << "\t" << f;
+	  fout << "\t" << model->T_to_from[e][f] << "\t" << model->ancestral[e][f] << endl;
+	}
   cout << "Results in: " << outname << endl;
   return 0;
 }
