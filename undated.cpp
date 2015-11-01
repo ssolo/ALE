@@ -492,7 +492,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	      uq[i][e]=uq_sum;
 	      new_mPTuq +=(PT[e]/(float)last_branch)*uq_sum;
 	      mPTuq_ancestral_correction[i][e]=0;
-	      for (map<int,int>::iterator it=ancestral[e].begin();( it!=ancestral[e].end() and i>0);it++)
+	      for (map<int,int>::iterator it=ancestral[e].begin(); it!=ancestral[e].end();it++)
 		{
 		  int f=(*it).second;
 		  mPTuq_ancestral_correction[i][e]+=(PT[f]/(float)last_branch)*uq_sum;
