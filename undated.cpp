@@ -13,7 +13,7 @@ void exODT_model::construct_undated(string Sstring)
   id_nodes.clear();
   
   string_parameter["S_un"]=Sstring;
-  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  (string_parameter["BOOT_STRAP_LABLES"]=="yes")
+  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  true//(string_parameter["BOOT_STRAP_LABLES"]=="yes")
 					 );
   S_root = S->getRootNode();
   vector <Node*> nodes = TreeTemplateTools::getNodes(*S_root);
@@ -113,7 +113,7 @@ void exODT_model::construct_undated(string Sstring)
       if ( node->hasBranchProperty("bootstrap") )
 	{
 	  rank2label[rank]=node->getBootstrapValue();
-	  cout <<rank2label[rank]<<"->"<<rank<< endl;
+	  //cout <<rank2label[rank]<<"->"<<rank<< endl;
 	}
       else
 	{
@@ -124,6 +124,43 @@ void exODT_model::construct_undated(string Sstring)
 
   string_parameter["S_with_ranks"]=TreeTemplateTools::treeToParenthesis(*S,false,"ID");
 
+
+  //map <string,map<string,int> > ancestral_names;
+  //map <int,map<int,int> > ancestral;
+  
+  for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
+    {
+      Node * node=(*it);
+      int e = node_ids[node];
+      stringstream name_from;
+      if (e<last_leaf)
+	name_from <<node_name[node];
+      else
+	name_from <<e;
+      map<string,int> tmp;
+      ancestral_names[name_from.str()]=tmp;
+      while (node->hasFather())
+	{
+	  stringstream name_to;
+	  int f = node_ids[node];
+	  if (f<last_leaf)
+	    name_to<<node_name[node];
+	  else
+	    name_to<<f;
+	  node=node->getFather();
+	  ancestral_names[name_from.str()][name_to.str()]=1;
+	  ancestral[e][f]=1;
+	}
+      stringstream name_to;
+      int f = node_ids[node];
+      name_to<<f;
+      ancestral_names[name_from.str()][name_to.str()]=1;
+      ancestral[e][f]=1;
+
+    }
+
+
+  
 
   for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ )
     if (not (*it).second->isLeaf())
@@ -820,7 +857,6 @@ void exODT_model::register_leafu(int e,string last_event)
 void exODT_model::register_T_to_from(int e,int f)
 {
   T_to_from[e][f]+=1;
-
 }
 
 string exODT_model::feSPR(int e, int f)
