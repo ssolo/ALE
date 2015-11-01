@@ -737,6 +737,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	      
 	  // T event
 	  for (int f=0;f<last_branch;f++)
+	    if (not ancestral[e][f]) 
 	    {
 	      stringstream fstring;
 	      if (not (f<last_leaf)) fstring << f; else fstring << extant_species[f]; 
@@ -797,7 +798,8 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
     }		  
   // TL event
   for (int f=0;f<last_branch;f++)
-    {
+    if (not ancestral[e][f]) 
+      {
       stringstream fstring;
       if (not (f<last_leaf)) fstring << f; else fstring << extant_species[f]; 
       string fstr=fstring.str();	      
