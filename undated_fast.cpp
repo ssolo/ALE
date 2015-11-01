@@ -13,7 +13,7 @@ void exODT_model::construct_undated(string Sstring)
   id_nodes.clear();
   
   string_parameter["S_un"]=Sstring;
-  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  true//(string_parameter["BOOT_STRAP_LABLES"]=="yes")
+  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  (string_parameter["BOOT_STRAP_LABLES"]=="yes")
 					 );
   S_root = S->getRootNode();
   vector <Node*> nodes = TreeTemplateTools::getNodes(*S_root);
@@ -113,7 +113,7 @@ void exODT_model::construct_undated(string Sstring)
       if ( node->hasBranchProperty("bootstrap") )
 	{
 	  rank2label[rank]=node->getBootstrapValue();
-	  //cout <<rank2label[rank]<<"->"<<rank<< endl;
+	  cout <<rank2label[rank]<<"->"<<rank<< endl;
 	}
       else
 	{
@@ -124,43 +124,6 @@ void exODT_model::construct_undated(string Sstring)
 
   string_parameter["S_with_ranks"]=TreeTemplateTools::treeToParenthesis(*S,false,"ID");
 
-
-  //map <string,map<string,int> > ancestral_names;
-  //map <int,map<int,int> > ancestral;
-  
-  for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
-    {
-      Node * node=(*it);
-      int e = node_ids[node];
-      stringstream name_from;
-      if (e<last_leaf)
-	name_from <<node_name[node];
-      else
-	name_from <<e;
-      map<string,int> tmp;
-      ancestral_names[name_from.str()]=tmp;
-      while (node->hasFather())
-	{
-	  stringstream name_to;
-	  int f = node_ids[node];
-	  if (f<last_leaf)
-	    name_to<<node_name[node];
-	  else
-	    name_to<<f;
-	  node=node->getFather();
-	  ancestral_names[name_from.str()][name_to.str()]=1;
-	  ancestral[e][f]=1;
-	}
-      stringstream name_to;
-      int f = node_ids[node];
-      name_to<<f;
-      ancestral_names[name_from.str()][name_to.str()]=1;
-      ancestral[e][f]=1;
-
-    }
-
-
-  
 
   for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ )
     if (not (*it).second->isLeaf())
@@ -212,7 +175,6 @@ void exODT_model::construct_undated(string Sstring)
 void exODT_model::calculate_undatedEs()
 {
   uE.clear();
-  mPTE_ancestral_correction.clear();
   PD.clear();
   PT.clear();
   PL.clear();
@@ -236,7 +198,6 @@ void exODT_model::calculate_undatedEs()
       PL.push_back(P_L);
       PS.push_back(P_S);
       uE.push_back(0);
-      mPTE_ancestral_correction.push_back(0);
     }
 
 
@@ -244,26 +205,21 @@ void exODT_model::calculate_undatedEs()
   for (int i=0;i<4;i++)
     {
       scalar_type newmPTE=0;
-      //vector<scalar_type> ancestral_correction;
-      for (int e=0;e<last_branch ;e++)
+      vector<scalar_type> ancestral_correction;
+      for (int e=0;e<last_branch;e++)
 	{
-	  mPTE_ancestral_correction[e]=0;
-	  for (map<int,int>::iterator it=ancestral[e].begin();( it!=ancestral[e].end() and i>0);it++)
-	    {
-	      int f=(*it).second;
-	      mPTE_ancestral_correction[e]+=  (PT[f]/(float)last_branch)*uE[f];
-	    }	  
+	  ancestral_correction.push_back(0);
+	  
 	}
-
       for (int e=0;e<last_branch;e++)
 	{
 	  if (e<last_leaf)
-	    uE[e]=PL[e]+PD[e]*uE[e]*uE[e]+uE[e]*(mPTE- mPTE_ancestral_correction[e]);
+	    uE[e]=PL[e]+PD[e]*uE[e]*uE[e]+uE[e]*mPTE;
 	  else
 	    {
 	      int f=daughter[e];
 	      int g=son[e];
-	      uE[e]=PL[e] + PS[e]*uE[f]*uE[g] + PD[e]*uE[e]*uE[e] + uE[e]*(mPTE- mPTE_ancestral_correction[e]);
+	      uE[e]=PL[e] + PS[e]*uE[f]*uE[g] + PD[e]*uE[e]*uE[e] + uE[e]*mPTE;
 	    }
 	  newmPTE+=(PT[e]/(float)last_branch) *uE[e];
 	}
@@ -339,7 +295,6 @@ scalar_type exODT_model::pun(approx_posterior *ale)
     }
   
   //map <long int, int> g_id2i;
-  //XX ancestral_correction .. 
   for (int i=0;i<(int)g_ids.size();i++)
     {
       long int g_id=g_ids[i];	
@@ -349,10 +304,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	{
 	  vector <scalar_type> tmp;
 	  uq.push_back(tmp);
-	  vector <scalar_type> tmp2;
-	  mPTuq_ancestral_correction.push_back(tmp2);
-
-	  mPTuq.push_back(0);
+	  mPTuq.push_back(0);       	
 	}
       else
 	mPTuq[i]=0;
@@ -361,14 +313,12 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	if (not ( e<(int)uq[i].size() ) )
 	  {
 	    uq[i].push_back(0);
-	    mPTuq_ancestral_correction[i].push_back(0);
 	  }
 	else
-	  {
-	    uq[i][e]=0;
-	    mPTuq_ancestral_correction[i][e]=0;
-	  }
-    }  
+	  uq[i][e]=0;
+      
+    }
+  
 
   for (int iter=0;iter<4;iter++)
     {
@@ -474,7 +424,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 		      // D event
 		      uq_sum+=PD[e]*(uq[gp_i][e]*uq[gpp_i][e]*2)*pp;			      
 		      // T event
-		      uq_sum+=(uq[gp_i][e]*(mPTuq[gpp_i]-mPTuq_ancestral_correction[gpp_i][e])+ uq[gpp_i][e]*(mPTuq[gp_i]-mPTuq_ancestral_correction[gp_i][e]))*pp;			      				      
+		      uq_sum+=(uq[gp_i][e]*mPTuq[gpp_i] + uq[gpp_i][e]*mPTuq[gp_i])*pp;			      				      
 		    }
 		}
 	      if (not (e<last_leaf) )
@@ -487,16 +437,10 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	      // DL event
 	      uq_sum+=PD[e]*(uq[i][e]*uE[e]*2);			      
 	      // TL event
-	      uq_sum+=((mPTuq[i]-mPTuq_ancestral_correction[i][e])*uE[e] + uq[i][e]* (mPTE- mPTE_ancestral_correction[e]) );			      				      	      
+	      uq_sum+=(mPTuq[i]*uE[e] + uq[i][e]*mPTE);			      				      	      
 	      if (uq_sum<EPSILON) uq_sum=EPSILON; 
 	      uq[i][e]=uq_sum;
 	      new_mPTuq +=(PT[e]/(float)last_branch)*uq_sum;
-	      mPTuq_ancestral_correction[i][e]=0;
-	      for (map<int,int>::iterator it=ancestral[e].begin();( it!=ancestral[e].end() and i>0);it++)
-		{
-		  int f=(*it).second;
-		  mPTuq_ancestral_correction[i][e]+=(PT[f]/(float)last_branch)*uq_sum;
-		}
 	    }
 	  mPTuq[i]=new_mPTuq;
 	  
@@ -653,11 +597,10 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	  uq_sum+=PD[e]*(uq[gp_i][e]*uq[gpp_i][e]*2)*pp+EPSILON;			      
 	  // T event
 	  for (int f=0;f<last_branch;f++)
-	    if (not ancestral[e][f]) 
-	      {
-		uq_sum+=uq[gp_i][e]*(PT[f]/(float)last_branch)*uq[gpp_i][f]*pp+EPSILON;
-		uq_sum+=uq[gpp_i][e]*(PT[f]/(float)last_branch)*uq[gp_i][f]*pp+EPSILON;
-	      }
+	    {
+	      uq_sum+=uq[gp_i][e]*(PT[f]/(float)last_branch)*uq[gpp_i][f]*pp+EPSILON;
+	      uq_sum+=uq[gpp_i][e]*(PT[f]/(float)last_branch)*uq[gp_i][f]*pp+EPSILON;
+	    }
 	}
     }
   if (not (e<last_leaf) )
@@ -672,11 +615,10 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
   uq_sum+=PD[e]*(uq[i][e]*uE[e]*2)+EPSILON;			      
   // TL event
   for (int f=0;f<last_branch;f++)
-    if (not ancestral[e][f]) 
-      {
-	uq_sum+=(PT[f]/(float)last_branch)*uq[i][f]*uE[e]+EPSILON;
-	uq_sum+=(PT[f]/(float)last_branch)*uE[f]*uq[i][e]+EPSILON;			      				      	      
-      }
+    {
+      uq_sum+=(PT[f]/(float)last_branch)*uq[i][f]*uE[e]+EPSILON;
+      uq_sum+=(PT[f]/(float)last_branch)*uE[f]*uq[i][e]+EPSILON;			      				      	      
+    }
   //######################################################################################################################
   //#########################################INNNER LOOP##################################################################
   //######################################################################################################################		    
@@ -779,14 +721,14 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	{
 	  register_Su(e,last_event);
 	  register_L(g);			  
-	  return sample_undated(f,i,"S","."+estr+branch_string);
+	  return sample_undated(f,i,"S","."+estr);
 	}		  
       uq_resum+=PS[e]*uq[i][g]*uE[f]+EPSILON;
       if (r*uq_sum<uq_resum)
 	{
 	  register_Su(e,last_event);
 	  register_L(f);			  
-	  return sample_undated(g,i,"S","."+estr+branch_string);
+	  return sample_undated(g,i,"S","."+estr);
 	}		  
     }
   // DL event
@@ -884,6 +826,7 @@ void exODT_model::register_leafu(int e,string last_event)
 void exODT_model::register_T_to_from(int e,int f)
 {
   T_to_from[e][f]+=1;
+
 }
 
 string exODT_model::feSPR(int e, int f)
