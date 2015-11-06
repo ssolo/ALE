@@ -17,13 +17,16 @@ class p_fun:
 private:
   double fval_;
   mpi_tree* model_pointer;
+  communicator world;
 public:
-  p_fun(mpi_tree* model, double delta_start=0.01,double tau_start=0.01,double lambda_start=0.01//,double sigma_start=2
+  p_fun(mpi_tree* model, communicator world_in , double delta_start=0.05,double tau_start=0.,double lambda_start=0.2//,double sigma_start=2
 ) : AbstractParametrizable(""), fval_(0), model_pointer(model) 
   {
+    world=world_in;
+
     //We declare parameters here:
  //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
-      IntervalConstraint* constraint = new IntervalConstraint ( 1e-6, 10-1e-6, true, true );
+      IntervalConstraint* constraint = new IntervalConstraint ( 0, 4, true, true );
       addParameter_( new Parameter("delta", delta_start, constraint) ) ;
       addParameter_( new Parameter("tau", tau_start, constraint) ) ;
       addParameter_( new Parameter("lambda", lambda_start, constraint) ) ;
@@ -58,7 +61,11 @@ public:
 
         //model_pointer->calculate_EGb();
         double y=-(model_pointer->calculate_pun());
-        //if (world.rank()==0) cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda << "\t ll=" << -y <<endl;
+	model_pointer->gather_counts();
+        if (world.rank()==0) {
+	  cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda << "\t ll=" << -y <<endl;
+	  model_pointer->print_branch_counts();
+	    };
         fval_ = y;
     }
 };
@@ -76,10 +83,16 @@ int main(int argc, char ** argv)
   
   getline (file_stream_S,Sstring);
   map<string,scalar_type> parameters;
+  if (world.rank()==0) cout << Sstring << endl;
   mpi_tree * infer_tree = new mpi_tree(Sstring,world,parameters,true);
-  infer_tree->load_distributed_ales(argv[2]);
-  scalar_type ll = infer_tree->calculate_pun(10);
+  if (world.rank()==0) cout << "..construct.. " << endl;
 
+  infer_tree->load_distributed_ales(argv[2]);
+  if (world.rank()==0) cout << "..load.. " << endl;
+
+  //scalar_type ll = infer_tree->calculate_pun(3);
+
+  //scalar_type ll = infer_tree->calculate_pun(10,1);
   
   if (world.rank()==0) cout << infer_tree->model->string_parameter["S_with_ranks"] << endl;
   infer_tree->gather_counts();
@@ -87,7 +100,7 @@ int main(int argc, char ** argv)
   broadcast(world,done,0);
 
   
-  Function* f = new p_fun(infer_tree);
+  Function* f = new p_fun(infer_tree,world );
   Optimizer* optimizer = new DownhillSimplexMethod(f);
 
   optimizer->setProfiler(0);
@@ -110,19 +123,50 @@ int main(int argc, char ** argv)
 
   //optimizer->getParameters().printParameters(cout);
   broadcast(world,done,0);
-
+  scalar_type delta=optimizer->getParameterValue("delta");
+  scalar_type tau=optimizer->getParameterValue("tau");
+  scalar_type lambda=optimizer->getParameterValue("lambda");              
+  infer_tree->model->set_model_parameter("delta",delta);
+  infer_tree->model->set_model_parameter("tau",tau);
+  infer_tree->model->set_model_parameter("lambda",lambda);
+  
   if (world.rank()==0)
     {
       optimizer->getParameters().printParameters(cout);
-      scalar_type delta=optimizer->getParameterValue("delta");
-      scalar_type tau=optimizer->getParameterValue("tau");
-      scalar_type lambda=optimizer->getParameterValue("lambda");
+
       //scalar_type sigma=optimizer->getParameterValue("sigma");
 
       cout <<endl<< delta << " " << tau << " " << lambda// << " " << sigma
 	   << endl;
     }
+  scalar_type ll_final = infer_tree->calculate_pun(100.);
+
   infer_tree->gather_counts();
   infer_tree->gather_T_to_from();
+  if (world.rank()==0) cout<< ">tree:\t"<< infer_tree->model->string_parameter["S_with_ranks"] << endl;
+  if (world.rank()==0) cout<< ">logl:\t"<< ll_final << endl;
+  if (world.rank()==0) cout<< ">Ts:\tfrom\tto"<< endl;
+  if (world.rank()==0) infer_tree->print_branch_counts();
+
+  if (world.rank()==0)
+    for (map <scalar_type, vector< int > >::iterator it=infer_tree->sort_e.begin();it!=infer_tree->sort_e.end();it++)
+      {
+	scalar_type Ts=-(*it).first;
+	if (Ts>0)
+	  for (int i=0;i<(*it).second.size();i++)
+	    {
+	      int e=infer_tree->sort_e[-Ts][i];
+	      int f=infer_tree->sort_f[-Ts][i];
+	      if (e<infer_tree->model->last_leaf)
+		cout << "\t" << infer_tree->model->node_name[infer_tree->model->id_nodes[e]];
+	      else
+		cout << "\t" << e;
+	      if (f<infer_tree->model->last_leaf)
+		cout << "\t" << infer_tree->model->node_name[infer_tree->model->id_nodes[f]];	      
+	      else
+		cout << "\t" << f;
+	      cout << "\t" << Ts << endl; //" " << new_S << endl;		
+	    }
+      }
 
 }

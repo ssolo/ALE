@@ -95,12 +95,16 @@ class exODT_model
   std::map<int,std::map <scalar_type,scalar_type> > Ee;                       //del-loc. Probability (scalar value) that a gene present at a given time slice (whose rank is the int key) at time the first scalar key is getting extinct before reaching extant species.
   std::map <std::string,bpp::Node *> name_node;
   std::map <bpp::Node *,std::string> node_name; 
+  std::map <std::string,std::map<std::string,int> > ancestral_names;
+  std::map <int,std::map<int,int> > ancestral;
 
   std::vector<scalar_type> uE;
   scalar_type mPTE;
+  std::vector<scalar_type> mPTE_ancestral_correction;
   int root_i;
   std::vector < std::vector <scalar_type> > uq;
   std::vector < scalar_type > mPTuq;
+  std::vector < std::vector <scalar_type> > mPTuq_ancestral_correction;
 
   std::vector<scalar_type> PD;
   std::vector<scalar_type> PT;
