@@ -694,8 +694,9 @@ void exODT_model::show_counts(string name)
 }
 
 //ad hoc function should be moved to a future exODT_util.cpp 
-string exODT_model::counts_string()
+string exODT_model::counts_string(scalar_type samples)
 {
+  
   stringstream out;
   for (int branch=0;branch<last_branch;branch++)	
     {	
@@ -712,16 +713,16 @@ string exODT_model::counts_string()
 	named_branch<<id_ranks[branch];
       if (not isleaf)
 	out<< "S_internal_branch\t"<< named_branch.str() << "\t" 
-	   << branch_counts["Ds"][branch] << "\t"
-	   << branch_counts["Ts"][branch] << "\t"
-	   << branch_counts["Ls"][branch] << "\t"
-	   << branch_counts["copies"][branch] << "\n";
+	   << branch_counts["Ds"][branch]/samples << "\t"
+	   << branch_counts["Ts"][branch]/samples << "\t"
+	   << branch_counts["Ls"][branch]/samples << "\t"
+	   << branch_counts["copies"][branch]/samples << "\n";
       else
 	out<< "S_terminal_branch\t"<< named_branch.str() << "\t" 
-	   << branch_counts["Ds"][branch] << "\t"
-	   << branch_counts["Ts"][branch] << "\t"
-	   << branch_counts["Ls"][branch] << "\t"
-	   << branch_counts["copies"][branch] << "\n";
+	   << branch_counts["Ds"][branch]/samples << "\t"
+	   << branch_counts["Ts"][branch]/samples << "\t"
+	   << branch_counts["Ls"][branch]/samples << "\t"
+	   << branch_counts["copies"][branch]/samples << "\n";
 	
     }  
   return out.str();

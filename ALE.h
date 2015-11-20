@@ -1,7 +1,7 @@
 //all code by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;
 #pragma once
 
-#define ALE_VERSION "0.3"
+#define ALE_VERSION "0.4"
 
 #include <iostream>
 #include <Bpp/Phyl/BipartitionTools.h>

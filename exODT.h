@@ -255,8 +255,8 @@ class exODT_model
 
 
   void show_counts(std::string name);
-  std::string counts_string();
-  std::string counts_string_undated();
+  std::string counts_string(scalar_type samples=1);
+  std::string counts_string_undated(scalar_type samples=1);
 
   void show_rates(std::string name);
   std::string gid_string(long int g_id);
