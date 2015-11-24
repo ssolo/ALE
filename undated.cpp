@@ -275,7 +275,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 {
   scalar_type survive=0;
   scalar_type root_sum=0;
-  uq.clear();mPTuq.clear();//XX
+  mPTuq_ancestral_correction.clear();uq.clear();mPTuq.clear();//XX
   ale_pointer=ale;
 
   for (std::map<long int, std::map< scalar_type, std::map<int, scalar_type> > >::iterator it=q.begin();it!=q.end();it++)
