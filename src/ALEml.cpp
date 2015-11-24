@@ -1,6 +1,8 @@
 
 #include "exODT.h"
 #include "ALE_util.h"
+#include <boost/progress.hpp>
+
 
 #include <Bpp/Phyl/App/PhylogeneticsApplicationTools.h>
 #include <Bpp/Phyl/OptimizationTools.h>
@@ -68,7 +70,7 @@ int main(int argc, char ** argv)
 
   if (argc<3) 
     {
-      cout << "usage:\n ./ALEml species_tree.newick gene_tree_sample.ale [gene_name_seperator]" << endl;
+      cout << "usage:\n ./ALEml species_tree.newick gene_tree_sample.ale  [samples] [gene_name_seperator]" << endl;
       return 1;
     }
 
@@ -87,9 +89,12 @@ int main(int argc, char ** argv)
   //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();
 
-  int D=3;
+  scalar_type samples=100.;
   if (argc>3)
-    model->set_model_parameter("gene_name_separators", argv[3]);
+    samples=atof(argv[3]);
+  int D=3;
+  if (argc>4)
+    model->set_model_parameter("gene_name_separators", argv[4]);
   model->set_model_parameter("BOOT_STRAP_LABLES","yes");
 
   model->set_model_parameter("min_D",D);
@@ -102,8 +107,9 @@ int main(int argc, char ** argv)
 
   //a set of inital rates
   scalar_type delta=0.01,tau=0.01,lambda=0.1;  
-  if (argc>6)
-    delta=atof(argv[4]),tau=atof(argv[5]),lambda=atof(argv[6]);  
+  if (argc>7)
+    delta=atof(argv[5]),tau=atof(argv[6]),lambda=atof(argv[7]);
+  
   model->set_model_parameter("delta", delta);
   model->set_model_parameter("tau", tau);
   model->set_model_parameter("lambda", lambda);
@@ -126,6 +132,7 @@ int main(int argc, char ** argv)
   optimizer->setConstraintPolicy(AutoParameter::CONSTRAINTS_AUTO);
   optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
 
+  
     
     
  //   FunctionStopCondition stop(optimizer, 1);//1e-1);
@@ -133,7 +140,7 @@ int main(int argc, char ** argv)
     //TEMP
   //optimizer->setMaximumNumberOfEvaluations( 10 );
     
-    optimizer->optimize();
+  optimizer->optimize();
 
   //optimizer->getParameters().printParameters(cout);
   delta=optimizer->getParameterValue("delta");
@@ -148,32 +155,92 @@ int main(int argc, char ** argv)
     
 
   cout << "LL=" << mlll << endl;
+  
+  cout << "Sampling reconciled gene trees.."<<endl;
+  vector <string> sample_strings;
+  vector <Tree*> sample_trees;
+  boost::progress_display pd( samples );
 
-  cout << "Calculating ML reconciled gene tree.."<<endl;
- 
-
+  for (int i=0;i<samples;i++) 
+    {
+      ++pd;
+      string sample_tree=model->sample(false);
+      sample_strings.push_back(sample_tree);
+      
+      if (ale->last_leafset_id>3)
+	{
+	  
+	  tree_type * G=TreeTemplateTools::parenthesisToTree(sample_tree,false);
+	  vector<Node*> leaves = G->getLeaves();
+	  for (vector<Node*>::iterator it=leaves.begin();it!=leaves.end();it++ )
+	    {
+	      string name=(*it)->getName();
+	      vector<string> tokens;
+	      boost::split(tokens,name,boost::is_any_of(".@"),boost::token_compress_on);
+	      (*it)->setName(tokens[0]);
+	      tokens.clear();
+	    }
+	  leaves.clear();
+	  sample_trees.push_back(G);
+	}
+    }
+  /*cout << "Calculating ML reconciled gene tree.."<<endl; 
   pair<string, scalar_type> res = model->p_MLRec(ale);    
   //and output it..
+  */
   string outname=ale_file+".ml_rec"; 
   ofstream fout( outname.c_str() );
   fout <<  "#ALEml using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl<<endl;
   fout << "S:\t"<<model->string_parameter["S_with_ranks"] <<endl;
   fout << endl;
   fout << "Input ale from:\t"<<ale_file<<endl;
+  fout << ">logl: " << mlll << endl;
   fout << "rate of\t Duplications\tTransfers\tLosses" <<endl;
   fout << "ML \t"<< delta << "\t" << tau << "\t" << lambda //<< "'t" << sigma_hat
        << endl;
   fout << endl;
-
-  fout << "reconciled G:\t"<< res.first <<endl;
-  fout << endl;
+  fout << samples << " reconciled G-s:\n"<<endl;
+  for (int i=0;i<samples;i++)
+    {
+      fout<<sample_strings[i]<<endl;
+    }
+  
+  //fout << "reconciled G:\t"<< res.first <<endl;
   fout << "# of\t Duplications\tTransfers\tLosses\tSpeciations" <<endl; 
-  fout <<"Total \t"<< model->MLRec_events["D"] << "\t" << model->MLRec_events["T"] << "\t" << model->MLRec_events["L"]<< "\t" << model->MLRec_events["S"] <<endl;    
+  fout <<"Total \t"<< model->MLRec_events["D"]/samples << "\t" << model->MLRec_events["T"]/samples << "\t" << model->MLRec_events["L"]/samples<< "\t" << model->MLRec_events["S"]/samples <<endl;    
   fout << endl;
-  fout << "# of\t Duplications\tTransfers\tLosses\tgene copies" <<endl; 
-  fout << model->counts_string();
+  fout << "# of\t Duplications\tTransfers\tLosses\tcopies" <<endl; 
+  fout << model->counts_string(samples);
   
   cout << "Results in: " << outname << endl;
+  if (ale->last_leafset_id>3)
+    {
+      cout << "Calculating consensus tree."<<endl;
+      Tree* con_tree= TreeTools::thresholdConsensus(sample_trees,0.5);
+      
+      string con_name=ale_file+".cons_tree";
+      
+      ofstream con_out( con_name.c_str() );
+      con_out <<  "#ALEsample using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl;
+      TreeTools::computeBootstrapValues(*con_tree,sample_trees);
+      string con_tree_sup=TreeTemplateTools::treeToParenthesis(*con_tree);
+      con_out << con_tree_sup << endl;
+      cout << endl<< "Consensus tree in " << con_name<< endl;
+    }
+
+    
+  string t_name=ale_file+".Ts";
+  ofstream tout( t_name.c_str() );
+  tout <<"#Transfer & duplications tokens: \n";
+  tout <<"#D|rank|named_branch|g_id\n;";
+  tout <<"#T(|rank|t|named_branch|g_id)>(|rank|t|named_branch|gp_id)>.. or \n";
+  tout <<"#>(|rank|t|named_branch|-1), where g_id=-1 is the root of G.\n";
+  
+  
+  for (std::vector<std::string>::iterator it=model->Ttokens.begin();it!=model->Ttokens.end();it++)
+    tout << (*it) <<endl;
+  
+  cout << "Transfers in: " << t_name << endl;
   return 0;
 }
 

@@ -275,7 +275,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 {
   scalar_type survive=0;
   scalar_type root_sum=0;
-  uq.clear();mPTuq.clear();//XX
+  mPTuq_ancestral_correction.clear();uq.clear();mPTuq.clear();//XX
   ale_pointer=ale;
 
   for (std::map<long int, std::map< scalar_type, std::map<int, scalar_type> > >::iterator it=q.begin();it!=q.end();it++)
@@ -402,6 +402,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	      }
 	  else
 	    {
+	      //XX
 	      //root bipartition needs to be handled separately
 	      map<set<long int>,int> bip_parts;
 	      for (map <long int,scalar_type> :: iterator it = ale->Bip_counts.begin(); it != ale->Bip_counts.end(); it++)
@@ -831,8 +832,9 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
   return "-!=-";
 }
 
-string exODT_model::counts_string_undated()
+string exODT_model::counts_string_undated(scalar_type samples)
 {
+  
   stringstream out;
   for (int e=0;e<last_branch;e++)	
     {	
@@ -842,18 +844,18 @@ string exODT_model::counts_string_undated()
 
       if (not isleaf)
 	out<< "S_internal_branch\t"<< named_branch.str() << "\t" 
-	   << branch_counts["Ds"][e] << "\t"
-	   << branch_counts["Ts"][e] << "\t"
-	   << branch_counts["Ls"][e] << "\t"
-	   << branch_counts["singleton"][e] << "\t"
-	   << branch_counts["copies"][e] << "\n";
+	   << branch_counts["Ds"][e]/samples << "\t"
+	   << branch_counts["Ts"][e]/samples << "\t"
+	   << branch_counts["Ls"][e]/samples << "\t"
+	  //<< branch_counts["singleton"][e]/samples << "\t"
+	   << branch_counts["copies"][e]/samples << "\n";
       else
 	out<< "S_terminal_branch\t"<< named_branch.str() << "\t" 
-	   << branch_counts["Ds"][e] << "\t"
-	   << branch_counts["Ts"][e] << "\t"
-	   << branch_counts["Ls"][e] << "\t"
-	   << branch_counts["singleton"][e] << "\t"
-	   << branch_counts["copies"][e] << "\n";
+	   << branch_counts["Ds"][e]/samples << "\t"
+	   << branch_counts["Ts"][e]/samples << "\t"
+	   << branch_counts["Ls"][e]/samples << "\t"
+	  //<< branch_counts["singleton"][e] << "\t"
+	   << branch_counts["copies"][e]/samples << "\n";
 	
     }  
   return out.str();

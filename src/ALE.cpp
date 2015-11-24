@@ -54,10 +54,19 @@ void approx_posterior::construct(string tree_string)
 
   last_leafset_id=0;
   observations=0;
+  vector <string > leaves;
   // ? name_separator="+";
-  tree_type * tree = TreeTemplateTools::parenthesisToTree(tree_string,false);//del-loc  
-  vector <string > leaves = tree->getLeavesNames();//del-loc
-
+  
+  if ( tree_string.substr(0,1) !="(")
+    {
+      boost::trim(tree_string);
+      boost::split(leaves,tree_string,boost::is_any_of(","),boost::token_compress_on);
+    }
+  else
+    {
+      tree_type * tree = TreeTemplateTools::parenthesisToTree(tree_string,false);//del-loc  
+      leaves = tree->getLeavesNames();//del-loc
+    }
   int id=0;
   for (vector <string >::iterator it=leaves.begin();it!=leaves.end();it++ )
     {      
@@ -87,14 +96,19 @@ void approx_posterior::construct(string tree_string)
   //number of bipartitions of Gamma
   K_Gamma=pow(2.,(int)Gamma_size-1)-1;
   //number of unrooted trees on Gamma_size leaves
-  if (Gamma_size==2)
+  if (Gamma_size<3)
     N_Gamma=1;
   else
     N_Gamma=boost::math::double_factorial<long double>(2*Gamma_size-5);
 
+  //XX
+  std::unordered_map< pair<long int, long int>,scalar_type> temp ;
+  while (leaves.size()+1 >  Dip_counts.size() ) 
+    Dip_counts.push_back(temp);
+  //XX
   //del-locs
   leaves.clear();
-  delete tree;
+  //delete tree;
 }
 
 
@@ -225,11 +239,13 @@ void approx_posterior::load_state(string fname)
               parts.second = atoi(tokens[2].c_str());
               if ( atol(tokens[0].c_str()) >= (long int) ( Dip_counts.size() ) )
               {
+		//XX
                   std::unordered_map< pair<long int, long int>,scalar_type> temp ;
-                  while (atol(tokens[0].c_str()) >  (long int) Dip_counts.size() ) {
+		  /*
+		  while (atol(tokens[0].c_str()) >  (long int) Dip_counts.size() ) {
                       Dip_counts.push_back(temp);
                   }
-                  
+		  */
                   temp[parts]=atof(tokens[3].c_str());
                   Dip_counts.push_back(temp);
               }
@@ -242,7 +258,7 @@ void approx_posterior::load_state(string fname)
           {
               //cout << reading << endl;
               boost::trim(line);
-              last_leafset_id=atol(line.c_str());
+              last_leafset_id=atol(line.c_str());	      
           }
           else if (reading=="#leaf-id")
           {
@@ -285,7 +301,6 @@ void approx_posterior::load_state(string fname)
     }
     id_sets[-1] = temp;
     set_ids[temp] = -1;
-
   for ( auto it = id_sets.begin(); it != id_sets.end(); it++ )
     {
         size_t size = 0;
@@ -306,6 +321,9 @@ void approx_posterior::load_state(string fname)
         VectorTools::print ( (*it).second );
     }*/
     
+    cout <<"Bip " <<              Bip_counts.size()<<endl;
+    cout <<"size " <<              size_ordered_bips.size()<<endl;
+
 }
 
 /*

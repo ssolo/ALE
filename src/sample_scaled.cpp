@@ -8,9 +8,11 @@ using namespace bpp;
 //(this could be made more clear)
 string exODT_model::sample(bool max_rec)
 {
-  MLRec_events.clear();
-  Ttokens.clear();
-  
+  if (max_rec)
+    {
+      MLRec_events.clear();
+      Ttokens.clear();
+    }
   //scalar_type beta=1;
   scalar_type root_resum=0;
   for (int rank=0;rank<last_rank;rank++)
@@ -87,11 +89,12 @@ string exODT_model::sample(bool max_rec)
       root_t_i=max_root_t_i;      
     }
   register_O(root_e);
+  /*
   if (root_e==-1)
     cout <<"c+O "<< time_slice_times[root_rank][root_t_i] << " " << 0 << endl;
   else
     cout <<"c+O "<< time_slice_times[root_rank][root_t_i] << " " << 1 << endl;
-    
+  */
   return sample(false,-1,root_t_i,root_rank,root_e,0,"","",max_rec)+";";
   //del-locs
 }
@@ -864,7 +867,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 
   if (back_step.t==0 and size == 1 and e!=-1)
     {
-      cout <<"c+P "<< back_step.t << " " << 0 << endl;
+      //cout <<"c+P "<< back_step.t << " " << 0 << endl;
 
       register_leaf(e);	 
       stringstream branch_string;
@@ -888,7 +891,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
       stringstream branch_string;
       if (back_step.event=="S")
 	{
-	  cout <<"c+S "<< back_step.t << " " << 1 << endl;
+	  //cout <<"c+S "<< back_step.t << " " << 1 << endl;
 	  
 	  register_S(e);
 
@@ -917,7 +920,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	{
 	  if (back_step.event=="Tb")
 	    {
-	      cout <<"c+Tb "<< back_step.t << " " << 1 << endl;
+	      //cout <<"c+Tb "<< back_step.t << " " << 1 << endl;
 
 	      int this_e,this_gid;
 
@@ -982,7 +985,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 
 	      stringstream tmp;
 	      tmp<<back_step.rank<<"|"<<t<<"|"<<named_branch.str()<<"|"<<this_gid;
-	      register_Ttoken(transfer_token+"|"+tmp.str());
+	      register_Ttoken(transfer_token+">"+tmp.str());
 	      // Tto
 	      
 	      branch_string<< branch_events<<back_step.event<<"@"<<back_step.rank<<"|"<<named_branch.str()<<":"<<max(new_branch_length,(scalar_type)0.0); 
@@ -1048,13 +1051,13 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	      if  (transfer_token!="")
 		transfer_token_stream<< transfer_token;
 	      else
-		transfer_token_stream<< rank<<"|"<<t<<"|"<<named_branch.str()<<"|"<<g_id;
+		transfer_token_stream<<"T|"<< rank<<"|"<<t<<"|"<<named_branch.str()<<"|"<<g_id;
 	      
 	      branch_string<< branch_events<<"T@"<<rank<<"|"<<named_branch.str()<<":"<<max(new_branch_length,(scalar_type)0.0); 	    
 	    }
 	  else
 	    {
-	      cout <<"c+D "<< back_step.t << " " << 1 << endl;
+	      //cout <<"c+D "<< back_step.t << " " << 1 << endl;
 	      register_D(e);	  
 	      stringstream Dtoken_stream;
 	      stringstream named_branch;
@@ -1152,7 +1155,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 	    {
 	      if (back_step.event=="TLb")
 		{
-		  cout <<"c+TLb "<< back_step.t << " " << (back_step.e!=-1) << endl;
+		  //cout <<"c+TLb "<< back_step.t << " " << (back_step.e!=-1) << endl;
 		  register_Tto(back_step.e);
 
 		  gid_events[g_id].push_back("TL");
@@ -1172,7 +1175,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		    named_branch<<id_ranks[back_step.e];
 
 		  tmp<<back_step.rank<<"|"<<t<<"|"<< named_branch.str()<<"|"<<g_id;
-		  register_Ttoken(transfer_token+"|"+tmp.str());
+		  register_Ttoken(transfer_token+">"+tmp.str());
 		  transfer_token="";
 	      
 		  branch_string<<""
@@ -1180,7 +1183,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		}
 	      else  if (back_step.event=="SLb")
 		{
-		  cout <<"c+TLb "<< back_step.t << " " << -1 << endl;
+		  //cout <<"c+TLb "<< back_step.t << " " << -1 << endl;
 		  register_L(e);
 		  register_Tfrom(e);
 
@@ -1198,7 +1201,7 @@ string exODT_model::sample(bool S_node,long int g_id,int t_i,scalar_type rank,in
 		  else
 		    named_branch<<id_ranks[e];
 
-		  transfer_token_stream<< rank<<"|"<<t<<"|"<<named_branch.str()<<"|"<<g_id;
+		  transfer_token_stream<<"T|"<< rank<<"|"<<t<<"|"<<named_branch.str()<<"|"<<g_id;
 
 		  branch_string<<".T"
 			       <<"@"<<rank<<"|"<<named_branch.str();
