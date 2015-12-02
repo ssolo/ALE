@@ -321,8 +321,8 @@ void approx_posterior::load_state(string fname)
         VectorTools::print ( (*it).second );
     }*/
     
-    cout <<"Bip " <<              Bip_counts.size()<<endl;
-    cout <<"size " <<              size_ordered_bips.size()<<endl;
+  //cout <<"Bip " <<              Bip_counts.size()<<endl;
+  //cout <<"size " <<              size_ordered_bips.size()<<endl;
 
 }
 

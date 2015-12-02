@@ -80,7 +80,6 @@ int main(int argc, char ** argv)
 
   //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();
-  cout << "o" << endl;
 
   int D=4;
   model->set_model_parameter("gene_name_separators", ".");
@@ -105,6 +104,25 @@ int main(int argc, char ** argv)
 
   //calculate_EGb() must always be called after changing rates to calculate E-s and G-s
   //cf. http://arxiv.org/abs/1211.4606
+  cout << "#Mapping begin:" << endl;
+  for (int branch=0;branch<model->last_branch;branch++)
+    {
+      stringstream named_branch;
+      if (branch==model->alpha)
+	named_branch<<-1;
+      else if (model->id_ranks[branch]==0)
+	named_branch<<model->extant_species[branch];
+      else
+	{
+	  if (model->rank2label[model->id_ranks[branch]]!=-1)
+	    named_branch<<model->rank2label[model->id_ranks[branch]];
+	  else
+	    named_branch<<"ROOT";
+	}
+      cout << named_branch.str() << "->" << branch << endl;
+    }
+  cout << "#mapping end." << endl;
+
   model->calculate_EGb();
 
   cout << "Reconciliation model initialised, starting DTL rate optimisation" <<".."<<endl;
@@ -215,6 +233,7 @@ int main(int argc, char ** argv)
       sample_out << sample_tree << endl;
     }
   cout << "sampling done." << endl;
+  
   for (vector<string>::iterator et=event_types.begin();et!=event_types.end();++et )
     {
       ofstream h_out( S_tree_name+"_"+((*et)+".h").c_str() );
