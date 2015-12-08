@@ -902,13 +902,13 @@ scalar_type mpi_tree::calculate_pun(int samples)
   for (int i=0;i<(int)ale_pointers.size();i++)
     {
       //if (rank==server) cout << rank <<" at " <<round(i/(float)ale_pointers.size()*100.)<<" %, strats "<< client_fnames[i] << endl;
-
+      model->calculate_undatedEs();
+      
       scalar_type tmpp=model->pun(ale_pointers[i]);
       fout << "started "<<client_fnames[i] << " ll="<< log(tmpp)<<endl;
       for (int si=0;si< samples;si++)
 	{
-	  model->sample_undated();
-	  
+	  model->sample_undated();	  
 	}
       fout << "finished "<<client_fnames[i]<<endl;
 

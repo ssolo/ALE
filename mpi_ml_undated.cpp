@@ -95,8 +95,8 @@ int main(int argc, char ** argv)
   //scalar_type ll = infer_tree->calculate_pun(10,1);
   
   if (world.rank()==0) cout << infer_tree->model->string_parameter["S_with_ranks"] << endl;
-  infer_tree->gather_counts();
-  infer_tree->gather_T_to_from();
+  //infer_tree->gather_counts();
+  //infer_tree->gather_T_to_from();
   broadcast(world,done,0);
   scalar_type delta=0.1;
   scalar_type tau=0.1;
@@ -133,20 +133,18 @@ int main(int argc, char ** argv)
     }
   else
     {
-      if (world.rank()==0) cout << "#skipping with: delta=" <<delta <<" lambda="<<lambda<<" tau="<<tau<<endl;       
+      if (world.rank()==0) cout << "#skipping rate optimization" << endl; 
     }
   //optimizer->getParameters().printParameters(cout);
   if (argc>5)
-    delta=atof(argv[3]),tau=atof(argv[4]),lambda=atof(argv[5]);  
+    delta=atof(argv[3]),tau=atof(argv[4]),lambda=atof(argv[5]);
   if (world.rank()==0) cout << "#rates : delta=" <<delta <<" lambda="<<lambda<<" tau="<<tau<<endl;
   
   infer_tree->model->set_model_parameter("delta",delta);
   infer_tree->model->set_model_parameter("tau",tau);
   infer_tree->model->set_model_parameter("lambda",lambda);  
-  infer_tree->calculate_pun();
-
-  
-  scalar_type samples=1;
+  infer_tree->calculate_pun(0);  
+  scalar_type samples=100;
   if (world.rank()==0) cout << "#sampling .." << endl;       
   scalar_type ll_final = infer_tree->calculate_pun(samples);
   if (world.rank()==0) cout << "#sampling done." << endl;       

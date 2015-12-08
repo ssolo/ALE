@@ -97,6 +97,7 @@ class exODT_model
   std::map <bpp::Node *,std::string> node_name; 
   std::map <std::string,std::map<std::string,int> > ancestral_names;
   std::map <int,std::map<int,int> > ancestral;
+  std::vector < std::vector <int> > ancestors;
 
   std::vector<scalar_type> uE;
   scalar_type mPTE;

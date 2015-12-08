@@ -41,9 +41,9 @@ class mpi_tree
 	  set_parameter("min_tau",1e-6);
 	  set_parameter("min_lambda",1e-6);
 
-	  set_parameter("inital_delta",0.01);
-	  set_parameter("inital_tau",0.02);
-	  set_parameter("inital_lambda",0.1);      
+	  set_parameter("inital_delta",0.2);
+	  set_parameter("inital_tau",0.2);
+	  set_parameter("inital_lambda",0.5);      
 	  model=new exODT_model();
 	  model->construct_undated(Sstring);//del-loc
 
