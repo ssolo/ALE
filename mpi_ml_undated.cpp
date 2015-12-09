@@ -144,7 +144,7 @@ int main(int argc, char ** argv)
   infer_tree->model->set_model_parameter("tau",tau);
   infer_tree->model->set_model_parameter("lambda",lambda);  
   infer_tree->calculate_pun(0);  
-  scalar_type samples=100;
+  scalar_type samples=1;
   if (world.rank()==0) cout << "#sampling .." << endl;       
   scalar_type ll_final = infer_tree->calculate_pun(samples);
   if (world.rank()==0) cout << "#sampling done." << endl;       
@@ -159,7 +159,10 @@ int main(int argc, char ** argv)
   if (world.rank()==0) cout<< ">logl:\t"<< ll_final << endl;
   if (world.rank()==0) cout<< ">Ts:\tfrom\tto"<< endl;
   if (world.rank()==0) infer_tree->print_branch_counts(samples);
-  return 1;
+
+  string Tname=Sstring+".Ts";
+  ofstream fout( Tname.c_str() );
+
   if (world.rank()==0)
     for (map <scalar_type, vector< int > >::iterator it=infer_tree->sort_e.begin();it!=infer_tree->sort_e.end();it++)
       {
@@ -170,14 +173,14 @@ int main(int argc, char ** argv)
 	      int e=infer_tree->sort_e[-Ts][i];
 	      int f=infer_tree->sort_f[-Ts][i];
 	      if (e<infer_tree->model->last_leaf)
-		cout << "\t" << infer_tree->model->node_name[infer_tree->model->id_nodes[e]];
+		fout << "\t" << infer_tree->model->node_name[infer_tree->model->id_nodes[e]];
 	      else
-		cout << "\t" << e;
+		fout << "\t" << e;
 	      if (f<infer_tree->model->last_leaf)
-		cout << "\t" << infer_tree->model->node_name[infer_tree->model->id_nodes[f]];	      
+		fout << "\t" << infer_tree->model->node_name[infer_tree->model->id_nodes[f]];	      
 	      else
-		cout << "\t" << f;
-	      cout << "\t" << Ts << endl; //" " << new_S << endl;		
+		fout << "\t" << f;
+	      fout << "\t" << Ts << endl; //" " << new_S << endl;		
 	    }
       }
 
