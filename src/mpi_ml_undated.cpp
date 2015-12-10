@@ -35,7 +35,7 @@ public:
   }
   
   p_fun* clone() const { return new p_fun(*this); }
-  
+
 public:
   
     void setParameters(const ParameterList& pl)
@@ -61,10 +61,10 @@ public:
 
         //model_pointer->calculate_EGb();
         double y=-(model_pointer->calculate_pun());
-	model_pointer->gather_counts();
+	//model_pointer->gather_counts();
         if (world.rank()==0) {
 	  cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda << "\t ll=" << -y <<endl;
-	  model_pointer->print_branch_counts();
+	  //model_pointer->print_branch_counts();
 	    };
         fval_ = y;
     }
@@ -95,58 +95,73 @@ int main(int argc, char ** argv)
   //scalar_type ll = infer_tree->calculate_pun(10,1);
   
   if (world.rank()==0) cout << infer_tree->model->string_parameter["S_with_ranks"] << endl;
-  infer_tree->gather_counts();
-  infer_tree->gather_T_to_from();
+  //infer_tree->gather_counts();
+  //infer_tree->gather_T_to_from();
   broadcast(world,done,0);
+  scalar_type delta=0.1;
+  scalar_type tau=0.1;
+  scalar_type lambda=0.1;
 
+  if (argc<5)
+    {
   
-  Function* f = new p_fun(infer_tree,world );
-  Optimizer* optimizer = new DownhillSimplexMethod(f);
-
-  optimizer->setProfiler(0);
-  optimizer->setMessageHandler(0);
-  optimizer->setVerbose(0);
-  if (world.rank()==0)   optimizer->setVerbose(1);
-
-
-  optimizer->setConstraintPolicy(AutoParameter::CONSTRAINTS_AUTO);
-  optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
-
-    
-    
- //   FunctionStopCondition stop(optimizer, 1);//1e-1);
- // optimizer->setStopCondition(stop);
-    //TEMP
-  //optimizer->setMaximumNumberOfEvaluations( 10 );
-    
-  optimizer->optimize();
-
+      Function* f = new p_fun(infer_tree,world );
+      Optimizer* optimizer = new DownhillSimplexMethod(f);
+      
+      optimizer->setProfiler(0);
+      optimizer->setMessageHandler(0);
+      optimizer->setVerbose(0);
+      if (world.rank()==0)   optimizer->setVerbose(1);
+      
+      
+      optimizer->setConstraintPolicy(AutoParameter::CONSTRAINTS_AUTO);
+      optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
+      if (world.rank()==0)      cout << "#ML rate optimization.." << endl;  
+      optimizer->optimize();
+      broadcast(world,done,0);
+      
+      delta=optimizer->getParameterValue("delta");
+      tau=optimizer->getParameterValue("tau");
+      lambda=optimizer->getParameterValue("lambda");
+      if (world.rank()==0 )
+	{
+	  optimizer->getParameters().printParameters(cout);
+	  cout <<endl<< delta << " " << tau << " " << lambda// << " " << sigma
+	       << endl;
+	}
+      
+    }
+  else
+    {
+      if (world.rank()==0) cout << "#skipping rate optimization" << endl; 
+    }
   //optimizer->getParameters().printParameters(cout);
-  broadcast(world,done,0);
-  scalar_type delta=optimizer->getParameterValue("delta");
-  scalar_type tau=optimizer->getParameterValue("tau");
-  scalar_type lambda=optimizer->getParameterValue("lambda");              
+  if (argc>5)
+    delta=atof(argv[3]),tau=atof(argv[4]),lambda=atof(argv[5]);
+  if (world.rank()==0) cout << "#rates : delta=" <<delta <<" lambda="<<lambda<<" tau="<<tau<<endl;
+  
   infer_tree->model->set_model_parameter("delta",delta);
   infer_tree->model->set_model_parameter("tau",tau);
-  infer_tree->model->set_model_parameter("lambda",lambda);
-  
-  if (world.rank()==0)
-    {
-      optimizer->getParameters().printParameters(cout);
+  infer_tree->model->set_model_parameter("lambda",lambda);  
+  infer_tree->calculate_pun(0);  
+  scalar_type samples=1;
+  if (world.rank()==0) cout << "#sampling .." << endl;       
+  scalar_type ll_final = infer_tree->calculate_pun(samples);
+  if (world.rank()==0) cout << "#sampling done." << endl;       
 
-      //scalar_type sigma=optimizer->getParameterValue("sigma");
+  infer_tree->gather_counts(samples);
+  if (world.rank()==0) cout << "#gather done." << endl;       
 
-      cout <<endl<< delta << " " << tau << " " << lambda// << " " << sigma
-	   << endl;
-    }
-  scalar_type ll_final = infer_tree->calculate_pun(100.);
+  infer_tree->gather_T_to_from(samples);
+  if (world.rank()==0) cout << "#gather T_from done." << endl;       
 
-  infer_tree->gather_counts();
-  infer_tree->gather_T_to_from();
   if (world.rank()==0) cout<< ">tree:\t"<< infer_tree->model->string_parameter["S_with_ranks"] << endl;
   if (world.rank()==0) cout<< ">logl:\t"<< ll_final << endl;
   if (world.rank()==0) cout<< ">Ts:\tfrom\tto"<< endl;
-  if (world.rank()==0) infer_tree->print_branch_counts();
+  if (world.rank()==0) infer_tree->print_branch_counts(samples);
+
+  string Tname=Sstring+".Ts";
+  ofstream fout( Tname.c_str() );
 
   if (world.rank()==0)
     for (map <scalar_type, vector< int > >::iterator it=infer_tree->sort_e.begin();it!=infer_tree->sort_e.end();it++)
@@ -158,14 +173,14 @@ int main(int argc, char ** argv)
 	      int e=infer_tree->sort_e[-Ts][i];
 	      int f=infer_tree->sort_f[-Ts][i];
 	      if (e<infer_tree->model->last_leaf)
-		cout << "\t" << infer_tree->model->node_name[infer_tree->model->id_nodes[e]];
+		fout << "\t" << infer_tree->model->node_name[infer_tree->model->id_nodes[e]];
 	      else
-		cout << "\t" << e;
+		fout << "\t" << e;
 	      if (f<infer_tree->model->last_leaf)
-		cout << "\t" << infer_tree->model->node_name[infer_tree->model->id_nodes[f]];	      
+		fout << "\t" << infer_tree->model->node_name[infer_tree->model->id_nodes[f]];	      
 	      else
-		cout << "\t" << f;
-	      cout << "\t" << Ts << endl; //" " << new_S << endl;		
+		fout << "\t" << f;
+	      fout << "\t" << Ts << endl; //" " << new_S << endl;		
 	    }
       }
 

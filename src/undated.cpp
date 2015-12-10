@@ -127,7 +127,14 @@ void exODT_model::construct_undated(string Sstring)
 
   //map <string,map<string,int> > ancestral_names;
   //map <int,map<int,int> > ancestral;
-  
+  ancestors.clear();
+  for (int e=0;e<last_branch;e++)
+    {
+      vector <int> tmp;
+      ancestors.push_back(tmp);
+      for (int f=0;f<last_branch;f++)
+	ancestral[e][f]=0;
+    }
   for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
     {
       Node * node=(*it);
@@ -149,16 +156,18 @@ void exODT_model::construct_undated(string Sstring)
 	    name_to<<f;
 	  node=node->getFather();
 	  ancestral_names[name_from.str()][name_to.str()]=1;
+	  if (not ancestral[e][f])
+	    ancestors[e].push_back(f);
 	  ancestral[e][f]=1;
 	}
       stringstream name_to;
       int f = node_ids[node];
       name_to<<f;
       ancestral_names[name_from.str()][name_to.str()]=1;
+      if (not ancestral[e][f])
+	ancestors[e].push_back(f);
       ancestral[e][f]=1;
-
     }
-
 
   
 
@@ -248,11 +257,14 @@ void exODT_model::calculate_undatedEs()
       for (int e=0;e<last_branch ;e++)
 	{
 	  mPTE_ancestral_correction[e]=0;
-	  for (map<int,int>::iterator it=ancestral[e].begin();( it!=ancestral[e].end() and i>0);it++)
-	    {
-	      int f=(*it).second;
-	      mPTE_ancestral_correction[e]+=  (PT[f]/(float)last_branch)*uE[f];
-	    }	  
+	  //for (map<int,int>::iterator it=ancestral[e].begin();( it!=ancestral[e].end() and i>0);it++)
+	    for (vector<int>::iterator it=ancestors[e].begin();( it!=ancestors[e].end() and i>0);it++)
+	      {
+		//int f=(*it).first;
+		int f=(*it);
+		//if (ancestral[e][f]==1)	  
+		  mPTE_ancestral_correction[e]+=  (PT[f]/(float)last_branch)*uE[f];
+	      }	  
 	}
 
       for (int e=0;e<last_branch;e++)
@@ -493,9 +505,12 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	      uq[i][e]=uq_sum;
 	      new_mPTuq +=(PT[e]/(float)last_branch)*uq_sum;
 	      mPTuq_ancestral_correction[i][e]=0;
-	      for (map<int,int>::iterator it=ancestral[e].begin(); it!=ancestral[e].end();it++)
+	      //for (map<int,int>::iterator it=ancestral[e].begin(); it!=ancestral[e].end();it++)
+	      for (vector<int>::iterator it=ancestors[e].begin(); it!=ancestors[e].end();it++)
 		{
-		  int f=(*it).second;
+		  //int f=(*it).first;
+		  int f=(*it);
+		  //if (ancestral[e][f]==1)
 		  mPTuq_ancestral_correction[i][e]+=(PT[f]/(float)last_branch)*uq_sum;
 		}
 	    }
@@ -512,7 +527,6 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	  root_sum+=uq[root_i][e];
 	  survive+=(1-uE[e]);
 	}	     
-      
       //cout << root_sum/survive << endl;
     }
   return root_sum/survive;
@@ -560,7 +574,6 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
     bl<<max(ale_pointer->Bip_bls[g_id]/ale_pointer->observations,(scalar_type)scalar_parameter["min_branch_lenghts"]); 
   string branch_length=bl.str();
 
-  
   vector <int> gp_is;
   vector <long int> gpp_is;
   vector <scalar_type> p_part;
@@ -633,6 +646,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
       // present
       uq_sum+=PS[e]*1+EPSILON;
     }
+
   // G internal		  
   if (not is_a_leaf)
     {
@@ -661,6 +675,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	      }
 	}
     }
+
   if (not (e<last_leaf) )
     {
       int f=daughter[e];
@@ -669,15 +684,18 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
       uq_sum+=PS[e]*uq[i][f]*uE[g]+EPSILON;
       uq_sum+=PS[e]*uq[i][g]*uE[f]+EPSILON;
     }
+  
   // DL event
   uq_sum+=PD[e]*(uq[i][e]*uE[e]*2)+EPSILON;			      
   // TL event
+
   for (int f=0;f<last_branch;f++)
     if (not ancestral[e][f]) 
       {
 	uq_sum+=(PT[f]/(float)last_branch)*uq[i][f]*uE[e]+EPSILON;
 	uq_sum+=(PT[f]/(float)last_branch)*uE[f]*uq[i][e]+EPSILON;			      				      	      
       }
+
   //######################################################################################################################
   //#########################################INNNER LOOP##################################################################
   //######################################################################################################################		    
@@ -685,6 +703,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
   //######################################################################################################################
   //#########################################INNNER LOOP##################################################################
   //######################################################################################################################		   
+
   stringstream estring;
   if (not (e<last_leaf)) estring << e; else estring << extant_species[e]; 
   string estr=estring.str();

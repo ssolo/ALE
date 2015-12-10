@@ -659,7 +659,7 @@ void exODT_model::register_Ttoken(string token)
 }
 
 //ad hoc function should be moved to a future exODT_util.cpp 
-void exODT_model::show_counts(string name)
+void exODT_model::show_counts(string name, bool as_branch_length, bool per_copy)
 {
   for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
     (*it).first->setBranchProperty("ID",BppString(""));
@@ -668,15 +668,29 @@ void exODT_model::show_counts(string name)
     if ( id_nodes.count(branch))
       {
 	Node * tmp_node = id_nodes[branch];
-	
+
+	scalar_type value=branch_counts[name][branch];
+	if (per_copy)
+	  value=value/max(1.,branch_counts["copies"][branch]);
 	stringstream out;
 	string old_name = (* (dynamic_cast<const BppString *>(tmp_node->getBranchProperty("ID")))).toSTL();
 	//out<< id_ranks[branch];
-	if (branch==last_branch-1) out<<"|"<<name<<"|";
-	out<<branch_counts[name][branch];
-	tmp_node->setBranchProperty("ID",BppString(out.str()));	      
-	if (tmp_node->isLeaf())
-	  tmp_node->setName(tmp_node->getName()+"_"+out.str());
+	out<<value;
+	if (branch==last_branch-1)
+	  {
+	    out<<"|"<<name<<"|";
+	    tmp_node->setBranchProperty("ID",BppString(out.str()));	      	   
+	  }
+	else if (not as_branch_length)
+	  {
+	    tmp_node->setBranchProperty("ID",BppString(out.str()));	      
+	    if (tmp_node->isLeaf())
+	      tmp_node->setName(tmp_node->getName()+"_"+out.str());
+	  }
+	else
+	  {
+	    tmp_node->setDistanceToFather(value);	    
+	  }
       }
   cout << TreeTemplateTools::treeToParenthesis(*S,false,"ID") << endl;
   for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )

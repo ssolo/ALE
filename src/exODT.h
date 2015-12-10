@@ -97,6 +97,7 @@ class exODT_model
   std::map <bpp::Node *,std::string> node_name; 
   std::map <std::string,std::map<std::string,int> > ancestral_names;
   std::map <int,std::map<int,int> > ancestral;
+  std::vector < std::vector <int> > ancestors;
 
   std::vector<scalar_type> uE;
   scalar_type mPTE;
@@ -254,7 +255,7 @@ class exODT_model
   std::string sample(bool S_node,long int g_id,int t_i,scalar_type rank,int e,scalar_type branch_length,std::string branch_events, std::string transfer_toke="",bool max_rec=false);
 
 
-  void show_counts(std::string name);
+  void show_counts(std::string name, bool as_branch_length=true, bool per_copy=false);
   std::string counts_string(scalar_type samples=1);
   std::string counts_string_undated(scalar_type samples=1);
 

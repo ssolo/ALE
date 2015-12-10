@@ -13,7 +13,7 @@ void exODT_model::construct_undated(string Sstring)
   id_nodes.clear();
   
   string_parameter["S_un"]=Sstring;
-  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  (string_parameter["BOOT_STRAP_LABLES"]=="yes")
+  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"], true//  (string_parameter["BOOT_STRAP_LABLES"]=="yes")
 					 );
   S_root = S->getRootNode();
   vector <Node*> nodes = TreeTemplateTools::getNodes(*S_root);
@@ -205,12 +205,6 @@ void exODT_model::calculate_undatedEs()
   for (int i=0;i<4;i++)
     {
       scalar_type newmPTE=0;
-      vector<scalar_type> ancestral_correction;
-      for (int e=0;e<last_branch;e++)
-	{
-	  ancestral_correction.push_back(0);
-	  
-	}
       for (int e=0;e<last_branch;e++)
 	{
 	  if (e<last_leaf)
@@ -721,14 +715,14 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	{
 	  register_Su(e,last_event);
 	  register_L(g);			  
-	  return sample_undated(f,i,"S","."+estr);
+	  return sample_undated(f,i,"S","."+estr+branch_string);
 	}		  
       uq_resum+=PS[e]*uq[i][g]*uE[f]+EPSILON;
       if (r*uq_sum<uq_resum)
 	{
 	  register_Su(e,last_event);
 	  register_L(f);			  
-	  return sample_undated(g,i,"S","."+estr);
+	  return sample_undated(g,i,"S","."+estr+branch_string);
 	}		  
     }
   // DL event
@@ -771,8 +765,9 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
   return "-!=-";
 }
 
-string exODT_model::counts_string_undated()
+string exODT_model::counts_string_undated(scalar_type samples)
 {
+  
   stringstream out;
   for (int e=0;e<last_branch;e++)	
     {	
@@ -782,18 +777,18 @@ string exODT_model::counts_string_undated()
 
       if (not isleaf)
 	out<< "S_internal_branch\t"<< named_branch.str() << "\t" 
-	   << branch_counts["Ds"][e] << "\t"
-	   << branch_counts["Ts"][e] << "\t"
-	   << branch_counts["Ls"][e] << "\t"
-	   << branch_counts["singleton"][e] << "\t"
-	   << branch_counts["copies"][e] << "\n";
+	   << branch_counts["Ds"][e]/samples << "\t"
+	   << branch_counts["Ts"][e]/samples << "\t"
+	   << branch_counts["Ls"][e]/samples << "\t"
+	  //<< branch_counts["singleton"][e]/samples << "\t"
+	   << branch_counts["copies"][e]/samples << "\n";
       else
 	out<< "S_terminal_branch\t"<< named_branch.str() << "\t" 
-	   << branch_counts["Ds"][e] << "\t"
-	   << branch_counts["Ts"][e] << "\t"
-	   << branch_counts["Ls"][e] << "\t"
-	   << branch_counts["singleton"][e] << "\t"
-	   << branch_counts["copies"][e] << "\n";
+	   << branch_counts["Ds"][e]/samples << "\t"
+	   << branch_counts["Ts"][e]/samples << "\t"
+	   << branch_counts["Ls"][e]/samples << "\t"
+	  //<< branch_counts["singleton"][e] << "\t"
+	   << branch_counts["copies"][e]/samples << "\n";
 	
     }  
   return out.str();
@@ -831,7 +826,8 @@ void exODT_model::register_T_to_from(int e,int f)
 
 string exODT_model::feSPR(int e, int f)
 {
-  tree_type * newS=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  (string_parameter["BOOT_STRAP_LABLES"]=="yes"));
+  tree_type * newS=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"], true// (string_parameter["BOOT_STRAP_LABLES"]=="yes"));
+							);
   Node * newS_root = newS->getRootNode();
   vector <Node*> nodes = TreeTemplateTools::getNodes(*newS_root);
 
