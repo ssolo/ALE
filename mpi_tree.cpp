@@ -360,7 +360,7 @@ void mpi_tree::clear_counts()
   int done=1;
   broadcast(world,done,server);
 }
-void mpi_tree::gather_T_to_from()
+void mpi_tree::gather_T_to_from(scalar_type samples)
 {
   if (rank==server)
     {      
@@ -382,8 +382,8 @@ void mpi_tree::gather_T_to_from()
 	for (int e=0;e<model->last_branch;e++)
 	  for (int f=0;f<model->last_branch;f++)
 	    {
-	      gathered_T_to_from[e][f]+=(*it)[e][f];
-	      Tsum+=(*it)[e][f];
+	      gathered_T_to_from[e][f]+=(*it)[e][f]/samples;
+	      Tsum+=(*it)[e][f]/samples;
 	    }
       //cout << ">TOTAL Ts = "<< Tsum/100. << endl;
       //map <scalar_type, vector< int > >sort_e;
@@ -420,7 +420,7 @@ void mpi_tree::gather_T_to_from()
 	}
     }
 }
-void mpi_tree::gather_counts()
+void mpi_tree::gather_counts(scalar_type samples)
 {
   map< string ,vector <vector <scalar_type> > > gathered_branch_counts;//del-loc
   for (map<string,vector<scalar_type> >::iterator it=model->branch_counts.begin();it!=model->branch_counts.end();it++)
@@ -436,10 +436,15 @@ void mpi_tree::gather_counts()
 	{
 	  for (int branch=0;branch<model->last_branch;branch++)	
 	    {
+	      model->branch_counts[count_name][branch]/=samples;
 	      for (int i=1;i<size;i++)
-		model->branch_counts[count_name][branch]+=gathered_branch_counts[count_name][i][branch];
-	    }    
-	  model->show_counts(count_name);
+		model->branch_counts[count_name][branch]+=gathered_branch_counts[count_name][i][branch]/samples;
+	    }
+	  cout << "# Tree for " << count_name << " counts:" << endl;
+	  model->show_counts(count_name,false);		      
+	  model->show_counts(count_name,true);
+	  model->show_counts(count_name,true,true);
+
 	}  
     }  
   //del-locs
@@ -470,7 +475,7 @@ void mpi_tree::gather_counts()
 }
 
 
-void mpi_tree::print_branch_counts()
+void mpi_tree::print_branch_counts(scalar_type samples)
 {
   if (rank==server)
     {
@@ -504,7 +509,7 @@ void mpi_tree::print_branch_counts()
 	  for (map<string,vector<scalar_type> >::iterator it=model->branch_counts.begin();it!=model->branch_counts.end();it++)
 	    {
 	      string count_name=(*it).first;
-	      some_sums[count_name]+=model->branch_counts[count_name][branch];
+	      some_sums[count_name]+=model->branch_counts[count_name][branch]/samples;
 
 	      //cout << model->branch_counts[count_name][branch] << "\t";
 	    }
@@ -519,7 +524,7 @@ void mpi_tree::print_branch_counts()
       for (map<string,vector<scalar_type> >::iterator it=model->branch_counts.begin();it!=model->branch_counts.end();it++)
 	{
 	  string count_name=(*it).first;	 
-	  cout <<"\t"<< some_sums[count_name];
+	  cout <<"\t"<< some_sums[count_name]/samples;
 	}
       cout << endl;
 
@@ -869,7 +874,11 @@ scalar_type mpi_tree::calculate_pun(int n, bool bw)
   return ll;
 }
 scalar_type mpi_tree::calculate_pun(int samples)
-{  
+{
+  stringstream outname;
+  outname << "try."<<rank; 
+  ofstream fout( outname.str().c_str() );
+
   scalar_type ll=0;
   model->calculate_undatedEs();
   vector<scalar_type> gather_ll;
@@ -892,9 +901,17 @@ scalar_type mpi_tree::calculate_pun(int samples)
   //boost::timer * t = new boost::timer();
   for (int i=0;i<(int)ale_pointers.size();i++)
     {
-      //cout << rank <<" at " <<round(i/(float)ale_pointers.size()*100.)<<" %, strats "<< client_fnames[i] << endl;
+      //if (rank==server) cout << rank <<" at " <<round(i/(float)ale_pointers.size()*100.)<<" %, strats "<< client_fnames[i] << endl;
+      model->calculate_undatedEs();
+      
       scalar_type tmpp=model->pun(ale_pointers[i]);
-      for (int i=0;i< samples;i++) model->sample_undated();
+      fout << "started "<<client_fnames[i] << " ll="<< log(tmpp)<<endl;
+      for (int si=0;si< samples;si++)
+	{
+	  model->sample_undated();	  
+	}
+      fout << "finished "<<client_fnames[i]<<endl;
+
       if (tmpp==0) cout << client_fnames[i] << " is 0 !!"<<endl;
       //cout <<"#LL " << client_fnames[i] << " " << log(tmpp) << endl;
       
@@ -906,7 +923,7 @@ scalar_type mpi_tree::calculate_pun(int samples)
   scalar_type sum_ll=0;
   if (rank==server) for (int i=0;i<size;i++) sum_ll+=gather_ll[i];
   broadcast(world,sum_ll,server);
-  if (rank==server) cout <<" " << sum_ll<<endl;
+  if (rank==server) cout <<" "<< sum_ll<<endl;
 
   return sum_ll;
 }
