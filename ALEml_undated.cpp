@@ -74,6 +74,7 @@ int main(int argc, char ** argv)
 
   //we need a dared species tree in newick format
   string Sstring;
+  string S_treefile=argv[1];
   ifstream file_stream_S (argv[1]);
   getline (file_stream_S,Sstring);
   cout << "Read species tree from: " << argv[1] <<".."<<endl;
@@ -123,21 +124,23 @@ int main(int argc, char ** argv)
   optimizer->setConstraintPolicy(AutoParameter::CONSTRAINTS_AUTO);
   optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
         
- 
-  optimizer->optimize();
-
-
-
-  delta=optimizer->getParameterValue("delta");
-  tau=optimizer->getParameterValue("tau");
-  lambda=optimizer->getParameterValue("lambda");
-
-  scalar_type mlll=-optimizer->getFunctionValue();
+  scalar_type mlll;
+  if (not (argc>7))
+    {
+      optimizer->optimize();
+      delta=optimizer->getParameterValue("delta");
+      tau=optimizer->getParameterValue("tau");
+      lambda=optimizer->getParameterValue("lambda");
+      mlll=-optimizer->getFunctionValue();
+    }
+  else
+    {
+      mlll=log(model->pun(ale));
+    }
   cout << endl << "ML rates: " << " delta=" << delta << "; tau=" << tau << "; lambda="<<lambda//<<"; sigma="<<sigma_hat
        <<"."<<endl;
   
-    
-
+  
   cout << "LL=" << mlll << endl;
   
   cout << "Sampling reconciled gene trees.."<<endl;
@@ -172,6 +175,9 @@ int main(int argc, char ** argv)
   pair<string, scalar_type> res = model->p_MLRec(ale);    
   //and output it..
   */
+  vector<string> tokens;
+  boost::split(tokens,ale_file,boost::is_any_of("/"),boost::token_compress_on);
+  ale_file=tokens[tokens.size()-1];
   string outname=ale_file+".uml_rec"; 
   ofstream fout( outname.c_str() );
   fout <<  "#ALEml_undated using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl<<endl;
