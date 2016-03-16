@@ -106,7 +106,7 @@ int main(int argc, char ** argv)
   model->set_model_parameter("N",1);
 
   //a set of inital rates
-  scalar_type delta=0.01,tau=0.01,lambda=0.1;  
+  scalar_type delta=0.1,tau=0.1,lambda=0.2;  
   if (argc>7)
     delta=atof(argv[5]),tau=atof(argv[6]),lambda=atof(argv[7]);
   
@@ -118,6 +118,9 @@ int main(int argc, char ** argv)
   //calculate_EGb() must always be called after changing rates to calculate E-s and G-s
   //cf. http://arxiv.org/abs/1211.4606
   model->calculate_EGb();
+  scalar_type mlll;
+  if (!(argc>7))
+    {
   cout << "Reconciliation model initialised, starting DTL rate optimisation" <<".."<<endl;
 
   //we use the Nelder–Mead method implemented in Bio++
@@ -148,12 +151,16 @@ int main(int argc, char ** argv)
   lambda=optimizer->getParameterValue("lambda");
   //scalar_type sigma_hat=optimizer->getParameterValue("sigma_hat");
 
-  scalar_type mlll=-optimizer->getFunctionValue();
+  mlll=-optimizer->getFunctionValue();
   cout << endl << "ML rates: " << " delta=" << delta << "; tau=" << tau << "; lambda="<<lambda//<<"; sigma="<<sigma_hat
        <<"."<<endl;
   
     
-
+    }
+  else
+    {
+      mlll=log(model->p(ale));
+    }
   cout << "LL=" << mlll << endl;
   
   cout << "Sampling reconciled gene trees.."<<endl;
