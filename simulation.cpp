@@ -31,24 +31,42 @@ int main(int argc, char ** argv)
 {
 
   //simulate
+  cout << " First run: \n ./simulate N n "<< endl;
+  cout << "  if you like the species tree then remeber S_seed and run: "<< endl;
+  cout << " ./simulate  N n S_seed  delta  tau lambda  omega " << endl;
+  cout << "  do this many times to get a lot of gene trees.. "<< endl;
+  if (argc<3) return 1;
   long int S_seed=good_seed();
-  if (argc>1) S_seed=atol(argv[1]);
+  if (argc>3) S_seed=atol(argv[3]);
   long int G_seed=good_seed();
-  if (argc>2) G_seed=atol(argv[2]);
-  
-  int N=1000;
-  int n=36;
-  int G_n=10;
+  //if (argc>2) G_seed=atol(argv[2]);
 
-  scalar_type omega=N*0.08;
+    
+  int N=atoi(argv[1]);
+  int n=atoi(argv[2]);
+
+  scalar_type omega=N*0.;
   //O rate overall 
-  scalar_type delta=0.2;
+  scalar_type delta=0;
   //D rate per gene
-  scalar_type tau=0.8;
+  scalar_type tau=0;
   //T rate per gene
-  scalar_type lambda=1.4;
+  scalar_type lambda=0;
   //L rate per gene
-
+  int G_n=0;      
+  if (argc>3)
+    {
+      G_n=100;      
+      omega=N*atof(argv[4]);
+      //O rate overall 
+      delta=atof(argv[5]);
+      //D rate per gene
+      tau=atof(argv[6]);
+      //T rate per gene
+      lambda=atof(argv[7]);
+      //L rate per gene
+      cout << G_n << endl;
+    }
   scalar_type init_t=2;
   scalar_type sigma=N;
 
