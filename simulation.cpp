@@ -33,7 +33,7 @@ int main(int argc, char ** argv)
   //simulate
   cout << " First run: \n ./simulate N n "<< endl;
   cout << "  if you like the species tree then remeber S_seed and run: "<< endl;
-  cout << " ./simulate  N n S_seed  delta  tau lambda  omega " << endl;
+  cout << " ./simulate  N n S_seed  omega delta tau lambda " << endl;
   cout << "  do this many times to get a lot of gene trees.. "<< endl;
   if (argc<3) return 1;
   long int S_seed=good_seed();
