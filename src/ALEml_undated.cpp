@@ -95,14 +95,19 @@ int main(int argc, char ** argv)
   if (argc>4)
     model->set_model_parameter("gene_name_separators", argv[4]);
   model->set_model_parameter("BOOT_STRAP_LABLES","yes");
-
+  
   model->construct_undated(Sstring);
   
-
   //a set of inital rates
+  
+  scalar_type O_R=1; 
+  if (argc>5)
+    O_R=atof(argv[5]);
+  model->set_model_parameter("O_R", O_R);
+
   scalar_type delta=0.01,tau=0.01,lambda=0.1;  
-  if (argc>7)
-    delta=atof(argv[5]),tau=atof(argv[6]),lambda=atof(argv[7]);  
+  if (argc>8)
+    delta=atof(argv[6]),tau=atof(argv[7]),lambda=atof(argv[8]);  
   model->set_model_parameter("delta", delta);
   model->set_model_parameter("tau", tau);
   model->set_model_parameter("lambda", lambda);
