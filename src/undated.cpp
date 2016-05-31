@@ -287,6 +287,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 {
   scalar_type survive=0;
   scalar_type root_sum=0;
+  scalar_type O_norm=0;
   mPTuq_ancestral_correction.clear();uq.clear();mPTuq.clear();//XX
   ale_pointer=ale;
 
@@ -522,14 +523,18 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	}
       survive=0;
       root_sum=0;
+      O_norm=0;
       for (int e=0;e<last_branch;e++)
 	{
-	  root_sum+=uq[root_i][e];
+	  scalar_type O_p=1;
+	  if ( e==(last_branch-1) ) O_p=scalar_parameter["O_R"];
+	  O_norm+=O_p;
+	  root_sum+=uq[root_i][e]*O_p;
 	  survive+=(1-uE[e]);
 	}	     
       //cout << root_sum/survive << endl;
     }
-  return root_sum/survive;
+  return root_sum/survive/O_norm;
   
 }
 
@@ -541,12 +546,20 @@ string exODT_model::sample_undated()
   scalar_type root_sum=0;
   
   for (int e=0;e<last_branch;e++)
-    root_sum+=uq[g_ids.size()-1][e]+EPSILON;
+    {
+      scalar_type O_p=1;
+      if ( e==(last_branch-1) ) O_p=scalar_parameter["O_R"];
+      root_sum+=uq[g_ids.size()-1][e]*O_p+EPSILON;
+    }
   scalar_type root_resum=0;
+  scalar_type O_norm=0;
   
   for (int e=0;e<last_branch;e++)
     {
-      root_resum+=uq[root_i][e]+EPSILON;
+      scalar_type O_p=1;
+      if ( e==(last_branch-1) ) O_p=scalar_parameter["O_R"];      
+      
+      root_resum+=uq[root_i][e]*O_p+EPSILON;
       if (r*root_sum<root_resum)
 	{
 	  register_O(e);
