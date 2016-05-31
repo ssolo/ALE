@@ -534,7 +534,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	}	     
       //cout << root_sum/survive << endl;
     }
-  return root_sum/survive/O_norm;
+  return root_sum/survive/O_norm*(last_branch);
   
 }
 
