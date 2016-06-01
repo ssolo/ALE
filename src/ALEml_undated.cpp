@@ -68,7 +68,7 @@ int main(int argc, char ** argv)
 
   if (argc<3) 
     {
-      cout << "usage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale [samples] [gene_name_seperator] [DuplicationRate] [TransferRate] [LossRate]" << endl;
+      cout << "usage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale [samples] [gene_name_separator] [OriginationAtRoot] [DuplicationRate] [TransferRate] [LossRate]" << endl;
       return 1;
     }
 
