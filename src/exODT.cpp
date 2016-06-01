@@ -374,6 +374,8 @@ void exODT_model::construct(string Sstring,scalar_type N)
   set_model_parameter("tau",0.17);
   // lambda is the gene loss rate
   set_model_parameter("lambda",1.0);
+  // O_R is the multiplier for O at the root
+  set_model_parameter("O_R",1.0);
 
   for (int branch=0;branch<last_branch;branch++)	
     {
