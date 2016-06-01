@@ -68,11 +68,11 @@ int main(int argc, char ** argv)
 
   if (argc<3) 
     {
-      cout << "usage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale [samples] [gene_name_seperator]" << endl;
+      cout << "usage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale [samples] [gene_name_seperator] [DuplicationRate] [TransferRate] [LossRate]" << endl;
       return 1;
     }
 
-  //we need a dared species tree in newick format
+  //we need a rooted species tree in newick format
   string Sstring;
   string S_treefile=argv[1];
   ifstream file_stream_S (argv[1]);
