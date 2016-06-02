@@ -56,7 +56,7 @@ int main(int argc, char ** argv)
   int G_n=0;      
   if (argc>3)
     {
-      G_n=100;      
+      G_n=1;      
       omega=N*atof(argv[4]);
       //O rate overall 
       delta=atof(argv[5]);
