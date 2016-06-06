@@ -117,6 +117,15 @@ target_link_libraries(simulateSpAndGeneTrees exODT
   ${BPP_LIBRARIES}
 )
 
+
+add_executable(simulation simulation.cpp exODT_sim.cpp)
+target_link_libraries(simulation exODT
+  ${Boost_MPI_LIBRARY}
+  ${Boost_SERIALIZATION_LIBRARY}
+  ${MPI_LIBRARIES}
+  ${BPP_LIBRARIES}
+)
+
 add_executable(mpi_ml mpi_tree.cpp mpi_ml.cpp)
 target_link_libraries(mpi_ml exODT
   ${Boost_MPI_LIBRARY}
