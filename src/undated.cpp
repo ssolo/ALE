@@ -827,7 +827,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
   uq_resum+=PD[e]*(uq[i][e]*uE[e]*2)+EPSILON;
   if (r*uq_sum<uq_resum)
     {
-      return sample_undated(e,i,"S");
+      return sample_undated(e,i,"S",branch_string);
     }		  
   // TL event
   for (int f=0;f<last_branch;f++)
@@ -849,7 +849,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	  Ttokens.push_back(Ttoken.str());
 	  */
 	  register_L(e); 
-	  return sample_undated(f,i,"T",".T@"+estr+"->"+fstr);
+	  return sample_undated(f,i,"T",".T@"+estr+"->"+fstr+branch_string);
 	}		  
       uq_resum+=(PT[f]/(float)last_branch)*uE[f]*uq[i][e]+EPSILON;
       if (r*uq_sum<uq_resum)

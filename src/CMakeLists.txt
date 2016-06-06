@@ -109,14 +109,6 @@ target_link_libraries(wALE_ml_sample_undated exODT
 #   ${BPP_LIBRARIES}
 # )
 
-add_executable(simulateSpAndGeneTrees simulateSpAndGeneTrees.cpp exODT_sim.cpp)
-target_link_libraries(simulateSpAndGeneTrees exODT
-  ${Boost_MPI_LIBRARY}
-  ${Boost_SERIALIZATION_LIBRARY}
-  ${MPI_LIBRARIES}
-  ${BPP_LIBRARIES}
-)
-
 
 add_executable(simulation simulation.cpp exODT_sim.cpp)
 target_link_libraries(simulation exODT
@@ -174,13 +166,6 @@ target_link_libraries(wol_paras exODT
 
 add_executable(wol_tree wol_tree.cpp)
 target_link_libraries(wol_tree exODT
-  ${Boost_MPI_LIBRARY}
-  ${MPI_LIBRARIES}
-  ${BPP_LIBRARIES}
-)
-
-add_executable(simulation simulation.cpp)
-target_link_libraries(simulation exODT
   ${Boost_MPI_LIBRARY}
   ${MPI_LIBRARIES}
   ${BPP_LIBRARIES}
