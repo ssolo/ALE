@@ -10,58 +10,6 @@
 using namespace std;
 using namespace bpp;
 
-class p_fun:
-  public virtual Function,
-  public AbstractParametrizable
-{
-private:
-  double fval_;
-  exODT_model* model_pointer;
-  approx_posterior* ale_pointer;
-public:
-  p_fun(exODT_model* model,approx_posterior* ale, double delta_start=0.01,double tau_start=0.01,double lambda_start=0.1//,double sigma_hat_start=1.
-) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale)
-  {
-    //We declare parameters here:
- //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
-      IntervalConstraint* constraint = new IntervalConstraint ( 1e-6, 10-1e-6, true, true );
-      addParameter_( new Parameter("delta", delta_start, constraint) ) ;
-      addParameter_( new Parameter("tau", tau_start, constraint) ) ;
-      addParameter_( new Parameter("lambda", lambda_start, constraint) ) ;
-      //addParameter_( new Parameter("sigma_hat", sigma_hat_start, constraint) ) ;
-
-  }
-
-  p_fun* clone() const { return new p_fun(*this); }
-
-public:
-
-    void setParameters(const ParameterList& pl)
-    throw (ParameterNotFoundException, ConstraintException, Exception)
-    {
-        matchParametersValues(pl);
-    }
-    double getValue() const throw (Exception) { return fval_; }
-    void fireParameterChanged(const ParameterList& pl)
-    {
-        double delta = getParameterValue("delta");
-        double tau = getParameterValue("tau");
-        double lambda = getParameterValue("lambda");
-        //double sigma_hat = getParameterValue("sigma_hat");
-
-        model_pointer->set_model_parameter("delta",delta);
-        model_pointer->set_model_parameter("tau",tau);
-        model_pointer->set_model_parameter("lambda",lambda);
-        //model_pointer->set_model_parameter("sigma_hat",sigma_hat);
-        model_pointer->calculate_undatedEs();
-        double y=-log(model_pointer->pun(ale_pointer));
-        //cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda //<< "\t lambda="<<sigma_hat << "\t ll="
-	//    << -y <<endl;
-        fval_ = y;
-    }
-};
-
-
 
 /************************************************************************
  * Scaling move to change the value of a Real Positive (e.g. a rate).
@@ -326,7 +274,7 @@ int main(int argc, char ** argv)
   double numTransfers = 0.0;
   double numLosses = 0.0;
   map<string, double> tToFrom ;
-  boost::progress_display pd( i );
+  //boost::progress_display pd( i );
 
   vector<string> tokens;
   boost::split(tokens,ale_file,boost::is_any_of("/"),boost::token_compress_on);
@@ -336,7 +284,47 @@ int main(int argc, char ** argv)
 
   mcmcout << "Iteration" << "\t"<< "LogLk" << "\t" << "LogPrior"  << "\t" << "Origination" << "\t" << "Delta" << "\t" << "Tau" << "\t" << "Lambda" <<std::endl;
   std::cout << "Iteration" << "\t"<< "LogLk" << "\t" << "LogPrior"  << "\t" << "Origination" << "\t" << "Delta" << "\t" << "Tau" << "\t" << "Lambda" <<std::endl;
-// MCMC loop
+
+  // BURNIN loop
+  size_t burninLength = 100;
+  std::cout << "BURNIN during "<<burninLength<<" iterations."<<std::endl;
+  std::cout << "LogLk" << "\t" << "LogPrior" << "\t" << "Origination" << "\t" << "Delta" << "\t" << "Tau" << "\t" << "Lambda"<<std::endl;
+  for (i = 0 ; i < burninLength ; ++i) {
+    move = RandomTools::pickOne( order, moveWeights, true );
+    scale = scaleMoveParameters[RandomTools::pickOne( orderScaleMoveParameters, scaleWeights, true )];
+    if(move == originationId) {
+      newOrigination = scaleDoubleConstrained ( currentOrigination, maxOrigination, scale, hastingsRatio, verbose ) ;
+    }
+    else if (move == deltaId) {
+      newDelta = scaleDoubleConstrained ( currentDelta, maxSumDTL - currentLambda - currentTau, scale, hastingsRatio, verbose ) ;
+    }
+    else if (move == lambdaId) {
+      newLambda = scaleDoubleConstrained ( currentLambda, maxSumDTL - currentDelta - currentTau, scale, hastingsRatio, verbose ) ;
+    }
+    else if (move == tauId) {
+      newTau = scaleDoubleConstrained ( currentTau, maxSumDTL - currentLambda - currentDelta, scale, hastingsRatio, verbose ) ;
+    }
+    newLogLikelihood = computeLogLk(model, ale, newOrigination, newDelta, newTau, newLambda);
+    newLogPrior = computeLogPrior(newOrigination, newDelta, newTau, newLambda, priorOrigination, priorDelta, priorTau, priorLambda);
+    //Accept or reject?
+    acceptanceProbability = exp (  ( newLogLikelihood + newLogPrior ) -  ( currentLogLikelihood + currentLogPrior) ) * hastingsRatio ;
+    threshold = RandomTools::giveRandomNumberBetweenZeroAndEntry ( 1.0 );
+    if (acceptanceProbability > threshold) { //accept
+      acceptMove(currentOrigination, currentDelta, currentTau, currentLambda, newOrigination, newDelta, newTau, newLambda);
+      currentLogLikelihood = newLogLikelihood;
+      currentLogPrior = newLogPrior;
+    }
+    else {
+      rejectMove(currentOrigination, currentDelta, currentTau, currentLambda, newOrigination, newDelta, newTau, newLambda);
+    }
+    std::cout << i <<"\t"<< currentLogLikelihood << "\t" << currentLogPrior  << "\t" << currentOrigination << "\t" << currentDelta << "\t" << currentTau << "\t" << currentLambda <<std::endl;
+    mcmcout << i <<"\t"<< currentLogLikelihood << "\t" << currentLogPrior  << "\t" << currentOrigination << "\t" << currentDelta << "\t" << currentTau << "\t" << currentLambda <<std::endl;
+  }
+
+
+  // MCMC loop
+  std::cout << "MCMC during "<<samples * sampling_rate<<" iterations."<<std::endl;
+  std::cout << "LogLk" << "\t" << "LogPrior" << "\t" << "Origination" << "\t" << "Delta" << "\t" << "Tau" << "\t" << "Lambda"<<std::endl;
   for (i = 0 ; i < samples * sampling_rate ; ++i) {
     move = RandomTools::pickOne( order, moveWeights, true );
     scale = scaleMoveParameters[RandomTools::pickOne( orderScaleMoveParameters, scaleWeights, true )];
@@ -372,77 +360,12 @@ int main(int argc, char ** argv)
       numTransfers += model->MLRec_events["T"];
       numLosses += model->MLRec_events["L"];
       fillTToFrom(model, tToFrom);
+      std::cout << i <<"\t"<< currentLogLikelihood << "\t" << currentLogPrior  << "\t" << currentOrigination << "\t" << currentDelta << "\t" << currentTau << "\t" << currentLambda <<std::endl;
     }
-    std::cout << i <<"\t"<< currentLogLikelihood << "\t" << currentLogPrior  << "\t" << currentOrigination << "\t" << currentDelta << "\t" << currentTau << "\t" << currentLambda <<std::endl;
     mcmcout << i <<"\t"<< currentLogLikelihood << "\t" << currentLogPrior  << "\t" << currentOrigination << "\t" << currentDelta << "\t" << currentTau << "\t" << currentLambda <<std::endl;
   }
   mcmcout.close();
 
-/*
-  //we use the Nelder–Mead method implemented in Bio++
-  Function* f = new p_fun(model,ale,delta,tau,lambda//,1
-			  );
-  Optimizer* optimizer = new DownhillSimplexMethod(f);
-
-  optimizer->setProfiler(0);
-  optimizer->setMessageHandler(0);
-  optimizer->setVerbose(2);
-
-  optimizer->setConstraintPolicy(AutoParameter::CONSTRAINTS_AUTO);
-  optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
-
-  scalar_type mlll;
-  if (not (argc>7))
-    {
-      optimizer->optimize();
-      delta=optimizer->getParameterValue("delta");
-      tau=optimizer->getParameterValue("tau");
-      lambda=optimizer->getParameterValue("lambda");
-      mlll=-optimizer->getFunctionValue();
-    }
-  else
-    {
-      mlll=log(model->pun(ale));
-    }
-  cout << endl << "ML rates: " << " delta=" << delta << "; tau=" << tau << "; lambda="<<lambda//<<"; sigma="<<sigma_hat
-       <<"."<<endl;
-
-
-  cout << "LL=" << mlll << endl;
-
-  cout << "Sampling reconciled gene trees.."<<endl;
-  vector <string> sample_strings;
-  vector <Tree*> sample_trees;
-
-
-  for (int i=0;i<samples;i++)
-    {
-      ++pd;
-      string sample_tree=model->sample_undated();
-      sample_strings.push_back(sample_tree);
-      if (ale->last_leafset_id>3)
-	{
-
-	  tree_type * G=TreeTemplateTools::parenthesisToTree(sample_tree,false);
-
-	  vector<Node*> leaves = G->getLeaves();
-	  for (vector<Node*>::iterator it=leaves.begin();it!=leaves.end();it++ )
-	    {
-	      string name=(*it)->getName();
-	      vector<string> tokens;
-	      boost::split(tokens,name,boost::is_any_of(".@"),boost::token_compress_on);
-	      (*it)->setName(tokens[0]);
-	      tokens.clear();
-	    }
-	  leaves.clear();
-	  sample_trees.push_back(G);
-	}
-}*/
-
-  /*cout << "Calculating ML reconciled gene tree.."<<endl;
-  pair<string, scalar_type> res = model->p_MLRec(ale);
-  //and output it..
-  */
   string outname=ale_file+".umcmc_rec";
   ofstream fout( outname.c_str() );
   fout <<  "#ALEmcmc_undated using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl<<endl;
