@@ -318,7 +318,6 @@ int main(int argc, char ** argv)
       rejectMove(currentOrigination, currentDelta, currentTau, currentLambda, newOrigination, newDelta, newTau, newLambda);
     }
     std::cout << i <<"\t"<< currentLogLikelihood << "\t" << currentLogPrior  << "\t" << currentOrigination << "\t" << currentDelta << "\t" << currentTau << "\t" << currentLambda <<std::endl;
-    mcmcout << i <<"\t"<< currentLogLikelihood << "\t" << currentLogPrior  << "\t" << currentOrigination << "\t" << currentDelta << "\t" << currentTau << "\t" << currentLambda <<std::endl;
   }
 
 
