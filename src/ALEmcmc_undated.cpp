@@ -354,6 +354,8 @@ int main(int argc, char ** argv)
       rejectMove(currentOrigination, currentDelta, currentTau, currentLambda, newOrigination, newDelta, newTau, newLambda);
     }
     if (i % sampling_rate == 0 ) {
+      model->MLRec_events.clear();
+      model->reset_T_to_from();
       sampleTree (model, ale, currentOrigination, currentDelta, currentTau, currentLambda, sample_strings, sample_trees);
       numSpeciations += model->MLRec_events["S"];
       numDuplications += model->MLRec_events["D"];

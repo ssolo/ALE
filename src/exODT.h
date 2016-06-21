@@ -1,7 +1,7 @@
 //all code by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;
 #include "ALE.h"
 //using namespace std;
-struct step 
+struct step
 {
   int e;
   int ep;
@@ -18,13 +18,13 @@ struct step
 /****************************************************************************
  // exODT_model class.
  // This class contains the description of a time-sliced species tree,
- // with parameters of duplication, transfer and loss, and a "population size", 
- // and an approx_posterior object. This object can compute the probability of 
+ // with parameters of duplication, transfer and loss, and a "population size",
+ // and an approx_posterior object. This object can compute the probability of
  // an approx_posterior given the species tree and values for the ODTL parameters.
- // Contains lots of maps to map time slices to nodes, nodes to time slices, 
+ // Contains lots of maps to map time slices to nodes, nodes to time slices,
  // nodes to ages...
  // Each time slice ends at a speciation node, with a particular age.
- // Each time slice has a rank, with the most recent one with rank 0, 
+ // Each time slice has a rank, with the most recent one with rank 0,
  // and the older one with rank number_of_species.
  *****************************************************************************/
 class exODT_model
@@ -45,37 +45,37 @@ class exODT_model
   approx_posterior * ale_pointer;                            //Pointer to an approx_posterior object on which dynamic programming is performed in p for instance.
 
   //Runge-Krutta variables
-  std::vector<scalar_type> Ee_y ;//del-loc                                                                          
-                                                                                                                                                                                                        
+  std::vector<scalar_type> Ee_y ;//del-loc
+
   scalar_type Ee_y_1;
-  //  map<int,scalar_type> Ge_y;//del-loc                                                                                                                                                                
-  std::vector<scalar_type> Ge_y ;//del-loc                                                                                                                                   
+  //  map<int,scalar_type> Ge_y;//del-loc
+  std::vector<scalar_type> Ge_y ;//del-loc
   scalar_type Ge_y_1;
 
   std::vector<scalar_type> E_k1 ;
   std::vector<scalar_type> E_k2 ;
   std::vector<scalar_type> E_k3 ;
-  std::vector<scalar_type> E_k4 ;//del-loc. Maps used for Runge-Kutta computations (4 stages).                                                                                
+  std::vector<scalar_type> E_k4 ;//del-loc. Maps used for Runge-Kutta computations (4 stages).
   scalar_type E_k1_1, E_k2_1, E_k3_1, E_k4_1;
 
   std::vector<scalar_type> G_k1;
   std::vector<scalar_type> G_k2;
   std::vector<scalar_type> G_k3;
-  std::vector<scalar_type> G_k4;//del-loc. Maps used for Runge-Kutta computations (4 stages).                                                                                
+  std::vector<scalar_type> G_k4;//del-loc. Maps used for Runge-Kutta computations (4 stages).
   scalar_type G_k1_1, G_k2_1, G_k3_1, G_k4_1;
 
 
   std::map<int,int> father;                                  //del-loc. Map between node id and id of its father.
   std::map<int,std::vector<int> > daughters;                 //del-loc. Map between node id and ids of its daughters (-1 if node is a leaf).
-  std::map<int,int> daughter;              
-  std::map<int,int> son;              
- 
+  std::map<int,int> daughter;
+  std::map<int,int> son;
+
   std::map<int,std::string> extant_species;                  //del-loc. Map between leaf id (0 to # of leaves) and leaf name.
   std::map <int,std::string> extant_taxa;                    // extant_taxa map for id-ing branches across trees
 
 
   std::map<int, scalar_type> branch_ts;                      //del-loc. Map between branch identified by the id of the node it ends at, and time of the time slice.
-  std::map<int,int>rank_ids;                                 //del-loc. Map between rank of a time slice and the id of the node that terminates it. 
+  std::map<int,int>rank_ids;                                 //del-loc. Map between rank of a time slice and the id of the node that terminates it.
   std::map<int,int>id_ranks;                                 //del-loc. Map between node id and rank of the time slice it terminates. Time slice at leaves has rank 0.
 
   tree_type * S;                                             //Species tree
@@ -85,7 +85,7 @@ class exODT_model
 
   std::map<int,scalar_type > t_begin;                        //del-loc. Map between the id of a node, and the beginning of the branch that leads to it.
   std::map<int,scalar_type > t_end;                          //del-loc. Map between the id of a node, and the end of the time slice it defines, corresponding to the age of this node.
-  
+
   std::map<int,std::vector<int > > time_slices;              //del-loc. Map between rank of time slice and indices of branches going through it. Terminating branch is last in the vector.
   std::map<int,std::vector<int > > branch_slices;            //del-loc. Map between a branch and all the time slices it traverses.
   std::map<int,std::vector<scalar_type > > time_slice_times; //del-loc. Map between rank of time slice and all the end times of the sub-slices inside this time slice.
@@ -94,7 +94,7 @@ class exODT_model
   //Variables used for computing.
   std::map<int,std::map <scalar_type,scalar_type> > Ee;                       //del-loc. Probability (scalar value) that a gene present at a given time slice (whose rank is the int key) at time the first scalar key is getting extinct before reaching extant species.
   std::map <std::string,bpp::Node *> name_node;
-  std::map <bpp::Node *,std::string> node_name; 
+  std::map <bpp::Node *,std::string> node_name;
   std::map <std::string,std::map<std::string,int> > ancestral_names;
   std::map <int,std::map<int,int> > ancestral;
   std::vector < std::vector <int> > ancestors;
@@ -114,13 +114,13 @@ class exODT_model
   int last_leaf;
   std::map<int,std::map <scalar_type,scalar_type> > Ge;                       //del-loc. Probability (scalar value) that a gene present at a given time slice (whose rank is the int key) actually reaches extant species.
   std::map<long int, std::map< scalar_type, std::map<int, scalar_type> > > q; //del-loc. Map between clade id (from the approx_posterior object) and a map between the time of a subslice and a map between branch id and probability of the clade given the ODTL model.
-  
+
   std::vector< std::vector < std::vector < std::map<int, scalar_type> > > > qvec;// NO del-loc !!
 
   std::map<long int, std::map< scalar_type, std::map<int, step> > > q_step;   //del-loc
   std::map <long int,std::string> gid_sps;                                    //del-loc. Map between clade id (from the approx_posterior object) and species included in that clade.
- 
-  std::map <std::string,scalar_type> MLRec_events;                            //del-loc  
+
+  std::map <std::string,scalar_type> MLRec_events;                            //del-loc
   std::map<std::string, std::vector<scalar_type> > branch_counts;             //del-loc
   std::vector<std::string> Ttokens;                                           //del-loc
 
@@ -147,7 +147,7 @@ class exODT_model
   void construct(std::string Sstring,scalar_type N=1e6); //Constructs an object given a species tree and population size.
   exODT_model();
   ~exODT_model()
-    {  
+    {
       rank_ids.clear();
       id_ranks.clear();
       father.clear();
@@ -189,14 +189,14 @@ class exODT_model
 	  for ( std::map< scalar_type, std::map<int, scalar_type> >::iterator jt=(*it).second.begin();jt!=(*it).second.end();jt++)
 	    (*jt).second.clear();
 	  (*it).second.clear();
-	}      
+	}
       q.clear();
       for (std::map<long int, std::map< scalar_type, std::map<int, step> > >::iterator it=q_step.begin();it!=q_step.end();it++)
 	{
 	  for ( std::map< scalar_type, std::map<int, step> >::iterator jt=(*it).second.begin();jt!=(*it).second.end();jt++)
 	    (*jt).second.clear();
 	  (*it).second.clear();
-	}      
+	}
       q_step.clear();
       gid_sps.clear();
       MLRec_events.clear();
@@ -241,6 +241,8 @@ class exODT_model
   void register_S(int e);
   void register_Su(int e,std::string last_event);
   void register_T_to_from(int e,int f);
+  void reset_T_to_from( );
+
   std::vector < std::vector<scalar_type> > T_to_from;
 
   void register_leaf(int e);
@@ -265,6 +267,5 @@ class exODT_model
 
  private:
   ;
-  
-};
 
+};
