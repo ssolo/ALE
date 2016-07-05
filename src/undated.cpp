@@ -11,7 +11,7 @@ void exODT_model::construct_undated(string Sstring)
   node_name.clear();
   node_ids.clear();
   id_nodes.clear();
-  
+
   string_parameter["S_un"]=Sstring;
   S=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  true//(string_parameter["BOOT_STRAP_LABLES"]=="yes")
 					 );
@@ -19,7 +19,7 @@ void exODT_model::construct_undated(string Sstring)
   vector <Node*> nodes = TreeTemplateTools::getNodes(*S_root);
 
   for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ ) (*it)->setDistanceToFather(1);
-  
+
   for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
     if ((*it)->isLeaf())
       {
@@ -33,7 +33,7 @@ void exODT_model::construct_undated(string Sstring)
 	stringstream name;
 	for (vector <string >::iterator st=leafnames.begin();st!=leafnames.end();st++ )
 	  name<<(*st)<<".";
-	
+
 	name_node[name.str()]=(*it);
 	node_name[(*it)]=name.str();
 
@@ -78,17 +78,17 @@ void exODT_model::construct_undated(string Sstring)
 	      vector <Node *> sons=father->getSons();
 	      Node * sister;
 	      if (sons[0]==node) sister=sons[1]; else sister=sons[0];
-	      	      
+
 	      if (not node_ids.count(father) and saw.count(sister))
 		{
 		  node_ids[father]=last_branch;
-		  id_nodes[last_branch]=father;		  
+		  id_nodes[last_branch]=father;
 		  stringstream name;
 		  name << last_branch;
 		  father->setBranchProperty("ID",BppString(name.str()));
 
 		  last_branch++;
-		  
+
 		  saw.insert(father);
 		  new_generation.push_back(father);
 		}
@@ -98,10 +98,10 @@ void exODT_model::construct_undated(string Sstring)
       for (vector<Node*>::iterator  it=new_generation.begin();it!=new_generation.end();it++ )
 	next_generation.push_back((*it));
     }
-  
+
     for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
     {
-      Node * node = (*it).first;     
+      Node * node = (*it).first;
       int branch = (*it).second;
       stringstream out;
       stringstream out1;
@@ -120,7 +120,7 @@ void exODT_model::construct_undated(string Sstring)
 	  rank2label[rank]=-1;
 	}
       node->setBranchProperty("ID",BppString(out.str()));
-    }  
+    }
 
   string_parameter["S_with_ranks"]=TreeTemplateTools::treeToParenthesis(*S,false,"ID");
 
@@ -169,7 +169,7 @@ void exODT_model::construct_undated(string Sstring)
       ancestral[e][f]=1;
     }
 
-  
+
 
   for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ )
     if (not (*it).second->isLeaf())
@@ -179,7 +179,7 @@ void exODT_model::construct_undated(string Sstring)
 	daughter[node_ids[node]]=node_ids[sons[0]];
 	son[node_ids[node]]=node_ids[sons[1]];
 	//cout << node_ids[node] << " => " << node_ids[sons[0]] << " & " << node_ids[sons[1]] << endl;
-	//cout << node_name[node] << " => " << node_name[sons[0]] << " & " << node_name[sons[1]] << endl;  
+	//cout << node_name[node] << " => " << node_name[sons[0]] << " & " << node_name[sons[1]] << endl;
 
       }
   branch_counts["Os"].clear();
@@ -191,14 +191,14 @@ void exODT_model::construct_undated(string Sstring)
   branch_counts["copies"].clear();
   branch_counts["singleton"].clear();
 
-  for (int e=0;e<last_branch;e++)	
+  for (int e=0;e<last_branch;e++)
     {
       branch_counts["Os"].push_back(0);
       branch_counts["Ds"].push_back(0);
       branch_counts["Ts"].push_back(0);
       branch_counts["Tfroms"].push_back(0);
       branch_counts["Ls"].push_back(0);
-      branch_counts["count"].push_back(0);    
+      branch_counts["count"].push_back(0);
       branch_counts["copies"].push_back(0);
       branch_counts["singleton"].push_back(0);
 
@@ -210,9 +210,9 @@ void exODT_model::construct_undated(string Sstring)
       T_to_from.push_back(tmp);
       for (int f=0;f<last_branch;f++)
 	T_to_from[e].push_back(0);
-    }	     
-  
-  
+    }
+
+
   last_rank=last_branch;
   set_model_parameter("N",1);
 
@@ -225,11 +225,11 @@ void exODT_model::calculate_undatedEs()
   PD.clear();
   PT.clear();
   PL.clear();
-  PS.clear();   
+  PS.clear();
   scalar_type P_T=0;
-  for (int f=0;f<last_branch;f++)	  
+  for (int f=0;f<last_branch;f++)
     P_T+=vector_parameter["tau"][f]/(float)last_branch;
-  
+
   for (int e=0;e<last_branch;e++)
     {
       //cout << e << " is " << node_name[id_nodes[e]] << endl;
@@ -262,9 +262,9 @@ void exODT_model::calculate_undatedEs()
 	      {
 		//int f=(*it).first;
 		int f=(*it);
-		//if (ancestral[e][f]==1)	  
+		//if (ancestral[e][f]==1)
 		  mPTE_ancestral_correction[e]+=  (PT[f]/(float)last_branch)*uE[f];
-	      }	  
+	      }
 	}
 
       for (int e=0;e<last_branch;e++)
@@ -296,7 +296,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
       for ( std::map< scalar_type, std::map<int, scalar_type> >::iterator jt=(*it).second.begin();jt!=(*it).second.end();jt++)
 	(*jt).second.clear();
       (*it).second.clear();
-    }      
+    }
   q.clear();
 
 
@@ -305,7 +305,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
   //vector <long int>  g_id_sizes;
   g_ids.clear();
   g_id_sizes.clear();
-  
+
   for (map <int, vector <long int > > :: iterator it = ale->size_ordered_bips.begin(); it != ale->size_ordered_bips.end(); it++)
     for (vector <long int >  :: iterator jt = (*it).second.begin(); jt != (*it).second.end(); jt++)
       {
@@ -320,8 +320,8 @@ scalar_type exODT_model::pun(approx_posterior *ale)
   // gene<->species mapping
   for (int i=0;i<(int)g_ids.size();i++)
     {
-      long int g_id=g_ids[i];		
-       
+      long int g_id=g_ids[i];
+
       if (g_id_sizes[i]==1)
 	{
 	  int id = 0;
@@ -333,7 +333,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 		  break;
 		}
 	    }
-	  
+
 	  string gene_name=ale->id_leaves[ id ];
 	  vector <string> tokens;
 	  boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_separators"]),boost::token_compress_on);
@@ -343,19 +343,19 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	      species_name=tokens[1];
 	      for (int fi=2;fi<tokens.size();fi++)
 		species_name+="_"+tokens[fi];
-	    }	  
-	  //	    species_name=tokens[tokens.size()-1];	  
+	    }
+	  //	    species_name=tokens[tokens.size()-1];
 	  else
-	    species_name=tokens[(int)scalar_parameter["species_field"]];	  
+	    species_name=tokens[(int)scalar_parameter["species_field"]];
 	  gid_sps[g_id]=species_name;
 	}
     }
-  
+
   //map <long int, int> g_id2i;
-  //XX ancestral_correction .. 
+  //XX ancestral_correction ..
   for (int i=0;i<(int)g_ids.size();i++)
     {
-      long int g_id=g_ids[i];	
+      long int g_id=g_ids[i];
       g_id2i[g_id]=i;
 
       if (not ( i<(int)uq.size() ) )
@@ -369,7 +369,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	}
       else
 	mPTuq[i]=0;
-      
+
       for (int e=0;e<last_branch;e++)
 	if (not ( e<(int)uq[i].size() ) )
 	  {
@@ -381,7 +381,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	    uq[i][e]=0;
 	    mPTuq_ancestral_correction[i][e]=0;
 	  }
-    }  
+    }
 
   for (int iter=0;iter<4;iter++)
     {
@@ -389,18 +389,18 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	{
 
 	  scalar_type new_mPTuq=0;
-	  
-	  // directed partition (dip) gamma's id  
+
+	  // directed partition (dip) gamma's id
 	  bool is_a_leaf=false;
-	  long int g_id=g_ids[i];	
+	  long int g_id=g_ids[i];
 	  if (g_id_sizes[i]==1)
 	    is_a_leaf=true;
 	  vector <int> gp_is;
 	  vector <long int> gpp_is;
 	  vector <scalar_type> p_part;
-	  if (g_id!=-1)       
+	  if (g_id!=-1)
 	    for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = ale->Dip_counts[g_id].begin(); kt != ale->Dip_counts[g_id].end(); kt++)
-	      {	  
+	      {
 		pair<long int, long int> parts = (*kt).first;
 		long int gp_id=parts.first;
 		long int gpp_id=parts.second;
@@ -425,7 +425,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 		  boost::dynamic_bitset<> not_gamma = ~gamma;
 		  not_gamma[0] = 0;
 		  long int gpp_id = ale->set_ids.at(not_gamma);
-	      
+
 		  set <long int> parts;
 		  parts.insert(gp_id);
 		  parts.insert(gpp_id);
@@ -446,37 +446,37 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 		  int gpp_i=g_id2i[parts[1]];
 		  gp_is.push_back(gp_i);
 		  gpp_is.push_back(gpp_i);
-	      
+
 		  //Here we can create a new ale->Bip_counts[gp_id], in particular for leaves.
 		  //We may want to add the leaf entries for Bip_counts when Bip_counts is first created.
 		  if (ale->Bip_counts[gp_id]<=scalar_parameter.at("min_bip_count") and not ale->Gamma_size<4)
-		    p_part.push_back(0);	      
+		    p_part.push_back(0);
 		  else
-		    p_part.push_back(ale->p_bip(gp_id));	      
+		    p_part.push_back(ale->p_bip(gp_id));
 		}
 	      bip_parts.clear();
 	    }
 	  //######################################################################################################################
 	  //#########################################INNNER LOOP##################################################################
-	  //######################################################################################################################		    
+	  //######################################################################################################################
 
 	  for (int e=0;e<last_branch;e++)
 	    {
 	      scalar_type uq_sum=0;
-	      // S leaf and G leaf 
+	      // S leaf and G leaf
 	      if (e<last_leaf and is_a_leaf and extant_species[e]==gid_sps[g_id])
 		{
 		  // present
 		  uq_sum+=PS[e]*1;
 		}
-	      // G internal		  
+	      // G internal
 	      if (not is_a_leaf)
 		{
-		  int N_parts=gp_is.size();		  
+		  int N_parts=gp_is.size();
 		  for (int i=0;i<N_parts;i++)
-		    {	
+		    {
 		      int gp_i=gp_is[i];
-		      int gpp_i=gpp_is[i];	    
+		      int gpp_i=gpp_is[i];
 		      scalar_type pp=p_part[i];
 		      if (not (e<last_leaf) )
 			{
@@ -486,9 +486,9 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 			  uq_sum+=PS[e]*(uq[gp_i][f]*uq[gpp_i][g] + uq[gp_i][g]*uq[gpp_i][f])*pp;
 			}
 		      // D event
-		      uq_sum+=PD[e]*(uq[gp_i][e]*uq[gpp_i][e]*2)*pp;			      
+		      uq_sum+=PD[e]*(uq[gp_i][e]*uq[gpp_i][e]*2)*pp;
 		      // T event
-		      uq_sum+=(uq[gp_i][e]*(mPTuq[gpp_i]-mPTuq_ancestral_correction[gpp_i][e])+ uq[gpp_i][e]*(mPTuq[gp_i]-mPTuq_ancestral_correction[gp_i][e]))*pp;			      				      
+		      uq_sum+=(uq[gp_i][e]*(mPTuq[gpp_i]-mPTuq_ancestral_correction[gpp_i][e])+ uq[gpp_i][e]*(mPTuq[gp_i]-mPTuq_ancestral_correction[gp_i][e]))*pp;
 		    }
 		}
 	      if (not (e<last_leaf) )
@@ -499,10 +499,10 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 		  uq_sum+=PS[e]*(uq[i][f]*uE[g] + uq[i][g]*uE[f]);
 		}
 	      // DL event
-	      uq_sum+=PD[e]*(uq[i][e]*uE[e]*2);			      
+	      uq_sum+=PD[e]*(uq[i][e]*uE[e]*2);
 	      // TL event
-	      uq_sum+=((mPTuq[i]-mPTuq_ancestral_correction[i][e])*uE[e] + uq[i][e]* (mPTE- mPTE_ancestral_correction[e]) );			      				      	      
-	      if (uq_sum<EPSILON) uq_sum=EPSILON; 
+	      uq_sum+=((mPTuq[i]-mPTuq_ancestral_correction[i][e])*uE[e] + uq[i][e]* (mPTE- mPTE_ancestral_correction[e]) );
+	      if (uq_sum<EPSILON) uq_sum=EPSILON;
 	      uq[i][e]=uq_sum;
 	      new_mPTuq +=(PT[e]/(float)last_branch)*uq_sum;
 	      mPTuq_ancestral_correction[i][e]=0;
@@ -516,10 +516,10 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 		}
 	    }
 	  mPTuq[i]=new_mPTuq;
-	  
+
 	  //######################################################################################################################
 	  //#########################################INNNER LOOP##################################################################
-	  //######################################################################################################################		    
+	  //######################################################################################################################
 	}
       survive=0;
       root_sum=0;
@@ -531,20 +531,20 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	  O_norm+=O_p;
 	  root_sum+=uq[root_i][e]*O_p;
 	  survive+=(1-uE[e]);
-	}	     
+	}
       //cout << root_sum/survive << endl;
     }
   return root_sum/survive/O_norm*(last_branch);
-  
+
 }
 
 string exODT_model::sample_undated()
 {
 
   scalar_type r=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);
-  
+
   scalar_type root_sum=0;
-  
+
   for (int e=0;e<last_branch;e++)
     {
       scalar_type O_p=1;
@@ -553,12 +553,12 @@ string exODT_model::sample_undated()
     }
   scalar_type root_resum=0;
   scalar_type O_norm=0;
-  
+
   for (int e=0;e<last_branch;e++)
     {
       scalar_type O_p=1;
-      if ( e==(last_branch-1) ) O_p=scalar_parameter["O_R"];      
-      
+      if ( e==(last_branch-1) ) O_p=scalar_parameter["O_R"];
+
       root_resum+=uq[root_i][e]*O_p+EPSILON;
       if (r*root_sum<root_resum)
 	{
@@ -572,11 +572,11 @@ string exODT_model::sample_undated()
 string exODT_model::sample_undated(int e, int i,string last_event,string branch_string)
 {
 
-  
+
   scalar_type r=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);
 
   bool is_a_leaf=false;
-  long int g_id=g_ids[i];	
+  long int g_id=g_ids[i];
   if (g_id_sizes[i]==1)
     is_a_leaf=true;
 
@@ -584,15 +584,15 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
   if (ale_pointer->Bip_counts.count(g_id) and ale_pointer->Bip_counts[g_id]>0)
     bl<<max(ale_pointer->Bip_bls[g_id]/ale_pointer->Bip_counts[g_id],(scalar_type)scalar_parameter["min_branch_lenghts"]);
   else
-    bl<<max(ale_pointer->Bip_bls[g_id]/ale_pointer->observations,(scalar_type)scalar_parameter["min_branch_lenghts"]); 
+    bl<<max(ale_pointer->Bip_bls[g_id]/ale_pointer->observations,(scalar_type)scalar_parameter["min_branch_lenghts"]);
   string branch_length=bl.str();
 
   vector <int> gp_is;
   vector <long int> gpp_is;
   vector <scalar_type> p_part;
-  if (g_id!=-1)       
+  if (g_id!=-1)
     for (unordered_map< pair<long int, long int>,scalar_type> :: iterator kt = ale_pointer->Dip_counts[g_id].begin(); kt != ale_pointer->Dip_counts[g_id].end(); kt++)
-      {	  
+      {
 	pair<long int, long int> parts = (*kt).first;
 	long int gp_id=parts.first;
 	long int gpp_id=parts.second;
@@ -616,7 +616,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	  boost::dynamic_bitset<> not_gamma = ~gamma;
 	  not_gamma[0] = 0;
 	  long int gpp_id = ale_pointer->set_ids.at(not_gamma);
-	      
+
 	  set <long int> parts;
 	  parts.insert(gp_id);
 	  parts.insert(gpp_id);
@@ -637,37 +637,37 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	  int gpp_i=g_id2i[parts[1]];
 	  gp_is.push_back(gp_i);
 	  gpp_is.push_back(gpp_i);
-	      
+
 	  //Here we can create a new ale->Bip_counts[gp_id], in particular for leaves.
 	  //We may want to add the leaf entries for Bip_counts when Bip_counts is first created.
 	  if (ale_pointer->Bip_counts[gp_id]<=scalar_parameter.at("min_bip_count") and not ale_pointer->Gamma_size<4)
-	    p_part.push_back(0);	      
+	    p_part.push_back(0);
 	  else
-	    p_part.push_back(ale_pointer->p_bip(gp_id));	      
+	    p_part.push_back(ale_pointer->p_bip(gp_id));
 	}
       bip_parts.clear();
     }
 
-  
+
   //######################################################################################################################
   //#########################################INNNER LOOP##################################################################
-  //######################################################################################################################		    
+  //######################################################################################################################
   scalar_type uq_sum=0;
-  // S leaf and G leaf 
+  // S leaf and G leaf
   if (e<last_leaf and is_a_leaf and extant_species[e]==gid_sps[g_id])
     {
       // present
       uq_sum+=PS[e]*1+EPSILON;
     }
 
-  // G internal		  
+  // G internal
   if (not is_a_leaf)
     {
-      int N_parts=gp_is.size();		  
+      int N_parts=gp_is.size();
       for (int i=0;i<N_parts;i++)
-	{	
+	{
 	  int gp_i=gp_is[i];
-	  int gpp_i=gpp_is[i];	    
+	  int gpp_i=gpp_is[i];
 	  scalar_type pp=p_part[i];
 	  if (not (e<last_leaf) )
 	    {
@@ -678,10 +678,10 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	      uq_sum+=PS[e]*uq[gp_i][g]*uq[gpp_i][f]*pp+EPSILON;
 	    }
 	  // D event
-	  uq_sum+=PD[e]*(uq[gp_i][e]*uq[gpp_i][e]*2)*pp+EPSILON;			      
+	  uq_sum+=PD[e]*(uq[gp_i][e]*uq[gpp_i][e]*2)*pp+EPSILON;
 	  // T event
 	  for (int f=0;f<last_branch;f++)
-	    if (not ancestral[e][f]) 
+	    if (not ancestral[e][f])
 	      {
 		uq_sum+=uq[gp_i][e]*(PT[f]/(float)last_branch)*uq[gpp_i][f]*pp+EPSILON;
 		uq_sum+=uq[gpp_i][e]*(PT[f]/(float)last_branch)*uq[gp_i][f]*pp+EPSILON;
@@ -697,32 +697,32 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
       uq_sum+=PS[e]*uq[i][f]*uE[g]+EPSILON;
       uq_sum+=PS[e]*uq[i][g]*uE[f]+EPSILON;
     }
-  
+
   // DL event
-  uq_sum+=PD[e]*(uq[i][e]*uE[e]*2)+EPSILON;			      
+  uq_sum+=PD[e]*(uq[i][e]*uE[e]*2)+EPSILON;
   // TL event
 
   for (int f=0;f<last_branch;f++)
-    if (not ancestral[e][f]) 
+    if (not ancestral[e][f])
       {
 	uq_sum+=(PT[f]/(float)last_branch)*uq[i][f]*uE[e]+EPSILON;
-	uq_sum+=(PT[f]/(float)last_branch)*uE[f]*uq[i][e]+EPSILON;			      				      	      
+	uq_sum+=(PT[f]/(float)last_branch)*uE[f]*uq[i][e]+EPSILON;
       }
 
   //######################################################################################################################
   //#########################################INNNER LOOP##################################################################
-  //######################################################################################################################		    
+  //######################################################################################################################
 
   //######################################################################################################################
   //#########################################INNNER LOOP##################################################################
-  //######################################################################################################################		   
+  //######################################################################################################################
 
   stringstream estring;
-  if (not (e<last_leaf)) estring << e; else estring << extant_species[e]; 
+  if (not (e<last_leaf)) estring << e; else estring << extant_species[e];
   string estr=estring.str();
-    
+
   scalar_type uq_resum=0;
-  // S leaf and G leaf 
+  // S leaf and G leaf
   if (e<last_leaf and is_a_leaf and extant_species[e]==gid_sps[g_id])
     {
       // present
@@ -733,14 +733,14 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	  return ale_pointer->set2name(ale_pointer->id_sets[g_id])+branch_string+":"+branch_length;
 	}
     }
-  // G internal		  
+  // G internal
   if (not is_a_leaf)
     {
-      int N_parts=gp_is.size();		  
+      int N_parts=gp_is.size();
       for (int i=0;i<N_parts;i++)
-	{	
+	{
 	  int gp_i=gp_is[i];
-	  int gpp_i=gpp_is[i];	    
+	  int gpp_i=gpp_is[i];
 	  scalar_type pp=p_part[i];
 	  if (not (e<last_leaf) )
 	    {
@@ -750,13 +750,13 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	      uq_resum+=PS[e]*uq[gp_i][f]*uq[gpp_i][g]*pp+EPSILON;
 	      if (r*uq_sum<uq_resum)
 		{
-		  register_Su(e,last_event);			  
+		  register_Su(e,last_event);
 		  return "("+sample_undated(f,gp_i,"S")+","+sample_undated(g,gpp_i,"S")+")."+estr+branch_string+":"+branch_length;
-		}		  
+		}
 	      uq_resum+=PS[e]*uq[gp_i][g]*uq[gpp_i][f]*pp+EPSILON;
 	      if (r*uq_sum<uq_resum)
 		{
-		  register_Su(e,last_event);			  
+		  register_Su(e,last_event);
 		  return "("+sample_undated(g,gp_i,"S")+","+sample_undated(f,gpp_i,"S")+")."+estr+branch_string+":"+branch_length;
 		}
 	    }
@@ -764,18 +764,18 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	  uq_resum+=PD[e]*(uq[gp_i][e]*uq[gpp_i][e]*2)*pp+EPSILON;
 	  if (r*uq_sum<uq_resum)
 	    {
-	      register_D(e);			 
+	      register_D(e);
 	      return "("+sample_undated(e,gp_i,"D")+","+sample_undated(e,gpp_i,"D")+").D@"+estr+branch_string+":"+branch_length;
-	    }		  
-	      
+	    }
+
 	  // T event
 	  for (int f=0;f<last_branch;f++)
-	    if (not ancestral[e][f]) 
+	    if (not ancestral[e][f])
 	    {
 	      stringstream fstring;
-	      if (not (f<last_leaf)) fstring << f; else fstring << extant_species[f]; 
-	      string fstr=fstring.str();	      
-		  
+	      if (not (f<last_leaf)) fstring << f; else fstring << extant_species[f];
+	      string fstr=fstring.str();
+
 	      uq_resum+=uq[gp_i][e]*(PT[f]/(float)last_branch)*uq[gpp_i][f]*pp+EPSILON;
 	      if (r*uq_sum<uq_resum)
 		{
@@ -785,9 +785,9 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 		  stringstream Ttoken;
 		  Ttoken<<estr<<">"<<fstr<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[g_ids[gpp_i]]);
 		  Ttokens.push_back(Ttoken.str());
-		  
+
 		  return "("+sample_undated(e,gp_i,"S")+","+sample_undated(f,gpp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
-		}		  	     
+		}
 	      uq_resum+=uq[gpp_i][e]*(PT[f]/(float)last_branch)*uq[gp_i][f]*pp+EPSILON;
 	      if (r*uq_sum<uq_resum)
 		{
@@ -798,8 +798,8 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 		  Ttoken<<estr<<">"<<fstr<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[g_ids[gp_i]]);
 		  Ttokens.push_back(Ttoken.str());
 		  return "("+sample_undated(e,gpp_i,"S")+","+sample_undated(f,gp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
-		}		  
-		  
+		}
+
 	    }
 	}
     }
@@ -812,31 +812,31 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
       if (r*uq_sum<uq_resum)
 	{
 	  register_Su(e,last_event);
-	  register_L(g);			  
+	  register_L(g);
 	  return sample_undated(f,i,"S","."+estr+branch_string);
-	}		  
+	}
       uq_resum+=PS[e]*uq[i][g]*uE[f]+EPSILON;
       if (r*uq_sum<uq_resum)
 	{
 	  register_Su(e,last_event);
-	  register_L(f);			  
+	  register_L(f);
 	  return sample_undated(g,i,"S","."+estr+branch_string);
-	}		  
+	}
     }
   // DL event
   uq_resum+=PD[e]*(uq[i][e]*uE[e]*2)+EPSILON;
   if (r*uq_sum<uq_resum)
     {
       return sample_undated(e,i,"S",branch_string);
-    }		  
+    }
   // TL event
   for (int f=0;f<last_branch;f++)
-    if (not ancestral[e][f]) 
+    if (not ancestral[e][f])
       {
       stringstream fstring;
-      if (not (f<last_leaf)) fstring << f; else fstring << extant_species[f]; 
-      string fstr=fstring.str();	      
-      
+      if (not (f<last_leaf)) fstring << f; else fstring << extant_species[f];
+      string fstr=fstring.str();
+
       uq_resum+=(PT[f]/(float)last_branch)*uq[i][f]*uE[e]+EPSILON;
       if (r*uq_sum<uq_resum)
 	{
@@ -848,14 +848,14 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	  Ttoken<<estr<<">"<<fstr<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[g_id]);
 	  Ttokens.push_back(Ttoken.str());
 	  */
-	  register_L(e); 
+	  register_L(e);
 	  return sample_undated(f,i,"T",".T@"+estr+"->"+fstr+branch_string);
-	}		  
+	}
       uq_resum+=(PT[f]/(float)last_branch)*uE[f]*uq[i][e]+EPSILON;
       if (r*uq_sum<uq_resum)
 	{
 	  return sample_undated(e,i,"S");
-	}		  
+	}
     }
   //######################################################################################################################
   //#########################################INNNER LOOP##################################################################
@@ -866,16 +866,16 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 
 string exODT_model::counts_string_undated(scalar_type samples)
 {
-  
+
   stringstream out;
-  for (int e=0;e<last_branch;e++)	
-    {	
+  for (int e=0;e<last_branch;e++)
+    {
       bool isleaf=e<last_leaf;
       stringstream named_branch;
-      if (e<last_leaf) named_branch << extant_species[e]; else  named_branch << e; 
+      if (e<last_leaf) named_branch << extant_species[e]; else  named_branch << e;
 
       if (not isleaf)
-	out<< "S_internal_branch\t"<< named_branch.str() << "\t" 
+	out<< "S_internal_branch\t"<< named_branch.str() << "\t"
 	   << branch_counts["Ds"][e]/samples << "\t"
 	   << branch_counts["Ts"][e]/samples << "\t"
 	   << branch_counts["Ls"][e]/samples << "\t"
@@ -883,29 +883,29 @@ string exODT_model::counts_string_undated(scalar_type samples)
 	  //<< branch_counts["singleton"][e]/samples << "\t"
 	   << branch_counts["copies"][e]/samples << "\n";
       else
-	out<< "S_terminal_branch\t"<< named_branch.str() << "\t" 
+	out<< "S_terminal_branch\t"<< named_branch.str() << "\t"
 	   << branch_counts["Ds"][e]/samples << "\t"
 	   << branch_counts["Ts"][e]/samples << "\t"
 	   << branch_counts["Ls"][e]/samples << "\t"
 	   << branch_counts["Os"][e]/samples << "\t"
 	  //<< branch_counts["singleton"][e] << "\t"
 	   << branch_counts["copies"][e]/samples << "\n";
-	
-    }  
+
+    }
   return out.str();
 }
 
 void exODT_model::register_Su(int e,string last_event)
 {
   MLRec_events["S"]+=1;
-  if (e>-1) 
+  if (e>-1)
     {
       int f=daughter[e];
       int g=son[e];
       if (last_event=="S" or last_event=="O") branch_counts["singleton"].at(e)+=1;
       branch_counts["copies"].at(e)+=1;
       branch_counts["count"].at(f)+=1;
-      branch_counts["count"].at(g)+=1;  
+      branch_counts["count"].at(g)+=1;
     }
 }
 
@@ -924,6 +924,16 @@ void exODT_model::register_T_to_from(int e,int f)
   T_to_from[e][f]+=1;
 }
 
+void exODT_model::reset_T_to_from()
+{
+  for (int e=0;e<last_branch;e++) {
+    for (int f=0;f<last_branch;f++) {
+      T_to_from[e][f] = 0;
+    }
+  }
+}
+
+
 string exODT_model::feSPR(int e, int f)
 {
   tree_type * newS=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  (string_parameter["BOOT_STRAP_LABLES"]=="yes"));
@@ -932,10 +942,10 @@ string exODT_model::feSPR(int e, int f)
 
   string e_name=node_name[id_nodes[e]];
   string f_name=node_name[id_nodes[f]];;
-  
+
   Node *e_node, *f_node;
 
-  
+
   for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
     {
       string name_it;
@@ -950,14 +960,14 @@ string exODT_model::feSPR(int e, int f)
 	  stringstream name;
 	  for (vector <string >::iterator st=leafnames.begin();st!=leafnames.end();st++ )
 	    name<<(*st)<<".";
-	  
-	  name_it=name.str();	  
+
+	  name_it=name.str();
 	}
       if (name_it==e_name) e_node=(*it);
-      if (name_it==f_name) f_node=(*it);	
+      if (name_it==f_name) f_node=(*it);
     }
 
-  if (e==f) return string_parameter["S_un"]; 
+  if (e==f) return string_parameter["S_un"];
 
   bool e_below_f=false;
   Node * node;
@@ -965,7 +975,7 @@ string exODT_model::feSPR(int e, int f)
   while (node->hasFather())
     {
       node=node->getFather();
-      if (node==f_node) e_below_f=true; 
+      if (node==f_node) e_below_f=true;
     }
   if (e_below_f)
     {
@@ -973,18 +983,18 @@ string exODT_model::feSPR(int e, int f)
       e_node=f_node;
       f_node=swap_tmp;
     }
-  if (f_node->hasFather() and f_node->getFather()==e_node ) return string_parameter["S_un"]; 
-  
+  if (f_node->hasFather() and f_node->getFather()==e_node ) return string_parameter["S_un"];
+
   Node * f_father=f_node->getFather();
   vector <Node *> f_sons=f_father->getSons();
   Node * f_sister;
   if (f_sons[0]==f_node) f_sister=f_sons[1]; else f_sister=f_sons[0];
-  f_father->removeSon(f_sister);      
+  f_father->removeSon(f_sister);
   if (f_father->hasFather())
     {
       Node * f_grand_father=f_father->getFather();
       f_grand_father->removeSon(f_father);
-      f_grand_father->addSon(f_sister);      
+      f_grand_father->addSon(f_sister);
     }
   else
     {
@@ -1000,9 +1010,9 @@ string exODT_model::feSPR(int e, int f)
     newS->setRootNode(f_father);
 
   f_father->addSon(e_node);
-  
+
   for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ ) (*it)->setDistanceToFather(1);
-  
+
   return TreeTemplateTools::treeToParenthesis(*newS,false,"ID");
 }
 
@@ -1010,15 +1020,15 @@ vector<string> exODT_model::NNIs(int e)
 {
   vector<string> NNIs;
   int left_e,right_e,f;
-  
+
   Node * root = id_nodes[e];
 
   if (root->isLeaf()) return NNIs;
-  
+
   vector <Node *> roots_sons=root->getSons();
 
   right_e=node_ids[roots_sons[0]];
-  left_e=node_ids[roots_sons[1]];    
+  left_e=node_ids[roots_sons[1]];
 
   if (roots_sons[0]->isLeaf())
     ;
@@ -1030,7 +1040,7 @@ vector<string> exODT_model::NNIs(int e)
       f=node_ids[right_sons[1]];
       NNIs.push_back(feSPR(left_e,f));
     }
-  
+
   if (roots_sons[1]->isLeaf())
     ;
   else
@@ -1042,5 +1052,5 @@ vector<string> exODT_model::NNIs(int e)
       NNIs.push_back(feSPR(right_e,f));
     }
   return NNIs;
-  
+
 }
