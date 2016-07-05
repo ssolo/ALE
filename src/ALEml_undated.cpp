@@ -204,7 +204,7 @@ int main(int argc, char ** argv)
   fout << "# of\t Duplications\tTransfers\tLosses\tSpeciations" <<endl; 
   fout <<"Total \t"<< model->MLRec_events["D"]/samples << "\t" << model->MLRec_events["T"]/samples << "\t" << model->MLRec_events["L"]/samples<< "\t" << model->MLRec_events["S"]/samples <<endl;    
   fout << endl;
-  fout << "# of\t Duplications\tTransfers\tLosses\tcopies" <<endl; 
+  fout << "# of\t Duplications\tTransfers\tLosses\tOriginations\tcopies" <<endl; 
   fout << model->counts_string_undated(samples);
   
   cout << "Results in: " << outname << endl;
