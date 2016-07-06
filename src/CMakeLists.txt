@@ -54,6 +54,13 @@ target_link_libraries(ALEobserve exODT
   ${BPP_LIBRARIES}
 )
 
+add_executable(ALEadd ALEadd.cpp)
+target_link_libraries(ALEadd exODT
+  ${Boost_MPI_LIBRARY}
+  ${MPI_LIBRARIES}
+  ${BPP_LIBRARIES}
+)
+
 add_executable(ALEcount ALEcount.cpp)
 target_link_libraries(ALEcount exODT
   ${Boost_MPI_LIBRARY}

@@ -9,35 +9,71 @@ int main(int argc, char ** argv)
 
   if (argc<2) 
     {
-      cout << "usage:\n ./ALEadd ale_file.ale gene_tree_sample.newicks [weight=1] [burnin=0]" << endl;
+      cout << "usage:\n ./ALEadd ale_file.ale gene_tree_sample.newicks [weight=1] [burnin=0] [every=1] [until=end] [outfile=filename]" << endl;
       return 1;
     }
 
-  string first_file=argv[1];
-  boost::trim(first_file);	    
-  string head=first_file;
-  string ale_name=head+".ale";
+  string ale_file=argv[1];
+  string trees_file=argv[2];
+  boost::trim(ale_file);	    
+  boost::trim(trees_file);	    
+  string ale_name=ale_file;
   approx_posterior * ale;
-  int burnin=0;
-  scalar_type weigth = 1;
-  vector<string> ale_files;
-  ale_files.push_back(first_file);
-  for (int i=2;i<argc;i++)
+  int burnin=0,every=0,until=-1;
+  scalar_type weight = 1;
+  
+  for (int i=3;i<argc;i++)
     {
       string next_field=argv[i];
       vector <string> tokens;
       boost::split(tokens,next_field,boost::is_any_of("="),boost::token_compress_on);
       if (tokens[0]=="burnin")
 	burnin=atoi(tokens[1].c_str());
+      else if (tokens[0]=="every")
+	every=atoi(tokens[1].c_str());
+
       else if (tokens[0]=="weight")
 	weight=atof(tokens[1].c_str());
+      else if (tokens[0]=="outfile")
+	ale_name=tokens[1];
     }
-  ale=load_ALE_from_file(ale_files,burnin);
-  cout << "# observe "<< ale->observations << " tree(s) from: " <<  argv[1] ;
-  for (int i=2;i<argc-1;i++)
-    cout << " " << argv[i];
-  cout << endl;
-  cout << burnin<<" burn in per file discarded."<<endl;
+  ale=load_ALE_from_file(ale_file);
+
+
+  vector<string> trees;
+  ifstream file_stream (trees_file.c_str());
+  int tree_i=0;  
+  if (file_stream.is_open())  //  ########## read trees ############
+    {
+      while (! file_stream.eof())
+	{
+	  string line;
+	  getline (file_stream,line);
+	  if (line.find("(")!=line.npos)
+	    {
+	      tree_i++;
+	      if (tree_i>burnin and tree_i%every==0) trees.push_back(line);			     
+	    }
+	}
+    }
+
+
+  vector<string> observe_trees;
+  if (until==-1)
+    until=trees.size();
+  for (int i=0;i<min((int)trees.size(),until);i++)
+    observe_trees.push_back(trees[i]);
+
+  ale->observation(observe_trees,false,weight);
+
+  trees.clear();
+  observe_trees.clear();
+
+
+  cout <<"#" << observe_trees.size() <<  " new tree(s) observed with weight "<<weight<<" from: " <<  argv[2] ;
+  cout << burnin<<" burn in discarded."<<endl;
+  
+  cout << "# .ale with "<< ale->observations << " tree(s) from: " <<  argv[1] << " and " << argv[2] << endl;
   ale->save_state(ale_name);
   cout << "# saved in "<< ale_name<<endl;
   return 1;
