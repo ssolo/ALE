@@ -19,7 +19,7 @@ int main(int argc, char ** argv)
   boost::trim(trees_file);	    
   string ale_name=ale_file;
   approx_posterior * ale;
-  int burnin=0,every=0,until=-1;
+  int burnin=0,every=1,until=-1;
   scalar_type weight = 1;
   
   for (int i=3;i<argc;i++)
@@ -38,6 +38,7 @@ int main(int argc, char ** argv)
 	ale_name=tokens[1];
     }
   ale=load_ALE_from_file(ale_file);
+  cout <<  "." << endl;
 
 
   vector<string> trees;
@@ -57,6 +58,7 @@ int main(int argc, char ** argv)
 	}
     }
 
+  cout <<  ".." << endl;
 
   vector<string> observe_trees;
   if (until==-1)
@@ -71,7 +73,7 @@ int main(int argc, char ** argv)
 
 
   cout <<"#" << observe_trees.size() <<  " new tree(s) observed with weight "<<weight<<" from: " <<  argv[2] ;
-  cout << burnin<<" burn in discarded."<<endl;
+  cout <<"; " << burnin<<" trees burnin discarded."<<endl;
   
   cout << "# .ale with "<< ale->observations << " tree(s) from: " <<  argv[1] << " and " << argv[2] << endl;
   ale->save_state(ale_name);
