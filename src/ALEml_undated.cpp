@@ -89,11 +89,11 @@ public:
 
 int main(int argc, char ** argv)
 {
-  cout << "ALEml using ALE v"<< ALE_VERSION <<endl;
+  cout << "ALEml_undated using ALE v"<< ALE_VERSION <<endl;
 
   if (argc<3) 
     {
-      cout << "usage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale [samples] [gene_name_separator] [OriginationAtRoot] [DuplicationRate] [TransferRate] [LossRate]" << endl;
+      cout << "usage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale [sample=100] [gene_name_separators=_] [O_R=1.0] [DuplicationRate=optimized] [TransferRate=optimized] [LossRate=optimized][seq_beta=1.0]" << endl;
       return 1;
     }
 
@@ -129,19 +129,19 @@ int main(int argc, char ** argv)
 	samples=atoi(tokens[1].c_str());
       else if (tokens[0]=="separators")
 	model->set_model_parameter("gene_name_separators", tokens[1]);
-      else if (tokens[0]=="delta")
+      else if (tokens[0]=="delta" and not (tokens[1]=="optimized"))
 	{
 	  delta=atof(tokens[1].c_str());
 	  delta_fixed=true;
 	  cout << "# delta fixed to " << delta << endl; 
 	}
-      else if (tokens[0]=="tau")
+      else if (tokens[0]=="tau" and not (tokens[1]=="optimized"))
 	{
 	  tau=atof(tokens[1].c_str());
 	  tau_fixed=true;
 	  cout << "# tau fixed to " << tau << endl; 
 	}
-      else if (tokens[0]=="lambda")
+      else if (tokens[0]=="lambda" and not (tokens[1]=="optimized"))
        	{
 	  lambda=atof(tokens[1].c_str());
 	  lambda_fixed=true;
