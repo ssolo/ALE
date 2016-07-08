@@ -376,6 +376,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
   set_model_parameter("lambda",1.0);
   // O_R is the multiplier for O at the root
   set_model_parameter("O_R",1.0);
+  set_model_parameter("seq_beta",1.0);
 
   for (int branch=0;branch<last_branch;branch++)	
     {

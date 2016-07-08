@@ -31,7 +31,8 @@ int main(int argc, char ** argv)
 	burnin=atoi(tokens[1].c_str());
       else if (tokens[0]=="every")
 	every=atoi(tokens[1].c_str());
-
+      else if (tokens[0]=="until")
+	until=atoi(tokens[1].c_str());
       else if (tokens[0]=="weight")
 	weight=atof(tokens[1].c_str());
       else if (tokens[0]=="outfile")
@@ -52,8 +53,12 @@ int main(int argc, char ** argv)
 	  getline (file_stream,line);
 	  if (line.find("(")!=line.npos)
 	    {
-	      tree_i++;
-	      if (tree_i>burnin and tree_i%every==0) trees.push_back(line);			     
+	      if (tree_i>=burnin and tree_i%every==0)
+		{
+		  cout << line;
+		  trees.push_back(line);		 
+		}
+		tree_i++;
 	    }
 	}
     }
@@ -64,19 +69,21 @@ int main(int argc, char ** argv)
   if (until==-1)
     until=trees.size();
   for (int i=0;i<min((int)trees.size(),until);i++)
-    observe_trees.push_back(trees[i]);
-
+    {
+      observe_trees.push_back(trees[i]);
+    }
   ale->observation(observe_trees,false,weight);
 
-  trees.clear();
-  observe_trees.clear();
 
-
-  cout <<"#" << observe_trees.size() <<  " new tree(s) observed with weight "<<weight<<" from: " <<  argv[2] ;
+  cout <<"# " << observe_trees.size() <<  " new tree(s) observed with weight "<<weight<<" from: " <<  argv[2] ;
   cout <<"; " << burnin<<" trees burnin discarded."<<endl;
   
   cout << "# .ale with "<< ale->observations << " tree(s) from: " <<  argv[1] << " and " << argv[2] << endl;
   ale->save_state(ale_name);
   cout << "# saved in "<< ale_name<<endl;
+  
+  trees.clear();
+  observe_trees.clear();
+
   return 1;
 }

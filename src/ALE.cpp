@@ -773,7 +773,7 @@ map < boost::dynamic_bitset<> ,scalar_type > approx_posterior::recompose(string 
 
 
 // an unrooted tree given by its Newick string (which can be rooted)
-void approx_posterior::decompose(string G_string, set<int> * bip_ids )
+void approx_posterior::decompose(string G_string, set<int> * bip_ids ,scalar_type weight)
 {
   //VEC
   std::unordered_map< pair<long int, long int>,scalar_type> tmp ;
@@ -875,7 +875,7 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids )
 
   if (G -> getLeaves().size()==2)
     {
-      Bip_counts[(long int) 1]+=1;
+      Bip_counts[(long int) 1]+=weight;
   
     }
   else
@@ -970,9 +970,9 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids )
 
 		//bl - hack
 		//INTEGRATED COUNTING 
-		Dip_counts[g_id][parts]+=1;
+		Dip_counts[g_id][parts]+=weight;
 
-		Bip_counts[g_id]+=1;
+		Bip_counts[g_id]+=weight;
 
 		//bipartion naming
 		if (bip_ids!=NULL) bip_ids->insert(g_id);
@@ -1023,7 +1023,7 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids )
   //return return_dips;
 }
 
-void approx_posterior::observation(vector<string> trees, bool count_topologies)
+void approx_posterior::observation(vector<string> trees, bool count_topologies, scalar_type weight)
 {
   for (vector<string>::iterator it=trees.begin();it!=trees.end();it++)
     {
@@ -1031,7 +1031,7 @@ void approx_posterior::observation(vector<string> trees, bool count_topologies)
       if (count_topologies)
 	{
 	  set <int> bip_ids;//del-loc      
-	  decompose(*it,&bip_ids);//del-loc      
+	  decompose(*it,&bip_ids,weight);//del-loc      
 	  string bip_string="|";
 	  for (set <int>::iterator st=bip_ids.begin();st!=bip_ids.end();st++)
 	    bip_string+=(*st)+"|";
@@ -1043,8 +1043,8 @@ void approx_posterior::observation(vector<string> trees, bool count_topologies)
 	  tree_counts[bipstring_trees[bip_string]]+=1;
 	  bip_ids.clear();
 	}
-      else decompose(*it);//del-loc            
-      observations+=1;
+      else decompose(*it,NULL,weight);//del-loc            
+      observations+=weight;
     }
   //cout << "obsdone." << endl;
 

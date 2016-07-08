@@ -16,19 +16,37 @@ class p_fun:
 {
 private:
   double fval_;
+  bool delta_fixed;
+  bool tau_fixed;
+  bool lambda_fixed;
   exODT_model* model_pointer;
   approx_posterior* ale_pointer;
 public:
   p_fun(exODT_model* model,approx_posterior* ale, double delta_start=0.01,double tau_start=0.01,double lambda_start=0.1//,double sigma_hat_start=1.
-) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale) 
+	,bool delta_fixed_in=false,bool tau_fixed_in=false,bool lambda_fixed_in=false) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale) 
   {
     //We declare parameters here:
  //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
       IntervalConstraint* constraint = new IntervalConstraint ( 1e-6, 10-1e-6, true, true );
-      addParameter_( new Parameter("delta", delta_start, constraint) ) ;
-      addParameter_( new Parameter("tau", tau_start, constraint) ) ;
-      addParameter_( new Parameter("lambda", lambda_start, constraint) ) ;
-      //addParameter_( new Parameter("sigma_hat", sigma_hat_start, constraint) ) ;
+      delta_fixed=delta_fixed_in;
+      tau_fixed=tau_fixed_in;
+      lambda_fixed=lambda_fixed_in;
+      
+      if (not delta_fixed)
+	{
+	  addParameter_( new Parameter("delta", delta_start, constraint) ) ;
+	  cout << "#optimizing delta rate"<< endl;
+	}
+      if (not tau_fixed)
+	{	  
+	  addParameter_( new Parameter("tau", tau_start, constraint) ) ;
+	  cout << "#optimizing tau rate"<< endl;
+	}
+      if (not lambda_fixed)
+	{
+	  addParameter_( new Parameter("lambda", lambda_start, constraint) ) ;
+	  cout << "#optimizing lambda rate"<< endl;
+	}
 
   }
   
@@ -44,20 +62,27 @@ public:
     double getValue() const throw (Exception) { return fval_; }
     void fireParameterChanged(const ParameterList& pl)
     {
-        double delta = getParameterValue("delta");
-        double tau = getParameterValue("tau");
-        double lambda = getParameterValue("lambda");
-        //double sigma_hat = getParameterValue("sigma_hat");
-        
-        model_pointer->set_model_parameter("delta",delta);
-        model_pointer->set_model_parameter("tau",tau);
-        model_pointer->set_model_parameter("lambda",lambda);
-        //model_pointer->set_model_parameter("sigma_hat",sigma_hat);
-        model_pointer->calculate_undatedEs();
-        double y=-log(model_pointer->pun(ale_pointer));
-        //cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda //<< "\t lambda="<<sigma_hat << "\t ll="
-	//    << -y <<endl;
-        fval_ = y;
+      if (not delta_fixed)
+	{
+	  double delta = getParameterValue("delta");
+	  model_pointer->set_model_parameter("delta",delta);	
+	}
+      if (not tau_fixed)
+	{
+	  double tau = getParameterValue("tau");
+	  model_pointer->set_model_parameter("tau",tau);	
+	}
+      if (not lambda_fixed)
+	{
+	  double lambda = getParameterValue("lambda");
+	  model_pointer->set_model_parameter("lambda",lambda);	
+	}
+
+      model_pointer->calculate_undatedEs();
+      double y=-log(model_pointer->pun(ale_pointer));
+      //cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda //<< "\t lambda="<<sigma_hat << "\t ll="
+      //    << -y <<endl;
+      fval_ = y;
     }
 };
 
@@ -89,25 +114,59 @@ int main(int argc, char ** argv)
   exODT_model* model=new exODT_model();
 
   scalar_type samples=100;
-  if (argc>3)
-    samples=atof(argv[3]);
+  scalar_type O_R=1,beta=1; 
+  bool delta_fixed=false;
+  bool tau_fixed=false;
+  bool lambda_fixed=false;
+  scalar_type delta=0.01,tau=0.01,lambda=0.1;  
 
-  if (argc>4)
-    model->set_model_parameter("gene_name_separators", argv[4]);
-  model->set_model_parameter("BOOT_STRAP_LABLES","yes");
-  
+  for (int i=3;i<argc;i++)
+    {
+      string next_field=argv[i];
+      vector <string> tokens;
+      boost::split(tokens,next_field,boost::is_any_of("="),boost::token_compress_on);
+      if (tokens[0]=="sample")
+	samples=atoi(tokens[1].c_str());
+      else if (tokens[0]=="separators")
+	model->set_model_parameter("gene_name_separators", tokens[1]);
+      else if (tokens[0]=="delta")
+	{
+	  delta=atof(tokens[1].c_str());
+	  delta_fixed=true;
+	  cout << "# delta fixed to " << delta << endl; 
+	}
+      else if (tokens[0]=="tau")
+	{
+	  tau=atof(tokens[1].c_str());
+	  tau_fixed=true;
+	  cout << "# tau fixed to " << tau << endl; 
+	}
+      else if (tokens[0]=="lambda")
+       	{
+	  lambda=atof(tokens[1].c_str());
+	  lambda_fixed=true;
+	  cout << "# lambda fixed to " << lambda << endl; 
+
+	}
+      else if (tokens[0]=="O_R")
+	{
+	  O_R=atof(tokens[1].c_str());
+	  cout << "# O_R set to " << O_R << endl; 
+	}
+      else if (tokens[0]=="beta")
+	{
+	  beta=atof(tokens[1].c_str());
+	  cout << "# beta set to " << beta << endl; 
+
+	}
+    }
+
+  model->set_model_parameter("BOOT_STRAP_LABLES","yes");  
   model->construct_undated(Sstring);
   
-  //a set of inital rates
-  
-  scalar_type O_R=1; 
-  if (argc>5)
-    O_R=atof(argv[5]);
+  model->set_model_parameter("seq_beta", beta);
   model->set_model_parameter("O_R", O_R);
-
-  scalar_type delta=0.01,tau=0.01,lambda=0.1;  
-  if (argc>8)
-    delta=atof(argv[6]),tau=atof(argv[7]),lambda=atof(argv[8]);  
+  //a set of inital rates
   model->set_model_parameter("delta", delta);
   model->set_model_parameter("tau", tau);
   model->set_model_parameter("lambda", lambda);
@@ -118,8 +177,7 @@ int main(int argc, char ** argv)
   cout << "Reconciliation model initialised, starting DTL rate optimisation" <<".."<<endl;
 
   //we use the Nelder–Mead method implemented in Bio++
-  Function* f = new p_fun(model,ale,delta,tau,lambda//,1
-			  );
+  Function* f = new p_fun(model,ale,delta,tau,lambda,delta_fixed,tau_fixed,lambda_fixed);
   Optimizer* optimizer = new DownhillSimplexMethod(f);
 
   optimizer->setProfiler(0);
@@ -130,12 +188,13 @@ int main(int argc, char ** argv)
   optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
         
   scalar_type mlll;
-  if (not (argc>7))
+  if (not (delta_fixed and tau_fixed and lambda_fixed) )
     {
+      cout << "#optimizing rates" << endl;
       optimizer->optimize();
-      delta=optimizer->getParameterValue("delta");
-      tau=optimizer->getParameterValue("tau");
-      lambda=optimizer->getParameterValue("lambda");
+      if (not delta_fixed) delta=optimizer->getParameterValue("delta");
+      if (not tau_fixed) tau=optimizer->getParameterValue("tau");
+      if (not lambda_fixed) lambda=optimizer->getParameterValue("lambda");
       mlll=-optimizer->getFunctionValue();
     }
   else

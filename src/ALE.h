@@ -82,7 +82,7 @@ class approx_posterior
   void save_state(std::string fname) ;                                               //Writes the object to a file.
   void load_state(std::string fname);
 
-  void observation(std::vector<std::string> trees,bool count_topologies=false);     //Given a vector of trees, fills an approx_posterior object by recursively calling decompose, and then doing some more counts.
+  void observation(std::vector<std::string> trees,bool count_topologies=false, scalar_type weight=1.0);     //Given a vector of trees, fills an approx_posterior object by recursively calling decompose, and then doing some more counts.
   scalar_type p(std::string tree) const;                                                  //Computes the probability of a string tree. Calls recompose on the tree, and then uses the map returned by recompose to compute the probability of the whole tree.
   scalar_type nbipp(std::string tree) const;                                              //Computes the proportion of bipartitions already in the approx_posterior object that are present in the tree
   scalar_type binomial(int n,int m) const;                                                //Computes the binomial coefficient.
@@ -130,7 +130,7 @@ class approx_posterior
   boost::timer * t;
 
   //algorithmic
-  void decompose(std::string G_string,std::set<int> * bip_ids=NULL );                //Parses a tree in string format and updates the approx_prior object accordingly (notably updates the Bip_bls, Bip_counts, Dip_counts, and set_ids + id_sets through set2id)
+  void decompose(std::string G_string,std::set<int> * bip_ids=NULL , scalar_type weight=1.0);                //Parses a tree in string format and updates the approx_prior object accordingly (notably updates the Bip_bls, Bip_counts, Dip_counts, and set_ids + id_sets through set2id)
   std::map < boost::dynamic_bitset<> ,scalar_type> recompose(std::string G_string) const;              //For a given input tree string, returns a map between all sets of leaves contained in the tree and their corresponding conditional clade probability.
   void register_leafset(std::string);
   long int set2id( boost::dynamic_bitset<>  leaf_set) ;                                           //If the set exists, returns the set id, otherwise creates a new set id for this set and returns it.

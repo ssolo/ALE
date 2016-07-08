@@ -411,7 +411,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 		if (ale->Bip_counts[g_id]<=scalar_parameter["min_bip_count"])
 		  p_part.push_back(0);
 		else
-		  p_part.push_back(ale->p_dip(g_id,gp_id,gpp_id));
+		  p_part.push_back( pow( (scalar_type) ale->p_dip(g_id,gp_id,gpp_id) , (scalar_type) scalar_parameter["seq_beta"] ) );//set pp
 	      }
 	  else
 	    {
@@ -452,7 +452,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 		  if (ale->Bip_counts[gp_id]<=scalar_parameter.at("min_bip_count") and not ale->Gamma_size<4)
 		    p_part.push_back(0);
 		  else
-		    p_part.push_back(ale->p_bip(gp_id));
+		    p_part.push_back(pow ( (scalar_type) ale->p_bip(gp_id) ,  (scalar_type) scalar_parameter["seq_beta"] ) );//set pp
 		}
 	      bip_parts.clear();
 	    }
@@ -603,7 +603,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	if (ale_pointer->Bip_counts[g_id]<=scalar_parameter["min_bip_count"])
 	  p_part.push_back(0);
 	else
-	  p_part.push_back(ale_pointer->p_dip(g_id,gp_id,gpp_id));
+	  p_part.push_back( pow( (scalar_type) ale_pointer->p_dip(g_id,gp_id,gpp_id) ,  (scalar_type) scalar_parameter["seq_beta"] ) );//set pp
       }
   else
     {
@@ -643,7 +643,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	  if (ale_pointer->Bip_counts[gp_id]<=scalar_parameter.at("min_bip_count") and not ale_pointer->Gamma_size<4)
 	    p_part.push_back(0);
 	  else
-	    p_part.push_back(ale_pointer->p_bip(gp_id));
+	    p_part.push_back( pow ( (scalar_type) ale_pointer->p_bip(gp_id) , (scalar_type) scalar_parameter["seq_beta"] ) );//set pp
 	}
       bip_parts.clear();
     }
