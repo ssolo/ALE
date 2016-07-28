@@ -16,17 +16,21 @@ The repository currently implements two objects and several programs:
 ## Using ALE
 ALE reconciles a sample of gene trees with a species tree. The sample of gene trees is typically obtained from a Bayesian MCMC program (e.g. PhyloBayes or mrBayes or RevBayes...) or could be obtained using bootstrap replicates. The species tree needs to be rooted. Both inputs need to be provided as files containing Newick strings. ALE will use the sample of gene trees to piece together (amalgamate) reconciled gene trees while estimating their probabilities. Here the probability of a gene tree depends on both sequence information (provided by the gene tree frequencies in the initial sample) and rates of D, T, L events, which can be optimized or sampled depending on the program chosen. 2 models have been implemented for reconciling gene trees with a species tree. A dated model, which assumes that the nodes of the species tree are ordered relative to each other, and an undated model which only requires that the species tree is rooted.
 
-Two steps are required to obtained reconciled amalgamated gene trees.
+Two steps are required to obtained reconciled amalgamated gene trees: first the preparation of the data by constructing an ALE object, then the actual inference of the reconciled amalgamated gene trees.
 
- - First, compact the sample of gene trees into an ALE object. This is done using the program ALEobserve.
+### Construction of the ALE object
+The sample of gene trees is compacted into an ALE object. This is done using the program ALEobserve.
 ```sh
 ALEobserve geneFamily.treelist 1000  
 ```
 Where geneFamily.treelist is the file containing the sample of gene trees, and 1000 is a number of gene trees that will be discarded. The result of the command above is to create a geneFamily.ale file that can be used to infer reconciled amalgamated gene trees during step 2.
 
- - Second, compute the reconciled amalgamated gene trees. The DTL rates can be provided, or estimated. For the undated model, there are 2 ways to estimate these rates: Maximum Likelihood estimation with ALEml_undated, or Bayesian MCMC sampling with ALEmcmc_undated.
 
-### Maximum likelihood estimation with ALEml_undated
+### Inference of the reconciled gene trees
+
+The second step infers the reconciled amalgamated gene trees. The DTL rates can be provided, or estimated. For the undated model, there are 2 ways to estimate these rates: Maximum Likelihood estimation with ALEml_undated, or Bayesian MCMC sampling with ALEmcmc_undated.
+
+#### Maximum likelihood estimation with ALEml_undated
 DTL rates can either be estimated by providing no starting value or fixed to a starting value. Using those rates, the program then outputs a certain number of sampled reconciled amalgamated gene trees.
 ```sh
 ALEml_undated species_tree.newick geneFamily.ale sample=number_of_samples separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence
@@ -49,7 +53,7 @@ lambda=LossRate : loss rate.
 
 beta=weight_of_sequence_evidence : how much sequence data will be trusted. Values higher than 1 mean the gene trees coming from the sequences alone is more trusted than by default; values lower than 1 mean that the gene trees seem not very trustworthy. Defaults to 1.
 
-### Bayesian MCMC sampling with ALEmcmc_undated
+#### Bayesian MCMC sampling with ALEmcmc_undated
 DTL rates as well as the origination at the root rate are sampled. A prior value for these rates can be provided:
 ```sh
 ALEmcmc_undated species_tree.newick geneFamily.ale sample=number_of_samples separators=gene_name_separator O_R=OriginationAtRootPrior delta=DuplicationRatePrior tau=TransferRatePrior lambda=LossRatePrior sampling_rate=sampling_rate beta=weight_of_sequence_evidence
