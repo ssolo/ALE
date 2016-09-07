@@ -671,7 +671,7 @@ void exODT_model::show_counts(string name, bool as_branch_length, bool per_copy)
 
 	scalar_type value=branch_counts[name][branch];
 	if (per_copy)
-	  value=value/max(1.,branch_counts["copies"][branch]);
+	  value=value/max( (double) 1., (double) branch_counts["copies"][branch]);
 	stringstream out;
 	string old_name = (* (dynamic_cast<const BppString *>(tmp_node->getBranchProperty("ID")))).toSTL();
 	//out<< id_ranks[branch];
