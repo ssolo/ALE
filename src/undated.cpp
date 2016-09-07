@@ -1,7 +1,7 @@
 #include "exODT.h"
 using namespace std;
 using namespace bpp;
-static double EPSILON = numeric_limits< double >::min();
+static scalar_type EPSILON = numeric_limits< scalar_type >::min();
 
 void exODT_model::construct_undated(string Sstring)
 {
@@ -228,7 +228,7 @@ void exODT_model::calculate_undatedEs()
   PS.clear();
   scalar_type P_T=0;
   for (int f=0;f<last_branch;f++)
-    P_T+=vector_parameter["tau"][f]/(float)last_branch;
+    P_T+=vector_parameter["tau"][f]/(scalar_type)last_branch;
 
   for (int e=0;e<last_branch;e++)
     {
@@ -263,7 +263,7 @@ void exODT_model::calculate_undatedEs()
 		//int f=(*it).first;
 		int f=(*it);
 		//if (ancestral[e][f]==1)
-		  mPTE_ancestral_correction[e]+=  (PT[f]/(float)last_branch)*uE[f];
+		  mPTE_ancestral_correction[e]+=  (PT[f]/(scalar_type)last_branch)*uE[f];
 	      }
 	}
 
@@ -277,7 +277,7 @@ void exODT_model::calculate_undatedEs()
 	      int g=son[e];
 	      uE[e]=PL[e] + PS[e]*uE[f]*uE[g] + PD[e]*uE[e]*uE[e] + uE[e]*(mPTE- mPTE_ancestral_correction[e]);
 	    }
-	  newmPTE+=(PT[e]/(float)last_branch) *uE[e];
+	  newmPTE+=(PT[e]/(scalar_type)last_branch) *uE[e];
 	}
       mPTE=newmPTE;
     }
@@ -504,7 +504,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 	      uq_sum+=((mPTuq[i]-mPTuq_ancestral_correction[i][e])*uE[e] + uq[i][e]* (mPTE- mPTE_ancestral_correction[e]) );
 	      if (uq_sum<EPSILON) uq_sum=EPSILON;
 	      uq[i][e]=uq_sum;
-	      new_mPTuq +=(PT[e]/(float)last_branch)*uq_sum;
+	      new_mPTuq +=(PT[e]/(scalar_type)last_branch)*uq_sum;
 	      mPTuq_ancestral_correction[i][e]=0;
 	      //for (map<int,int>::iterator it=ancestral[e].begin(); it!=ancestral[e].end();it++)
 	      for (vector<int>::iterator it=ancestors[e].begin(); it!=ancestors[e].end();it++)
@@ -512,7 +512,7 @@ scalar_type exODT_model::pun(approx_posterior *ale)
 		  //int f=(*it).first;
 		  int f=(*it);
 		  //if (ancestral[e][f]==1)
-		  mPTuq_ancestral_correction[i][e]+=(PT[f]/(float)last_branch)*uq_sum;
+		  mPTuq_ancestral_correction[i][e]+=(PT[f]/(scalar_type)last_branch)*uq_sum;
 		}
 	    }
 	  mPTuq[i]=new_mPTuq;
@@ -683,8 +683,8 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	  for (int f=0;f<last_branch;f++)
 	    if (not ancestral[e][f])
 	      {
-		uq_sum+=uq[gp_i][e]*(PT[f]/(float)last_branch)*uq[gpp_i][f]*pp+EPSILON;
-		uq_sum+=uq[gpp_i][e]*(PT[f]/(float)last_branch)*uq[gp_i][f]*pp+EPSILON;
+		uq_sum+=uq[gp_i][e]*(PT[f]/(scalar_type)last_branch)*uq[gpp_i][f]*pp+EPSILON;
+		uq_sum+=uq[gpp_i][e]*(PT[f]/(scalar_type)last_branch)*uq[gp_i][f]*pp+EPSILON;
 	      }
 	}
     }
@@ -705,8 +705,8 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
   for (int f=0;f<last_branch;f++)
     if (not ancestral[e][f])
       {
-	uq_sum+=(PT[f]/(float)last_branch)*uq[i][f]*uE[e]+EPSILON;
-	uq_sum+=(PT[f]/(float)last_branch)*uE[f]*uq[i][e]+EPSILON;
+	uq_sum+=(PT[f]/(scalar_type)last_branch)*uq[i][f]*uE[e]+EPSILON;
+	uq_sum+=(PT[f]/(scalar_type)last_branch)*uE[f]*uq[i][e]+EPSILON;
       }
 
   //######################################################################################################################
@@ -776,7 +776,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	      if (not (f<last_leaf)) fstring << f; else fstring << extant_species[f];
 	      string fstr=fstring.str();
 
-	      uq_resum+=uq[gp_i][e]*(PT[f]/(float)last_branch)*uq[gpp_i][f]*pp+EPSILON;
+	      uq_resum+=uq[gp_i][e]*(PT[f]/(scalar_type)last_branch)*uq[gpp_i][f]*pp+EPSILON;
 	      if (r*uq_sum<uq_resum)
 		{
 		  register_Tfrom(e);
@@ -788,7 +788,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 
 		  return "("+sample_undated(e,gp_i,"S")+","+sample_undated(f,gpp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
 		}
-	      uq_resum+=uq[gpp_i][e]*(PT[f]/(float)last_branch)*uq[gp_i][f]*pp+EPSILON;
+	      uq_resum+=uq[gpp_i][e]*(PT[f]/(scalar_type)last_branch)*uq[gp_i][f]*pp+EPSILON;
 	      if (r*uq_sum<uq_resum)
 		{
 		  register_Tfrom(e);
@@ -837,7 +837,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
       if (not (f<last_leaf)) fstring << f; else fstring << extant_species[f];
       string fstr=fstring.str();
 
-      uq_resum+=(PT[f]/(float)last_branch)*uq[i][f]*uE[e]+EPSILON;
+      uq_resum+=(PT[f]/(scalar_type)last_branch)*uq[i][f]*uE[e]+EPSILON;
       if (r*uq_sum<uq_resum)
 	{
 	  register_Tfrom(e);
@@ -851,7 +851,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 	  register_L(e);
 	  return sample_undated(f,i,"T",".T@"+estr+"->"+fstr+branch_string);
 	}
-      uq_resum+=(PT[f]/(float)last_branch)*uE[f]*uq[i][e]+EPSILON;
+      uq_resum+=(PT[f]/(scalar_type)last_branch)*uE[f]*uq[i][e]+EPSILON;
       if (r*uq_sum<uq_resum)
 	{
 	  return sample_undated(e,i,"S");
