@@ -54,7 +54,7 @@ int main(int argc, char ** argv)
   scalar_type lambda=0;
   //L rate per gene
   int G_n=0;      
-  if (argc>3)
+  if (argc>4)
     {
       G_n=1;      
       omega=N*atof(argv[4]);
@@ -156,7 +156,8 @@ int main(int argc, char ** argv)
     {
       long int extant_species = sampled_population[i];
       stringstream extant_species_name;
-      extant_species_name << i;//extant_species;
+      //extant_species_name << i;//extant_species;
+      extant_species_name << extant_species;      
       strings[extant_species]=extant_species_name.str();
       sampled_population_counts[extant_species]=1;  
       age[extant_species]=0;
@@ -477,7 +478,8 @@ int main(int argc, char ** argv)
 	  {
 	    long int extant_gene=(*git);
 	    stringstream extant_gene_name;
-	    extant_gene_name << i << "_" << j;// extant_species << "_" << extant_gene;
+	    //extant_gene_name << i << "_" << j;// extant_species << "_" << extant_gene;
+	    extant_gene_name << sampled_i << "_" << j;// extant_species << "_" << extant_gene;	    
 	    gene_strings[extant_gene]=extant_gene_name.str();
 	    sampled_gene_counts[extant_gene]=1;  
 	    gene_age[extant_gene]=0;
