@@ -169,8 +169,8 @@ int main(int argc, char ** argv)
 
   if (argc<3)
   {
-    cout << "usage:\n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale [number_of_samples] [gene_name_separator] [OriginationAtRoot] [DuplicationRate] [TransferRate] [LossRate] [sampling_rate]" << endl;
-    cout << "Example:\n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale 100 '_' 1 0.01 0.01 0.1 10" << endl;
+    cout << "\nUsage:\n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale sample=number_of_samples separators=gene_name_separator O_R=OriginationAtRootPrior delta=DuplicationRatePrior tau=TransferRatePrior lambda=LossRatePrior sampling_rate=sampling_rate beta=weight_of_sequence_evidence" << endl;
+    cout << "\nExample:\n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ O_R=1 delta=0.01 tau=0.01 lambda=0.1 sampling_rate=10 beta=1\n" << endl;
     return 1;
   }
 
@@ -191,29 +191,63 @@ int main(int argc, char ** argv)
   exODT_model* model=new exODT_model();
 
   scalar_type samples=100;
-  if (argc>3)
-  samples=atof(argv[3]);
 
-  if (argc>4)
-  model->set_model_parameter("gene_name_separators", argv[4]);
+	//a set of inital rates
+  double priorOrigination =1.0,  priorDelta=0.01,priorTau=0.01,priorLambda=0.1;
+	size_t sampling_rate = 10;
+	scalar_type beta=1;
+
+
+	for (int i=3;i<argc;i++)
+	{
+		string next_field=argv[i];
+		vector <string> tokens;
+		boost::split(tokens,next_field,boost::is_any_of("="),boost::token_compress_on);
+		if (tokens[0]=="sample")
+		samples=atof(tokens[1].c_str());
+		else if (tokens[0]=="separators")
+		model->set_model_parameter("gene_name_separators", tokens[1]);
+		else if (tokens[0]=="delta")
+		{
+			priorDelta=atof(tokens[1].c_str());
+			cout << "# priorDelta fixed to " << priorDelta << endl;
+		}
+		else if (tokens[0]=="tau")
+		{
+			priorTau=atof(tokens[1].c_str());
+			cout << "# priorTau fixed to " << priorTau << endl;
+		}
+		else if (tokens[0]=="lambda")
+		{
+			priorLambda=atof(tokens[1].c_str());
+			priorLambda=true;
+			cout << "# priorLambda fixed to " << priorLambda << endl;
+
+		}
+		else if (tokens[0]=="O_R")
+		{
+			priorOrigination=atof(tokens[1].c_str());
+			cout << "# priorOrigination set to " << priorOrigination << endl;
+		}
+		else if (tokens[0]=="beta")
+		{
+			beta=atof(tokens[1].c_str());
+			cout << "# beta set to " << beta << endl;
+		}
+		else if (tokens[0]=="sampling_rate")
+		{
+			sampling_rate=atoi(tokens[1].c_str());
+			cout << "# sampling_rate set to " << sampling_rate << endl;
+
+		}
+
+	}
+
+
   model->set_model_parameter("BOOT_STRAP_LABLES","yes");
+	model->set_model_parameter("seq_beta", beta);
 
   model->construct_undated(Sstring);
-
-  //a set of inital rates
-
-  double priorOrigination =1.0,  priorDelta=0.01,priorTau=0.01,priorLambda=0.1;
-
-  if (argc>5)
-  priorOrigination=atof(argv[5]);
-
-  if (argc>8)
-  priorDelta=atof(argv[6]),priorTau=atof(argv[7]),priorLambda=atof(argv[8]);
-
-  size_t sampling_rate = 10;
-  if (argc>9)
-  sampling_rate = atoi(argv[9]);
-
 
   double currentOrigination = RandomTools::randExponential(priorOrigination) ;
   double currentDelta = RandomTools::randExponential(priorDelta) ;
