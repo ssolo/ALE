@@ -93,14 +93,9 @@ int main(int argc, char ** argv)
 
   if (argc<3)
     {
-<<<<<<< HEAD
-      cout << "usage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale [sample=100] [gene_name_separators=_] [O_R=1.0] [DuplicationRate=optimized] [TransferRate=optimized] [LossRate=optimized][seq_beta=1.0]" << endl;
-=======
       cout << "\nUsage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=number_of_samples separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence" << endl;
-      cout << "\n1st example: we arbitrarily set the DTL values and do not perform any optimization \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ delta=0.05 tau=0.1 lambda=0.2 " << endl;
-      cout << "\n2nd example: we arbitrarily set the T value to 0 to get a DL-only model and optimize the DL parameters \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ tau=0\n" << endl;
-
->>>>>>> bf083af25db03066d36c7b20f498513b4ae39958
+      cout << "\n1st example: we fix the DTL values and do not perform any optimization \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ delta=0.05 tau=0.1 lambda=0.2 " << endl;
+      cout << "\n2nd example: we fix the T value to 0 to get a DL-only model and optimize the DL parameters \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ tau=0\n" << endl;
       return 1;
     }
 
@@ -138,32 +133,6 @@ int main(int argc, char ** argv)
     model->set_model_parameter("gene_name_separators", tokens[1]);
     else if (tokens[0]=="delta")
     {
-<<<<<<< HEAD
-      string next_field=argv[i];
-      vector <string> tokens;
-      boost::split(tokens,next_field,boost::is_any_of("="),boost::token_compress_on);
-      if (tokens[0]=="sample")
-	samples=atoi(tokens[1].c_str());
-      else if (tokens[0]=="separators")
-	model->set_model_parameter("gene_name_separators", tokens[1]);
-      else if (tokens[0]=="delta" and not (tokens[1]=="optimized"))
-	{
-	  delta=atof(tokens[1].c_str());
-	  delta_fixed=true;
-	  cout << "# delta fixed to " << delta << endl; 
-	}
-      else if (tokens[0]=="tau" and not (tokens[1]=="optimized"))
-	{
-	  tau=atof(tokens[1].c_str());
-	  tau_fixed=true;
-	  cout << "# tau fixed to " << tau << endl; 
-	}
-      else if (tokens[0]=="lambda" and not (tokens[1]=="optimized"))
-       	{
-	  lambda=atof(tokens[1].c_str());
-	  lambda_fixed=true;
-	  cout << "# lambda fixed to " << lambda << endl; 
-=======
       delta=atof(tokens[1].c_str());
       delta_fixed=true;
       cout << "# delta fixed to " << delta << endl;
@@ -179,8 +148,6 @@ int main(int argc, char ** argv)
       lambda=atof(tokens[1].c_str());
       lambda_fixed=true;
       cout << "# lambda fixed to " << lambda << endl;
->>>>>>> bf083af25db03066d36c7b20f498513b4ae39958
-
     }
     else if (tokens[0]=="O_R")
     {
