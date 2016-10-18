@@ -13,7 +13,7 @@ int main(int argc, char ** argv)
   ifstream tree_stream (argv[2]);
   string tree;
   getline (tree_stream,tree);
-  cout << ale->p(tree) << endl;
+  cout << log(ale->p(tree)) << endl;
 
   return 1;
 }
