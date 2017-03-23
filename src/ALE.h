@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <Bpp/Phyl/BipartitionTools.h>
-#include <Bpp/Numeric/Random.all>
+#include <Bpp/Numeric/Random/RandomTools.h>
 #include <Bpp/Numeric/NumConstants.h>
 #include <Bpp/Phyl/TreeTemplate.h>
 #include <Bpp/Phyl/TreeTemplateTools.h>
