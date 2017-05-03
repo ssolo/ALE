@@ -111,4 +111,4 @@ cmake ../ALE -DBUILD_STATIC=OFF
 make
 ```
 
-If everything went well, you find the binaries in the `bin` directory.
+If everything went well, you will find the binaries in the `bin` directory.
