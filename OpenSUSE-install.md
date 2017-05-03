@@ -71,7 +71,7 @@ cd ../..
 
 ## 1.4b (You can leave out this section) Prebuilt Bio++
 
-There is an openSUSE repository `jdutheil` with Bio++ 2.2.0 libraries prebuilt, but these seems to be wrongly built, because we get 
+There is an openSUSE repository `jdutheil` with Bio++ 2.2.0 libraries prebuilt, but these seem to be wrongly built, because we get 
 `undefined reference to` errors for functions of Bio++ library itself.
 
 You may give it a try, but our recommendation is to build the Bio++ libraries yourself.
