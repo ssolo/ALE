@@ -1,17 +1,21 @@
-# 1 Install dependecies
+# ALE installation HowTo for OpenSUSE systems
 
-## 1.1 Basic dependencies
+This guide is tested on a fresh installation of OpenSUSE 42.2.
+
+## 1 Install dependecies
+
+### 1.1 Basic dependencies
 
 ```
 sudo zypper install git cmake gcc gcc-c++
 ```
 
-## 1.2 MPI
+### 1.2 MPI
 ```
 sudo zypper install openmpi-devel openmpi-devel-static lam lam-devel 
 ```
 
-## 1.3 Boost
+### 1.3 Boost
 ```
 sudo zypper install boost-devel 
 ```
@@ -21,7 +25,7 @@ Following dependencies include version number, you may need to adjust them:
 sudo zypper libboost_mpi1_61_0 libboost_serialization_61_0
 ```
 
-## 1.4a Compile Bio++ from source
+### 1.4a Compile Bio++ from source
 
 We can use the newest, development version of Bio++.
 
@@ -49,27 +53,29 @@ mkdir bpp-seq-build
 And finally build and install the libraries:
 ```
 cd bpp-core-build/
-cmake ../bpp-core -DCMAKE_INSTALL_PREFIX=/usr/ -DBUILD_TESTING=FALSE
+cmake ../bpp-core -DCMAKE_INSTALL_PREFIX=/usr/ -DLIB_SUFFIX=64 -DBUILD_TESTING=FALSE
 make
 sudo make install
 
 cd ../bpp-seq-build/
-cmake ../bpp-seq -DCMAKE_INSTALL_PREFIX=/usr/ -DBUILD_TESTING=FALSE
+cmake ../bpp-seq -DCMAKE_INSTALL_PREFIX=/usr/ -DLIB_SUFFIX=64 -DBUILD_TESTING=FALSE
 make
 sudo make install
 
 cd ../bpp-phyl-build/
-cmake ../bpp-phyl -DCMAKE_INSTALL_PREFIX=/usr/ -DBUILD_TESTING=FALSE
+cmake ../bpp-phyl -DCMAKE_INSTALL_PREFIX=/usr/ -DLIB_SUFFIX=64 -DBUILD_TESTING=FALSE
 make
 sudo make install
 ```
+
+The default installations locations are `${CMAKE_INSTALL_PREFIX}/include` and `${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}`.
 
 If you just copy-paste all the commands, don't forget to step back two directories.
 ```
 cd ../..
 ```
 
-## 1.4b (You can leave out this section) Prebuilt Bio++
+### 1.4b (You can skip this section) Prebuilt Bio++
 
 There is an openSUSE repository `jdutheil` with Bio++ 2.2.0 libraries prebuilt, but these seem to be wrongly built, because we get 
 `undefined reference to` errors for functions of Bio++ library itself.
@@ -90,13 +96,13 @@ libbpp-phyl-omics-devel
 
 Later on, at the build step you will most likely get some `undefined reference to` errors. If so, try to build the Bio++ libraries from source.
 
-# 2 Clone ALE repository
+## 2 Clone ALE repository
 
 ```
 git clone https://github.com/ssolo/ALE.git
 ```
 
-# 3 Build ALE
+## 3 Build ALE
 
 Create a build directory and enter it:
 ```
@@ -104,7 +110,8 @@ mkdir ALE-build
 cd ALE-build
 ```
 
-For some reason ( [maybe because packaging guidelines](https://en.opensuse.org/openSUSE:Packaging_guidelines#Static_Libraries) ) the openSUSE Boost library can not be statically linked, so we have to use the `-DBUILD_STATIC=OFF` switch.
+For some reason ( [maybe because of the packaging guidelines](https://en.opensuse.org/openSUSE:Packaging_guidelines#Static_Libraries) ) 
+the openSUSE Boost library can not be statically linked, so we have to use the `-DBUILD_STATIC=OFF` switch.
 
 ```
 cmake ../ALE -DBUILD_STATIC=OFF
