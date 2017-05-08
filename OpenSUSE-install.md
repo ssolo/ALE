@@ -89,9 +89,7 @@ sudo zypper refresh
 
 After that you can install the needed Bio++ libraries:
 ```
-sudo zypper install libbpp-core-devel libbpp-phyl-devel 
-libbpp-seq-devel libbpp-seq-omics-devel 
-libbpp-phyl-omics-devel
+sudo zypper install libbpp-core-devel libbpp-phyl-devel libbpp-seq-devel libbpp-seq-omics-devel libbpp-phyl-omics-devel
 ```
 
 Later on, at the build step you will most likely get some `undefined reference to` errors. If so, try to build the Bio++ libraries from source.
