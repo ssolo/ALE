@@ -68,7 +68,7 @@ make
 sudo make install
 ```
 
-The default installations locations are `${CMAKE_INSTALL_PREFIX}/include` and `${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}`.
+The default installation locations are `${CMAKE_INSTALL_PREFIX}/include` and `${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}`.
 
 If you just copy-paste all the commands, don't forget to step back two directories.
 ```
