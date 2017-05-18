@@ -1,0 +1,12 @@
+#Building:
+docker build -t alesuite .
+
+
+#Running:
+docker run -v $PWD:$PWD alesuite ALEml $PWD/test/S.tree /Users/boussau/imageDocker/test/HBG745965_real.2.treelist.txt.ale 
+
+
+# publishing:
+docker login
+docker tag alesuite boussau/alesuite:latest
+docker push boussau/alesuite:latest
