@@ -41,9 +41,9 @@ mkdir bpp-seq-build
 
 Finally build and install the libraries.
 
-The default installation locations are `${CMAKE_INSTALL_PREFIX}/include` and `${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}`.
+The default installation locations are `${CMAKE_INSTALL_PREFIX}/include` and `${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}`. `$LIB_SUFFIX` is empty by default.
 
-To install locally (e.g. to your home directory) just replace the `CMAKE_INSTALL_PREFIX` switch with the desired path. In this case you do not need sudo rights to `make install`.
+To install locally (e.g. to your home directory) just replace the `CMAKE_INSTALL_PREFIX` switch with the desired path. In this case you don't need sudo rights to `make install`.
 
 ```
 cd bpp-core-build/
