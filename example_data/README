@@ -2,15 +2,15 @@ ALEobserve - construct an .ale file containg marginal clade frequencies used by 
 
 e.g. for the provided example of all cyanobacterial genes from HOGENOMv5 family HBG745965 ( http://pbil.univ-lyon1.fr/databases/hogenom5/ ): HBG745965_real.1.treelist and  HBG745965_real.1.treelist are outputs from PhyloBayes (www.phylobayes.org/) obtained for the alignment HBG745965_real.phyl, to construct the relevant .ale files run:
  
-./ALEobserve_LINUX HBG745965_real.1.treelist 1000  
+../build/bin/ALEobserve_LINUX HBG745965_real.1.treelist 1000  
 and
-./ALEobserve HBG745965_real.2.treelist 1000  
+../build/bin/ALEobserve HBG745965_real.2.treelist 1000  
 
 In both cases we discard the first 1000 trees as burnin.
 
 For comparison we also produce a .ale file for the single ML tree -- obtained using PhyML -www.atgc-montpellier.fr/phyml/ for the same alignment. 
 
-./ALEobserve HBG745965_real.seq.tree 
+../build/bin/ALEobserve HBG745965_real.seq.tree 
 
 (Note that the default burnin is 0 trees)
 
@@ -19,9 +19,9 @@ In general ALEobserve takes a list os newick trees with identical leaf labels fr
 ALEml - infer the maximum likelihood reconciled gene tree from a species tree and a .ale file
 
 e.g. for the above:
-./ALEml S.tree HBG745965_real.1.treelist.ale
-./ALEml S.tree HBG745965_real.2.treelist.ale
-./ALEml S.tree HBG745965_real.seq.tree.ale
+../build/bin/ALEml S.tree HBG745965_real.1.treelist.ale
+../build/bin/ALEml S.tree HBG745965_real.2.treelist.ale
+../build/bin/ALEml S.tree HBG745965_real.seq.tree.ale
 
 Comparing the outputs named e.g. HBG745965_real.1.treelist.ale.ml_rec we see that the joint trees have much fewer events.
 
@@ -29,7 +29,7 @@ ALEsample - sample DTL rates and reconciled gene trees (this can take a signific
 
 As an example for ALEsample we will use as out input HBG284202_real.ale:
 
-./ALEsample S.tree HBG284202_real.ale
+../build/bin/ALEsample S.tree HBG284202_real.ale
 
 produces a series of files:
 HBG284202_real.ale.rateslist - list of sampled rates and log likelihood
