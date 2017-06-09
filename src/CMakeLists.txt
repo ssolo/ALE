@@ -8,6 +8,7 @@
   sample_scaled.cpp
   undated.cpp
   pairHasher.h
+  fractionMissing.h fractionMissing.cpp
   )
 
 add_library(exODT ${exODT_SRCS})

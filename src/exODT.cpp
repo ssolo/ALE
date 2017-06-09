@@ -1,4 +1,6 @@
 #include "exODT.h"
+#include "fractionMissing.h"
+
 using namespace std;
 using namespace bpp;
 
@@ -397,7 +399,7 @@ void exODT_model::construct(const string& Sstring, const scalar_type& N, const s
 
     }
     else {
-
+      fraction_missing = readFractionMissingFile(fractionMissingFile);
     }
 
 

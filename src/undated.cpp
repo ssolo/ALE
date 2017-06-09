@@ -1,4 +1,6 @@
 #include "exODT.h"
+#include "fractionMissing.h"
+
 using namespace std;
 using namespace bpp;
 static scalar_type EPSILON = numeric_limits< scalar_type >::min();
@@ -224,7 +226,7 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
 
   }
   else {
-
+    fraction_missing = readFractionMissingFile(fractionMissingFile);
   }
 
 
@@ -256,7 +258,7 @@ void exODT_model::calculate_undatedEs()
       PT.push_back(P_T/tmp);
       PL.push_back(P_L);
       PS.push_back(P_S);
-      if (e<last_leaf) { // we are at a leaf 
+      if (e<last_leaf) { // we are at a leaf
         uE.push_back(vector_parameter["fraction_missing"][e]);
       }
       else {

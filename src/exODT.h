@@ -129,6 +129,7 @@ class exODT_model
   std::map<long int, std::vector<int> > gid_branches;             //del-loc
   std::map<long int, std::vector<long int> > gid_gidp;             //del-loc
   std::map<long int, std::vector<long int> > gid_gidpp;             //del-loc
+  std::map<std::string, scalar_type> fraction_missing;
 
   void construct_undated(const std::string& Sstring, const std::string& fractionMissingFile=""); //Constructs an object given a species tree and file containing fractions of missing genes per species.
   void calculate_undatedEs();
