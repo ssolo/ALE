@@ -57,7 +57,7 @@ void exODT_model::construct(string Sstring,scalar_type N)
   alpha=-1;
   last_branch=0;
   
-  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_in"],  (string_parameter["BOOT_STRAP_LABLES"]=="yes")
+  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_in"],  (string_parameter["BOOTSTRAP_LABELS"]=="yes")
 );//del-loc
 
   S_root = S->getRootNode();//del-loc

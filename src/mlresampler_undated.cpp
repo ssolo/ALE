@@ -46,7 +46,7 @@ int main(int argc, char ** argv)
   cout <<"# rates: "<< delta << " " << tau << " " << lambda << endl;
   exODT_model* model=new exODT_model();
 
-  model->set_model_parameter("BOOT_STRAP_LABLES","yes");
+  model->set_model_parameter("BOOTSTRAP_LABELS","yes");
 
   model->construct_undated(Sstring);
 

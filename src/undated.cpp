@@ -13,7 +13,7 @@ void exODT_model::construct_undated(string Sstring)
   id_nodes.clear();
 
   string_parameter["S_un"]=Sstring;
-  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  true//(string_parameter["BOOT_STRAP_LABLES"]=="yes")
+  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  true//(string_parameter["BOOTSTRAP_LABELS"]=="yes")
 					 );
   S_root = S->getRootNode();
   vector <Node*> nodes = TreeTemplateTools::getNodes(*S_root);
@@ -936,7 +936,7 @@ void exODT_model::reset_T_to_from()
 
 string exODT_model::feSPR(int e, int f)
 {
-  tree_type * newS=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  (string_parameter["BOOT_STRAP_LABLES"]=="yes"));
+  tree_type * newS=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  (string_parameter["BOOTSTRAP_LABELS"]=="yes"));
   Node * newS_root = newS->getRootNode();
   vector <Node*> nodes = TreeTemplateTools::getNodes(*newS_root);
 

@@ -162,7 +162,7 @@ int main(int argc, char ** argv)
     }
   }
 
-  model->set_model_parameter("BOOT_STRAP_LABLES","yes");
+  model->set_model_parameter("BOOTSTRAP_LABELS","yes");
   model->construct_undated(Sstring);
 
   model->set_model_parameter("seq_beta", beta);

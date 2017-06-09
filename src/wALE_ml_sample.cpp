@@ -83,7 +83,7 @@ int main(int argc, char ** argv)
 
   int D=4;
   model->set_model_parameter("gene_name_separators", ".");
-  model->set_model_parameter("BOOT_STRAP_LABLES","yes");
+  model->set_model_parameter("BOOTSTRAP_LABELS","yes");
 
   model->set_model_parameter("min_D",D);
   model->set_model_parameter("grid_delta_t",0.05);

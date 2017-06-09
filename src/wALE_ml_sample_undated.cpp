@@ -85,7 +85,7 @@ int main(int argc, char ** argv)
 
   int D=4;
   model->set_model_parameter("gene_name_separators", ".");
-  model->set_model_parameter("BOOT_STRAP_LABLES","yes");
+  model->set_model_parameter("BOOTSTRAP_LABELS","yes");
 
   model->construct_undated(Sstring);
 

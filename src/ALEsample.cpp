@@ -32,7 +32,7 @@ int main(int argc, char ** argv)
   //we initialise the model 
   exODT_model* model=new exODT_model();
   //
-  model->set_model_parameter("BOOT_STRAP_LABLES","yes");
+  model->set_model_parameter("BOOTSTRAP_LABELS","yes");
 
   model->set_model_parameter("min_D",3);
   model->set_model_parameter("grid_delta_t",0.05);
