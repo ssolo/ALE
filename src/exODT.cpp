@@ -50,7 +50,7 @@ exODT_model::exODT_model()
 }
 
 
-void exODT_model::construct(string Sstring,scalar_type N)
+void exODT_model::construct(const string& Sstring, const scalar_type& N, const string& fractionMissingFile)
 {
   string_parameter["S_in"]=Sstring;
   //virtual branch
@@ -392,7 +392,13 @@ void exODT_model::construct(string Sstring,scalar_type N)
 
     //Put default values for the fraction of missing genes at the leaves.
     vector_parameter["fraction_missing"]=vector<scalar_type> (leaves.size(), 0.0);
+    //Put user-defined values, if available
+    if (fractionMissingFile == "") {
 
+    }
+    else {
+
+    }
 
 
   //del-locs

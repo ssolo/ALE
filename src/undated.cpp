@@ -3,7 +3,7 @@ using namespace std;
 using namespace bpp;
 static scalar_type EPSILON = numeric_limits< scalar_type >::min();
 
-void exODT_model::construct_undated(string Sstring)
+void exODT_model::construct_undated(const string& Sstring, const string& fractionMissingFile)
 {
   daughter.clear();
   son.clear();
@@ -215,6 +215,18 @@ void exODT_model::construct_undated(string Sstring)
 
   last_rank=last_branch;
   set_model_parameter("N",1);
+
+
+  //Put default values for the fraction of missing genes at the leaves.
+  vector_parameter["fraction_missing"]=vector<scalar_type> (last_leaf, 0.0);
+  //Put user-defined values, if available
+  if (fractionMissingFile == "") {
+
+  }
+  else {
+
+  }
+
 
 }
 
