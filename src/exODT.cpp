@@ -456,7 +456,7 @@ void exODT_model::set_model_parameter(string name,vector<scalar_type> value_vect
 	}
       scalar_parameter[name+"_avg"]=avg/c;
     }
-  else if (name=="N" or name=="Delta_bar" or name=="Lambda_bar" )
+  else //if (name=="N" or name=="Delta_bar" or name=="Lambda_bar" )
     {
       vector_parameter[name].clear();
       for (int rank=0;rank<last_rank;rank++)
