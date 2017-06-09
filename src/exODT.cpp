@@ -390,6 +390,11 @@ void exODT_model::construct(string Sstring,scalar_type N)
       branch_counts["singleton"].push_back(0);
     }
 
+    //Put default values for the fraction of missing genes at the leaves.
+    vector_parameter["fraction_missing"]=vector<scalar_type> (leaves.size(), 0.0);
+
+
+
   //del-locs
   node_ts.clear();
   next_generation.clear();
