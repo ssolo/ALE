@@ -70,7 +70,7 @@ int main(int argc, char ** argv)
 
   if (argc<3) 
     {
-      cout << "usage:\n ./ALEml species_tree.newick gene_tree_sample.ale  [samples] [gene_name_seperator]" << endl;
+      cout << "usage:\n ./ALEml species_tree.newick gene_tree_sample.ale  [samples] [gene_name_separator]" << endl;
       return 1;
     }
 
