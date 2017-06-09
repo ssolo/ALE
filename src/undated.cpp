@@ -256,7 +256,12 @@ void exODT_model::calculate_undatedEs()
       PT.push_back(P_T/tmp);
       PL.push_back(P_L);
       PS.push_back(P_S);
-      uE.push_back(0);
+      if (e<last_leaf) { // we are at a leaf 
+        uE.push_back(vector_parameter["fraction_missing"][e]);
+      }
+      else {
+        uE.push_back(0);
+      }
       mPTE_ancestral_correction.push_back(0);
     }
 
@@ -281,7 +286,7 @@ void exODT_model::calculate_undatedEs()
 
       for (int e=0;e<last_branch;e++)
 	{
-	  if (e<last_leaf)
+	  if (e<last_leaf) // we are at a leaf
 	    uE[e]=PL[e]+PD[e]*uE[e]*uE[e]+uE[e]*(mPTE- mPTE_ancestral_correction[e]);
 	  else
 	    {
