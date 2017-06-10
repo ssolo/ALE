@@ -197,6 +197,7 @@ int main(int argc, char ** argv)
 	size_t sampling_rate = 10;
 	scalar_type beta=1;
 
+	string fractionMissingFile = "";
 
 	for (int i=3;i<argc;i++)
 	{
@@ -238,16 +239,19 @@ int main(int argc, char ** argv)
 		{
 			sampling_rate=atoi(tokens[1].c_str());
 			cout << "# sampling_rate set to " << sampling_rate << endl;
-
 		}
-
+		else if (tokens[0]=="fraction_missing")
+		{
+			fractionMissingFile=tokens[1];
+			cout << "# File containing fractions of missing genes set to " << fractionMissingFile << endl;
+		}
 	}
 
 
   model->set_model_parameter("BOOTSTRAP_LABELS","yes");
 	model->set_model_parameter("seq_beta", beta);
 
-  model->construct_undated(Sstring);
+  model->construct_undated(Sstring, fractionMissingFile);
 
   double currentOrigination = RandomTools::randExponential(priorOrigination) ;
   double currentDelta = RandomTools::randExponential(priorDelta) ;

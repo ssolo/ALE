@@ -121,7 +121,7 @@ int main(int argc, char ** argv)
   bool tau_fixed=false;
   bool lambda_fixed=false;
   scalar_type delta=0.01,tau=0.01,lambda=0.1;
-
+  string fractionMissingFile = "";
   for (int i=3;i<argc;i++)
   {
     string next_field=argv[i];
@@ -158,12 +158,16 @@ int main(int argc, char ** argv)
     {
       beta=atof(tokens[1].c_str());
       cout << "# beta set to " << beta << endl;
-
+    }
+    else if (tokens[0]=="fraction_missing")
+    {
+      fractionMissingFile=tokens[1];
+      cout << "# File containing fractions of missing genes set to " << fractionMissingFile << endl;
     }
   }
 
   model->set_model_parameter("BOOTSTRAP_LABELS","yes");
-  model->construct_undated(Sstring);
+  model->construct_undated(Sstring, fractionMissingFile);
 
   model->set_model_parameter("seq_beta", beta);
   model->set_model_parameter("O_R", O_R);
