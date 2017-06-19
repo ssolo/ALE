@@ -31,6 +31,12 @@ target_link_libraries(ALEmcmc_undated exODT
   ${BPP_LIBRARIES}
 )
 
+add_executable(ALEevaluate_undated ALEevaluate_undated.cpp)
+target_link_libraries(ALEevaluate_undated exODT
+  ${BPP_LIBRARIES}
+)
+
+
 add_executable(ALEsample ALEsample.cpp)
 target_link_libraries(ALEsample exODT
   ${BPP_LIBRARIES}
