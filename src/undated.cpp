@@ -15,231 +15,231 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
   id_nodes.clear();
 
   string_parameter["S_un"]=Sstring;
-  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  true//(string_parameter["BOOTSTRAP_LABELS"]=="yes")
-);
-S_root = S->getRootNode();
-vector <Node*> nodes = TreeTemplateTools::getNodes(*S_root);
+  S=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  true);//(string_parameter["BOOTSTRAP_LABELS"]=="yes")
 
-for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ ) (*it)->setDistanceToFather(1);
+  S_root = S->getRootNode();
+  vector <Node*> nodes = TreeTemplateTools::getNodes(*S_root);
 
-for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
-if ((*it)->isLeaf())
-{
-  name_node[(*it)->getName()]=(*it);
-  node_name[(*it)]=(*it)->getName();
-}
-else
-{
-  vector<string> leafnames=TreeTemplateTools::getLeavesNames(*(*it));
-  sort(leafnames.begin(),leafnames.end());
-  stringstream name;
-  for (vector <string >::iterator st=leafnames.begin();st!=leafnames.end();st++ )
-  name<<(*st)<<".";
+  for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ ) (*it)->setDistanceToFather(1);
 
-  name_node[name.str()]=(*it);
-  node_name[(*it)]=name.str();
-
-}
-// register species
-last_branch=0;
-last_leaf=0;
-
-set <Node*> saw;
-for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ )
-if ((*it).second->isLeaf())
-{
-  Node * node = (*it).second;
-  extant_species[last_branch]=node->getName();
-  node_ids[node]=last_branch;
-  id_nodes[last_branch]=node;
-  last_branch++;
-  last_leaf++;
-  saw.insert(node);
-  // a leaf
-  daughter[last_branch]=-1;
-  // a leaf
-  son[last_branch]=-1;
-}
-//ad-hoc postorder
-vector<Node*> next_generation;
-for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ )
-if ((*it).second->isLeaf())
-{
-  Node * node = (*it).second;
-  next_generation.push_back(node);
-}
-while(next_generation.size())
-{
-  vector <Node*> new_generation;
-  for (vector<Node*>::iterator  it=next_generation.begin();it!=next_generation.end();it++ )
+  for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
+  if ((*it)->isLeaf())
   {
-    Node * node = (*it);
-    if (node->hasFather() )
+    name_node[(*it)->getName()]=(*it);
+    node_name[(*it)]=(*it)->getName();
+  }
+  else
+  {
+    vector<string> leafnames=TreeTemplateTools::getLeavesNames(*(*it));
+    sort(leafnames.begin(),leafnames.end());
+    stringstream name;
+    for (vector <string >::iterator st=leafnames.begin();st!=leafnames.end();st++ )
+    name<<(*st)<<".";
+
+    name_node[name.str()]=(*it);
+    node_name[(*it)]=name.str();
+
+  }
+  // register species
+  last_branch=0;
+  last_leaf=0;
+
+  set <Node*> saw;
+  for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ )
+  if ((*it).second->isLeaf())
+  {
+    Node * node = (*it).second;
+    extant_species[last_branch]=node->getName();
+    node_ids[node]=last_branch;
+    id_nodes[last_branch]=node;
+    last_branch++;
+    last_leaf++;
+    saw.insert(node);
+    // a leaf
+    daughter[last_branch]=-1;
+    // a leaf
+    son[last_branch]=-1;
+  }
+  //ad-hoc postorder
+  vector<Node*> next_generation;
+  for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ )
+  if ((*it).second->isLeaf())
+  {
+    Node * node = (*it).second;
+    next_generation.push_back(node);
+  }
+  while(next_generation.size())
+  {
+    vector <Node*> new_generation;
+    for (vector<Node*>::iterator  it=next_generation.begin();it!=next_generation.end();it++ )
     {
-      Node * father=node->getFather();
-      vector <Node *> sons=father->getSons();
-      Node * sister;
-      if (sons[0]==node) sister=sons[1]; else sister=sons[0];
-
-      if (not node_ids.count(father) and saw.count(sister))
+      Node * node = (*it);
+      if (node->hasFather() )
       {
-        node_ids[father]=last_branch;
-        id_nodes[last_branch]=father;
-        stringstream name;
-        name << last_branch;
-        father->setBranchProperty("ID",BppString(name.str()));
+        Node * father=node->getFather();
+        vector <Node *> sons=father->getSons();
+        Node * sister;
+        if (sons[0]==node) sister=sons[1]; else sister=sons[0];
 
-        last_branch++;
+        if (not node_ids.count(father) and saw.count(sister))
+        {
+          node_ids[father]=last_branch;
+          id_nodes[last_branch]=father;
+          stringstream name;
+          name << last_branch;
+          father->setBranchProperty("ID",BppString(name.str()));
 
-        saw.insert(father);
-        new_generation.push_back(father);
+          last_branch++;
+
+          saw.insert(father);
+          new_generation.push_back(father);
+        }
       }
     }
+    next_generation.clear();
+    for (vector<Node*>::iterator  it=new_generation.begin();it!=new_generation.end();it++ )
+    next_generation.push_back((*it));
   }
-  next_generation.clear();
-  for (vector<Node*>::iterator  it=new_generation.begin();it!=new_generation.end();it++ )
-  next_generation.push_back((*it));
-}
 
-for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
-{
-  Node * node = (*it).first;
-  int branch = (*it).second;
-  stringstream out;
-  stringstream out1;
-  stringstream out2;
-  out1<<t_begin[branch];
-  out2<< t_end[branch];
-  int rank=branch;
-  out<<rank;
-  if ( node->hasBranchProperty("bootstrap") )
+  for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
   {
-    rank2label[rank]=node->getBootstrapValue();
-    //cout <<rank2label[rank]<<"->"<<rank<< endl;
+    Node * node = (*it).first;
+    int branch = (*it).second;
+    stringstream out;
+    stringstream out1;
+    stringstream out2;
+    out1<<t_begin[branch];
+    out2<< t_end[branch];
+    int rank=branch;
+    out<<rank;
+    if ( node->hasBranchProperty("bootstrap") )
+    {
+      rank2label[rank]=node->getBootstrapValue();
+      //cout <<rank2label[rank]<<"->"<<rank<< endl;
+    }
+    else
+    {
+      rank2label[rank]=-1;
+    }
+    node->setBranchProperty("ID",BppString(out.str()));
   }
-  else
+
+  string_parameter["S_with_ranks"]=TreeTemplateTools::treeToParenthesis(*S,false,"ID");
+
+
+  //map <string,map<string,int> > ancestral_names;
+  //map <int,map<int,int> > ancestral;
+  ancestors.clear();
+  for (int e=0;e<last_branch;e++)
   {
-    rank2label[rank]=-1;
+    vector <int> tmp;
+    ancestors.push_back(tmp);
+    for (int f=0;f<last_branch;f++)
+    ancestral[e][f]=0;
   }
-  node->setBranchProperty("ID",BppString(out.str()));
-}
-
-string_parameter["S_with_ranks"]=TreeTemplateTools::treeToParenthesis(*S,false,"ID");
-
-
-//map <string,map<string,int> > ancestral_names;
-//map <int,map<int,int> > ancestral;
-ancestors.clear();
-for (int e=0;e<last_branch;e++)
-{
-  vector <int> tmp;
-  ancestors.push_back(tmp);
-  for (int f=0;f<last_branch;f++)
-  ancestral[e][f]=0;
-}
-for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
-{
-  Node * node=(*it);
-  int e = node_ids[node];
-  stringstream name_from;
-  if (e<last_leaf)
-  name_from <<node_name[node];
-  else
-  name_from <<e;
-  map<string,int> tmp;
-  ancestral_names[name_from.str()]=tmp;
-  while (node->hasFather())
+  for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
   {
+    Node * node=(*it);
+    int e = node_ids[node];
+    stringstream name_from;
+    if (e<last_leaf)
+    name_from <<node_name[node];
+    else
+    name_from <<e;
+    map<string,int> tmp;
+    ancestral_names[name_from.str()]=tmp;
+    while (node->hasFather())
+    {
+      stringstream name_to;
+      int f = node_ids[node];
+      if (f<last_leaf)
+      name_to<<node_name[node];
+      else
+      name_to<<f;
+      node=node->getFather();
+      ancestral_names[name_from.str()][name_to.str()]=1;
+      if (not ancestral[e][f])
+      ancestors[e].push_back(f);
+      ancestral[e][f]=1;
+    }
     stringstream name_to;
     int f = node_ids[node];
-    if (f<last_leaf)
-    name_to<<node_name[node];
-    else
     name_to<<f;
-    node=node->getFather();
     ancestral_names[name_from.str()][name_to.str()]=1;
     if (not ancestral[e][f])
     ancestors[e].push_back(f);
     ancestral[e][f]=1;
   }
-  stringstream name_to;
-  int f = node_ids[node];
-  name_to<<f;
-  ancestral_names[name_from.str()][name_to.str()]=1;
-  if (not ancestral[e][f])
-  ancestors[e].push_back(f);
-  ancestral[e][f]=1;
-}
 
 
 
-for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ )
-if (not (*it).second->isLeaf())
-{
-  Node * node = (*it).second;
-  vector <Node *> sons=node->getSons();
-  daughter[node_ids[node]]=node_ids[sons[0]];
-  son[node_ids[node]]=node_ids[sons[1]];
-  //cout << node_ids[node] << " => " << node_ids[sons[0]] << " & " << node_ids[sons[1]] << endl;
-  //cout << node_name[node] << " => " << node_name[sons[0]] << " & " << node_name[sons[1]] << endl;
+  for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ )
+  if (not (*it).second->isLeaf())
+  {
+    Node * node = (*it).second;
+    vector <Node *> sons=node->getSons();
+    daughter[node_ids[node]]=node_ids[sons[0]];
+    son[node_ids[node]]=node_ids[sons[1]];
+    //cout << node_ids[node] << " => " << node_ids[sons[0]] << " & " << node_ids[sons[1]] << endl;
+    //cout << node_name[node] << " => " << node_name[sons[0]] << " & " << node_name[sons[1]] << endl;
 
-}
-branch_counts["Os"].clear();
-branch_counts["Ds"].clear();
-branch_counts["Ts"].clear();
-branch_counts["Tfroms"].clear();
-branch_counts["Ls"].clear();
-branch_counts["count"].clear();
-branch_counts["copies"].clear();
-branch_counts["singleton"].clear();
-
-for (int e=0;e<last_branch;e++)
-{
-  branch_counts["Os"].push_back(0);
-  branch_counts["Ds"].push_back(0);
-  branch_counts["Ts"].push_back(0);
-  branch_counts["Tfroms"].push_back(0);
-  branch_counts["Ls"].push_back(0);
-  branch_counts["count"].push_back(0);
-  branch_counts["copies"].push_back(0);
-  branch_counts["singleton"].push_back(0);
-
-}
-T_to_from.clear();
-for (int e=0;e<last_branch;e++)
-{
-  vector <scalar_type> tmp;
-  T_to_from.push_back(tmp);
-  for (int f=0;f<last_branch;f++)
-  T_to_from[e].push_back(0);
-}
-
-
-last_rank=last_branch;
-set_model_parameter("N",1);
-
-
-//Put default values for the fraction of missing genes at the leaves.
-vector_parameter["fraction_missing"]=vector<scalar_type> (last_leaf, 0.0);
-//Put user-defined values, if available
-if (fractionMissingFile == "") {
-
-}
-else {
-  fraction_missing = readFractionMissingFile(fractionMissingFile);
-  // Now we need to fill up the vector_parameter, and we have to be careful about the order.
-  size_t index = 0;
-  for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ ) {
-    if ((*it).second->isLeaf())
-    {
-      Node * node = (*it).second;
-      string currentSpecies = node->getName();
-      vector_parameter["fraction_missing"][index] = fraction_missing[currentSpecies];
-      index++;
-    }
   }
-  VectorTools::print(vector_parameter["fraction_missing"]);
-}
+  branch_counts["Os"].clear();
+  branch_counts["Ds"].clear();
+  branch_counts["Ts"].clear();
+  branch_counts["Tfroms"].clear();
+  branch_counts["Ls"].clear();
+  branch_counts["count"].clear();
+  branch_counts["copies"].clear();
+  branch_counts["singleton"].clear();
+
+  for (int e=0;e<last_branch;e++)
+  {
+    branch_counts["Os"].push_back(0);
+    branch_counts["Ds"].push_back(0);
+    branch_counts["Ts"].push_back(0);
+    branch_counts["Tfroms"].push_back(0);
+    branch_counts["Ls"].push_back(0);
+    branch_counts["count"].push_back(0);
+    branch_counts["copies"].push_back(0);
+    branch_counts["singleton"].push_back(0);
+
+  }
+  T_to_from.clear();
+  for (int e=0;e<last_branch;e++)
+  {
+    vector <scalar_type> tmp;
+    T_to_from.push_back(tmp);
+    for (int f=0;f<last_branch;f++)
+    T_to_from[e].push_back(0);
+  }
+
+
+  last_rank=last_branch;
+  set_model_parameter("N",1);
+
+
+  //Put default values for the fraction of missing genes at the leaves.
+  vector_parameter["fraction_missing"]=vector<scalar_type> (last_leaf, 0.0);
+  //Put user-defined values, if available
+  if (fractionMissingFile == "") {
+
+  }
+  else {
+    fraction_missing = readFractionMissingFile(fractionMissingFile);
+    // Now we need to fill up the vector_parameter, and we have to be careful about the order.
+    size_t index = 0;
+    for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ ) {
+      if ((*it).second->isLeaf())
+      {
+        Node * node = (*it).second;
+        string currentSpecies = node->getName();
+        vector_parameter["fraction_missing"][index] = fraction_missing[currentSpecies];
+        index++;
+      }
+    }
+    VectorTools::print(vector_parameter["fraction_missing"]);
+  }
 
 
 }
@@ -314,7 +314,7 @@ void exODT_model::calculate_undatedEs()
   }
 }
 
-scalar_type exODT_model::pun(approx_posterior *ale)
+scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
 {
   scalar_type survive=0;
   scalar_type root_sum=0;
@@ -348,40 +348,56 @@ scalar_type exODT_model::pun(approx_posterior *ale)
   g_id_sizes.push_back(ale->Gamma_size);
 
   root_i=g_ids.size()-1;
+
   // gene<->species mapping
-  for (int i=0;i<(int)g_ids.size();i++)
+  if (gid_sps.size() == 0) // If the mapping has not been done yet
   {
-    long int g_id=g_ids[i];
-
-    if (g_id_sizes[i]==1)
+    //Test that the species associated to genes are really in the species tree
+    std::set<string> species_set;
+    for (std::map<int, string>::iterator iter = extant_species.begin(); iter!=extant_species.end(); ++iter)
     {
-      int id = 0;
-      for (auto i=0; i< ale->Gamma_size + 1; ++i)
-      {
-        if ( ale->id_sets[g_id][i] )
-        {
-          id=i;
-          break;
-        }
-      }
+         species_set.insert(iter->second);
+    }
 
-      string gene_name=ale->id_leaves[ id ];
-      vector <string> tokens;
-      boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_separators"]),boost::token_compress_on);
-      string species_name;
-      if ((int)scalar_parameter["species_field"]==-1)
+    if (verbose) cout << "\nGene" << "\t:\t"<< "Species" << endl;
+    for (int i=0;i<(int)g_ids.size();i++)
+    {
+      long int g_id=g_ids[i];
+
+      if (g_id_sizes[i]==1)
       {
-        species_name=tokens[1];
-        for (int fi=2;fi<tokens.size();fi++)
-        species_name+="_"+tokens[fi];
+        int id = 0;
+        for (auto i=0; i< ale->Gamma_size + 1; ++i)
+        {
+          if ( ale->id_sets[g_id][i] )
+          {
+            id=i;
+            break;
+          }
+        }
+
+        string gene_name=ale->id_leaves[ id ];
+        vector <string> tokens;
+        boost::split(tokens,gene_name,boost::is_any_of(string_parameter["gene_name_separators"]),boost::token_compress_on);
+        string species_name;
+        if ((int)scalar_parameter["species_field"]==-1)
+        {
+          species_name=tokens[1];
+          for (int fi=2;fi<tokens.size();fi++)
+          species_name+="_"+tokens[fi];
+        }
+        //	    species_name=tokens[tokens.size()-1];
+        else
+        species_name=tokens[(int)scalar_parameter["species_field"]];
+        gid_sps[g_id]=species_name;
+        if (species_set.find(species_name) == species_set.end() ) {
+          cout << "Error: gene name " << gene_name << " is associated to species name "<<species_name << " that cannot be found in the species tree."<< endl;
+          exit (-1);
+        }
+        if (verbose) cout << gene_name << "\t:\t"<< species_name << endl;
       }
-      //	    species_name=tokens[tokens.size()-1];
-      else
-      species_name=tokens[(int)scalar_parameter["species_field"]];
-      gid_sps[g_id]=species_name;
     }
   }
-
   //map <long int, int> g_id2i;
   //XX ancestral_correction ..
   for (int i=0;i<(int)g_ids.size();i++)

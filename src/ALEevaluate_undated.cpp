@@ -39,7 +39,7 @@ int main(int argc, char ** argv)
   boost::trim(species_tree_file);
   //Reading the species tree from within the file
   string species_tree_str = readTreeFromFile( species_tree_file );
-  cout << "Read species tree from: " << argv[1] <<".."<<endl;
+  cout << "\n\tRead species tree from: " << argv[1] <<endl;
 
   // Gene tree business
   string gene_tree_file=argv[2];
@@ -52,7 +52,7 @@ int main(int argc, char ** argv)
   vector<string> gene_tree_strs ; // Silly: we need to produce a vector with a single element...
   gene_tree_strs.push_back(gene_tree_str);
   ale->observation(gene_tree_strs);
-  cout << "# Observed "<< ale->observations << " gene tree(s) from: " <<  argv[2] ;
+  cout << "\n\tObserved "<< ale->observations << " gene tree(s) from: " <<  argv[2] <<endl ;
 
   //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();
@@ -74,32 +74,32 @@ int main(int argc, char ** argv)
     else if (tokens[0]=="delta")
     {
       delta=atof(tokens[1].c_str());
-      cout << "# delta fixed to " << delta << endl;
+      cout << "\n\tDelta fixed to " << delta << endl;
     }
     else if (tokens[0]=="tau")
     {
       tau=atof(tokens[1].c_str());
-      cout << "# tau fixed to " << tau << endl;
+      cout << "\n\tTau fixed to " << tau << endl;
     }
     else if (tokens[0]=="lambda")
     {
       lambda=atof(tokens[1].c_str());
-      cout << "# lambda fixed to " << lambda << endl;
+      cout << "Lambda fixed to " << lambda << endl;
     }
     else if (tokens[0]=="O_R")
     {
       O_R=atof(tokens[1].c_str());
-      cout << "# O_R set to " << O_R << endl;
+      cout << "\n\tO_R set to " << O_R << endl;
     }
     else if (tokens[0]=="beta")
     {
       beta=atof(tokens[1].c_str());
-      cout << "# beta set to " << beta << endl;
+      cout << "\n\tBeta set to " << beta << endl;
     }
     else if (tokens[0]=="fraction_missing")
     {
       fractionMissingFile=tokens[1];
-      cout << "# File containing fractions of missing genes set to " << fractionMissingFile << endl;
+      cout << "\n\tFile containing fractions of missing genes set to " << fractionMissingFile << endl;
     }
   }
 
@@ -118,13 +118,12 @@ int main(int argc, char ** argv)
   //calculate_EGb() must always be called after changing rates to calculate E-s and G-s
   //cf. http://arxiv.org/abs/1211.4606
   model->calculate_undatedEs();
-  double loglk = log(model->pun(ale));
-  cout << "Reconciliation model likelihood computed, logLk: " <<loglk<<endl;
-
+  double loglk = log(model->pun(ale, true));
+  cout << "\n\tReconciliation model likelihood computed, logLk: " <<loglk<<endl;
 
   // Output
 
-  cout << "Sampling reconciled gene trees.."<<endl;
+  cout << "\n\tSampling reconciled gene trees.."<<endl;
   vector <string> sample_strings;
   vector <Tree*> sample_trees;
   boost::progress_display pd( samples );
