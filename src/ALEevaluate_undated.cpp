@@ -30,7 +30,7 @@ int main(int argc, char ** argv)
 
   if (argc<2)
   {
-    cout << "usage:\n ./ALEestimate species_tree_file gene_tree_file separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence" << endl;
+    cout << "usage:\n ./ALEestimate species_tree_file gene_tree_file separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence outputFiles=n" << endl;
     return 1;
   }
 
@@ -62,6 +62,7 @@ int main(int argc, char ** argv)
   scalar_type O_R=1,beta=1;
   scalar_type delta=0.01,tau=0.01,lambda=0.1;
   string fractionMissingFile = "";
+  bool outputyn = false;
   for (int i=3;i<argc;i++)
   {
     string next_field=argv[i];
@@ -101,6 +102,12 @@ int main(int argc, char ** argv)
       fractionMissingFile=tokens[1];
       cout << "\n\tFile containing fractions of missing genes set to " << fractionMissingFile << endl;
     }
+    else if (tokens[0]=="outputFiles")
+    {
+      if (tokens[1] == "y" || tokens[1] == "yes" || tokens[1] == "Y" || tokens[1] == "YES") {
+        outputyn = true;
+      }
+    }
   }
 
   // Constructing the ALE_undated object and computing the logLk.
@@ -122,63 +129,63 @@ int main(int argc, char ** argv)
   cout << "\n\tReconciliation model likelihood computed, logLk: " <<loglk<<endl;
 
   // Output
+  if (outputyn) {
+    cout << "\n\tSampling reconciled gene trees.."<<endl;
+    vector <string> sample_strings;
+    vector <Tree*> sample_trees;
+    boost::progress_display pd( samples );
 
-  cout << "\n\tSampling reconciled gene trees.."<<endl;
-  vector <string> sample_strings;
-  vector <Tree*> sample_trees;
-  boost::progress_display pd( samples );
-
-  for (int i=0;i<samples;i++)
+    for (int i=0;i<samples;i++)
     {
       ++pd;
       string sample_tree=model->sample_undated();
       sample_strings.push_back(sample_tree);
       if (ale->last_leafset_id>3)
-	{
+      {
 
-	  tree_type * G=TreeTemplateTools::parenthesisToTree(sample_tree,false);
+        tree_type * G=TreeTemplateTools::parenthesisToTree(sample_tree,false);
 
-	  vector<Node*> leaves = G->getLeaves();
-	  for (vector<Node*>::iterator it=leaves.begin();it!=leaves.end();it++ )
-	    {
-	      string name=(*it)->getName();
-	      vector<string> tokens;
-	      boost::split(tokens,name,boost::is_any_of(".@"),boost::token_compress_on);
-	      (*it)->setName(tokens[0]);
-	      tokens.clear();
-	    }
-	  leaves.clear();
-	  sample_trees.push_back(G);
-	}
+        vector<Node*> leaves = G->getLeaves();
+        for (vector<Node*>::iterator it=leaves.begin();it!=leaves.end();it++ )
+        {
+          string name=(*it)->getName();
+          vector<string> tokens;
+          boost::split(tokens,name,boost::is_any_of(".@"),boost::token_compress_on);
+          (*it)->setName(tokens[0]);
+          tokens.clear();
+        }
+        leaves.clear();
+        sample_trees.push_back(G);
+      }
     }
-  vector<string> tokens;
-  boost::split(tokens,gene_tree_file,boost::is_any_of("/"),boost::token_compress_on);
-  ale_name=tokens[tokens.size()-1];
-  string outname=ale_name+".uml_rec";
-  ofstream fout( outname.c_str() );
-  fout <<  "#ALEevaluate using ALE v"<< ALE_VERSION <<"; CC BY-SA 3.0;"<<endl<<endl;
-  fout << "S:\t"<<model->string_parameter["S_with_ranks"] <<endl;
-  fout << endl;
-  fout << "Gene tree from:\t"<<gene_tree_file<<endl;
-  fout << ">logl: " << loglk << endl;
-  fout << "rate of\t Duplications\tTransfers\tLosses" <<endl;
-  fout << "\t"<< delta << "\t" << tau << "\t" << lambda //<< "'t" << sigma_hat
-       << endl;
-  fout << endl;
-  fout << samples << " reconciled G-s:\n"<<endl;
-  for (int i=0;i<samples;i++)
+    vector<string> tokens;
+    boost::split(tokens,gene_tree_file,boost::is_any_of("/"),boost::token_compress_on);
+    ale_name=tokens[tokens.size()-1];
+    string outname=ale_name+".uml_rec";
+    ofstream fout( outname.c_str() );
+    fout <<  "#ALEevaluate using ALE v"<< ALE_VERSION <<"; CC BY-SA 3.0;"<<endl<<endl;
+    fout << "S:\t"<<model->string_parameter["S_with_ranks"] <<endl;
+    fout << endl;
+    fout << "Gene tree from:\t"<<gene_tree_file<<endl;
+    fout << ">logl: " << loglk << endl;
+    fout << "rate of\t Duplications\tTransfers\tLosses" <<endl;
+    fout << "\t"<< delta << "\t" << tau << "\t" << lambda //<< "'t" << sigma_hat
+    << endl;
+    fout << endl;
+    fout << samples << " reconciled G-s:\n"<<endl;
+    for (int i=0;i<samples;i++)
     {
       fout<<sample_strings[i]<<endl;
     }
 
-  fout << "# of\t Duplications\tTransfers\tLosses\tSpeciations" <<endl;
-  fout <<"Total \t"<< model->MLRec_events["D"]/samples << "\t" << model->MLRec_events["T"]/samples << "\t" << model->MLRec_events["L"]/samples<< "\t" << model->MLRec_events["S"]/samples <<endl;
-  fout << endl;
-  fout << "# of\t Duplications\tTransfers\tLosses\tOriginations\tcopies" <<endl;
-  fout << model->counts_string_undated(samples);
+    fout << "# of\t Duplications\tTransfers\tLosses\tSpeciations" <<endl;
+    fout <<"Total \t"<< model->MLRec_events["D"]/samples << "\t" << model->MLRec_events["T"]/samples << "\t" << model->MLRec_events["L"]/samples<< "\t" << model->MLRec_events["S"]/samples <<endl;
+    fout << endl;
+    fout << "# of\t Duplications\tTransfers\tLosses\tOriginations\tcopies" <<endl;
+    fout << model->counts_string_undated(samples);
 
-  cout << "Results in: " << outname << endl;
-  if (ale->last_leafset_id>3)
+    cout << "Results in: " << outname << endl;
+    if (ale->last_leafset_id>3)
     {
       cout << "Calculating consensus tree."<<endl;
       Tree* con_tree= TreeTools::thresholdConsensus(sample_trees,0.5);
@@ -193,26 +200,26 @@ int main(int argc, char ** argv)
       cout << endl<< "Consensus tree in " << con_name<< endl;
     }
 
-  string t_name=ale_name+".uTs";
-  ofstream tout( t_name.c_str() );
-  tout <<"#from\tto\tfreq.\n";
+    string t_name=ale_name+".uTs";
+    ofstream tout( t_name.c_str() );
+    tout <<"#from\tto\tfreq.\n";
 
-  for (int e=0;e<model->last_branch;e++)
+    for (int e=0;e<model->last_branch;e++)
     for (int f=0;f<model->last_branch;f++)
-      if  (model->T_to_from[e][f]>0)
-	{
-	  if (e<model->last_leaf)
-	    tout << "\t" << model->node_name[model->id_nodes[e]];
-	  else
-	    tout << "\t" << e;
-	  if (f<model->last_leaf)
-	    tout << "\t" << model->node_name[model->id_nodes[f]];
-	  else
-	    tout << "\t" << f;
-	  tout << "\t" << model->T_to_from[e][f]/samples <<  endl;
-	}
-  cout << "Transfers in: " << t_name << endl;
-
+    if  (model->T_to_from[e][f]>0)
+    {
+      if (e<model->last_leaf)
+      tout << "\t" << model->node_name[model->id_nodes[e]];
+      else
+      tout << "\t" << e;
+      if (f<model->last_leaf)
+      tout << "\t" << model->node_name[model->id_nodes[f]];
+      else
+      tout << "\t" << f;
+      tout << "\t" << model->T_to_from[e][f]/samples <<  endl;
+    }
+    cout << "Transfers in: " << t_name << endl;
+  }
 
   return 1;
 }
