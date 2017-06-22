@@ -224,5 +224,5 @@ int main(int argc, char ** argv)
     cout << "Transfers in: " << t_name << endl;
   }
 
-  return 1;
+  return 0;
 }
