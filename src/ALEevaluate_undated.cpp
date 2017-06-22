@@ -7,6 +7,10 @@ using namespace bpp;
 
 
 string readTreeFromFile(string fname) {
+  if (!fexists(fname)) {
+    cout << "Error, file "<<fname << " does not seem accessible." << endl;
+    exit(1);
+  }
   ifstream file_stream (fname.c_str());
   string tree_str="";
   if (file_stream.is_open())  //  ########## read trees ############

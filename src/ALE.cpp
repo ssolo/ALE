@@ -1,4 +1,6 @@
 #include "ALE.h"
+#include "ALE_util.h"
+
 using namespace std;
 using namespace bpp;
 
@@ -172,12 +174,16 @@ void approx_posterior::save_state(string fname)
 
   fout<< "#END" << endl;
   fout.close();
-  
+
 }
 
 void approx_posterior::load_state(string fname)
 {
   string tree_string;
+  if (!fexists(fname)) {
+    cout << "Error, file "<<fname << " does not seem accessible." << endl;
+    exit(1);
+  }
   ifstream file_stream (fname.c_str());
   string reading="#nothing";
   if (file_stream.is_open())  //  ########## read state ############
