@@ -164,69 +164,70 @@ int main(int argc, char ** argv)
   }
 
 
-    Function* f = new p_fun(infer_tree,world );
-    Optimizer* optimizer = new DownhillSimplexMethod(f);
+  Function* f = new p_fun(infer_tree,world );
+  Optimizer* optimizer = new DownhillSimplexMethod(f);
 
-    optimizer->setProfiler(0);
-    optimizer->setMessageHandler(0);
-    optimizer->setVerbose(0);
-    if (world.rank()==0)   optimizer->setVerbose(1);
+  optimizer->setProfiler(0);
+  optimizer->setMessageHandler(0);
+  optimizer->setVerbose(0);
+  if (world.rank()==0)   optimizer->setVerbose(1);
 
 
-    optimizer->setConstraintPolicy(AutoParameter::CONSTRAINTS_AUTO);
-    optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
-    ParameterList parametersRep = f->getParameters();
-    //Removing the parameters that were fixed in the input
-    for (size_t i=0;i<paramsToIgnore.size();i++) {
-      parametersRep.deleteParameter(paramsToIgnore[i]);
+  optimizer->setConstraintPolicy(AutoParameter::CONSTRAINTS_AUTO);
+  optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
+  ParameterList parametersRep = f->getParameters();
+  //Removing the parameters that were fixed in the input
+  for (size_t i=0;i<paramsToIgnore.size();i++) {
+    parametersRep.deleteParameter(paramsToIgnore[i]);
+  }
+  if ( parametersRep.size() > 0)  {
+    if (world.rank()==0) cout << "#ML rate optimization.." << endl;
+    optimizer->optimize();
+    broadcast(world,done,0);
+    delta=optimizer->getParameterValue("delta");
+    tau=optimizer->getParameterValue("tau");
+    lambda=optimizer->getParameterValue("lambda");
+    if (world.rank()==0 )
+    {
+      optimizer->getParameters().printParameters(cout);
+      cout <<endl<< delta << " " << tau << " " << lambda// << " " << sigma
+      << endl;
     }
-    if ( parametersRep.size() > 0)  {
-      if (world.rank()==0) cout << "#ML rate optimization.." << endl;
-      optimizer->optimize();
-      broadcast(world,done,0);
-      delta=optimizer->getParameterValue("delta");
-      tau=optimizer->getParameterValue("tau");
-      lambda=optimizer->getParameterValue("lambda");
-      if (world.rank()==0 )
-      {
-        optimizer->getParameters().printParameters(cout);
-        cout <<endl<< delta << " " << tau << " " << lambda// << " " << sigma
-        << endl;
-      }
-    }
-    else {
-      if (world.rank()==0) cout << "#skipping rate optimization" << endl;
-      if (world.rank()==0) cout << "#rates : delta=" <<delta <<" lambda="<<lambda<<" tau="<<tau<<endl;
-    }
+  }
+  else {
+    if (world.rank()==0) cout << "#skipping rate optimization" << endl;
+    if (world.rank()==0) cout << "#rates : delta=" <<delta <<" lambda="<<lambda<<" tau="<<tau<<endl;
+  }
 
-    //optimizer->getParameters().printParameters(cout);
-    //  if (argc>5)
-    //  delta=atof(argv[3]),tau=atof(argv[4]),lambda=atof(argv[5]);
-    if (outputyn) {
-      infer_tree->model->set_model_parameter("delta",delta);
-      infer_tree->model->set_model_parameter("tau",tau);
-      infer_tree->model->set_model_parameter("lambda",lambda);
-      infer_tree->calculate_pun(0);
-      scalar_type samples=1;
-      if (world.rank()==0) cout << "#sampling .." << endl;
-      scalar_type ll_final = infer_tree->calculate_pun(samples);
-      if (world.rank()==0) cout << "#sampling done." << endl;
+  //optimizer->getParameters().printParameters(cout);
+  //  if (argc>5)
+  //  delta=atof(argv[3]),tau=atof(argv[4]),lambda=atof(argv[5]);
+  if (outputyn) {
+    infer_tree->model->set_model_parameter("delta",delta);
+    infer_tree->model->set_model_parameter("tau",tau);
+    infer_tree->model->set_model_parameter("lambda",lambda);
+    infer_tree->calculate_pun(0);
+    scalar_type samples=1;
+    if (world.rank()==0) cout << "#sampling .." << endl;
+    scalar_type ll_final = infer_tree->calculate_pun(samples);
+    if (world.rank()==0) cout << "#sampling done." << endl;
 
-      infer_tree->gather_counts(samples);
-      if (world.rank()==0) cout << "#gather done." << endl;
+    infer_tree->gather_counts(samples);
+    if (world.rank()==0) cout << "#gather done." << endl;
 
-      infer_tree->gather_T_to_from(samples);
-      if (world.rank()==0) cout << "#gather T_from done." << endl;
+    infer_tree->gather_T_to_from(samples);
+    if (world.rank()==0) cout << "#gather T_from done." << endl;
 
-      if (world.rank()==0) cout<< ">tree:\t"<< infer_tree->model->string_parameter["S_with_ranks"] << endl;
-      if (world.rank()==0) cout<< ">logl:\t"<< ll_final << endl;
-      if (world.rank()==0) cout<< ">Ts:\tfrom\tto"<< endl;
-      if (world.rank()==0) infer_tree->print_branch_counts(samples);
+    if (world.rank()==0) cout<< ">tree:\t"<< infer_tree->model->string_parameter["S_with_ranks"] << endl;
+    if (world.rank()==0) cout<< ">logl:\t"<< ll_final << endl;
+    if (world.rank()==0) cout<< ">Ts:\tfrom\tto"<< endl;
+    if (world.rank()==0) infer_tree->print_branch_counts(samples);
 
-      string Tname=Sstring+".Ts";
-      ofstream fout( Tname.c_str() );
+    string Tname=Sstring+".Ts";
+    ofstream fout( Tname.c_str() );
 
-      if (world.rank()==0)
+    if (world.rank()==0)
+    {
       for (map <scalar_type, vector< int > >::iterator it=infer_tree->sort_e.begin();it!=infer_tree->sort_e.end();it++)
       {
         scalar_type Ts=-(*it).first;
@@ -247,4 +248,6 @@ int main(int argc, char ** argv)
         }
       }
     }
+    fout.close();
   }
+}

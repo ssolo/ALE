@@ -270,6 +270,7 @@ int main(int argc, char ** argv)
   fout << endl;
   fout << "# of\t Duplications\tTransfers\tLosses\tOriginations\tcopies" <<endl;
   fout << model->counts_string_undated(samples);
+  fout.close();
 
   cout << "Results in: " << outname << endl;
   if (ale->last_leafset_id>3)
@@ -305,6 +306,7 @@ int main(int argc, char ** argv)
 	    tout << "\t" << f;
 	  tout << "\t" << model->T_to_from[e][f]/samples <<  endl;
 	}
+  tout.close();
   cout << "Transfers in: " << t_name << endl;
   return 0;
 }

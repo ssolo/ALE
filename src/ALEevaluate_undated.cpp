@@ -183,6 +183,7 @@ int main(int argc, char ** argv)
     fout << endl;
     fout << "# of\t Duplications\tTransfers\tLosses\tOriginations\tcopies" <<endl;
     fout << model->counts_string_undated(samples);
+    fout.close();
 
     cout << "Results in: " << outname << endl;
     if (ale->last_leafset_id>3)
@@ -197,6 +198,7 @@ int main(int argc, char ** argv)
       TreeTools::computeBootstrapValues(*con_tree,sample_trees);
       string con_tree_sup=TreeTemplateTools::treeToParenthesis(*con_tree);
       con_out << con_tree_sup << endl;
+      con_out.close();
       cout << endl<< "Consensus tree in " << con_name<< endl;
     }
 
@@ -218,6 +220,7 @@ int main(int argc, char ** argv)
       tout << "\t" << f;
       tout << "\t" << model->T_to_from[e][f]/samples <<  endl;
     }
+    tout.close();
     cout << "Transfers in: " << t_name << endl;
   }
 

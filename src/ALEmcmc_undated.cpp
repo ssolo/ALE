@@ -442,6 +442,7 @@ int main(int argc, char ** argv)
       string con_tree_sup=TreeTemplateTools::treeToParenthesis(*con_tree);
       con_out << con_tree_sup << endl;
       cout << endl<< "Consensus tree in " << con_name<< endl;
+			con_out.close();
     }
 
   string t_name=ale_file+"_mcmc.uTs";
@@ -451,6 +452,7 @@ int main(int argc, char ** argv)
   for(it = tToFrom.begin(); it != tToFrom.end(); it++) {
      tout << "\t" << it->first << "\t" <<  it->second/samples << endl;
   }
+	tout.close();
   cout << "Transfers in: " << t_name << endl;
   return 0;
 }
