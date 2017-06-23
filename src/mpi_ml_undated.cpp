@@ -78,6 +78,18 @@ int main(int argc, char ** argv)
   communicator world;
   int done=1;
 
+  if (argc<2)
+  {
+    cout << "usage:\n ./mpi_ml_undated species_tree_file file_containing_ales O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence outputFiles=n" << endl;
+    cout << "\n\tImportant: If duplication, transfer or loss rates are specified, they are fixed." << endl;
+    return 1;
+  }
+
+
+  if (!fexists(argv[1])) {
+    cout << "Error, file "<<argv[1] << " does not seem accessible." << endl;
+    exit(1);
+  }
   ifstream file_stream_S (argv[1]);
   string Sstring;
 
@@ -85,10 +97,10 @@ int main(int argc, char ** argv)
   map<string,scalar_type> parameters;
   if (world.rank()==0) cout << Sstring << endl;
   mpi_tree * infer_tree = new mpi_tree(Sstring,world,parameters,true);
-  if (world.rank()==0) cout << "..construct.. " << endl;
+  if (world.rank()==0) cout << "Constructed the species tree. " << endl;
 
   infer_tree->load_distributed_ales(argv[2]);
-  if (world.rank()==0) cout << "..load.. " << endl;
+  if (world.rank()==0) cout << "Ales loaded. " << endl;
 
   //scalar_type ll = infer_tree->calculate_pun(3);
 
@@ -101,13 +113,6 @@ int main(int argc, char ** argv)
   scalar_type delta=0.01;
   scalar_type tau=0.01;
   scalar_type lambda=0.1;
-
-  if (argc<2)
-  {
-    cout << "usage:\n ./mpi_ml_undated species_tree_file file_containing_ales O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence outputFiles=n" << endl;
-    cout << "\n\tImportant: If duplication, transfer or loss rates are specified, they are fixed." << endl;
-    return 1;
-  }
 
   // Getting the other options
   scalar_type samples=100;

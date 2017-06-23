@@ -114,6 +114,10 @@ void mpi_tree::load_distributed_ales(string fname)
   vector<vector<string> > scatter_fnames;//del-loc
   if (rank==server)
     {
+      if (!fexists(fname)) {
+        cout << "Error, file "<< fname << " does not seem accessible." << endl;
+        exit(1);
+      }
       ifstream file_stream (fname.c_str());
       int tree_i=0;
       set <string> verify;
