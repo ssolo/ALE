@@ -179,12 +179,13 @@ int main(int argc, char ** argv)
 
 
   optimizer->setConstraintPolicy(AutoParameter::CONSTRAINTS_AUTO);
-  optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
   ParameterList parametersRep = f->getParameters();
   //Removing the parameters that were fixed in the input
   for (size_t i=0;i<paramsToIgnore.size();i++) {
     parametersRep.deleteParameter(paramsToIgnore[i]);
   }
+  optimizer->init(parametersRep); //Here we optimize all parameters, and start with the default values.
+
   if ( parametersRep.size() > 0)  {
     if (world.rank()==0) cout << "#ML rate optimization.." << endl;
     optimizer->optimize();
