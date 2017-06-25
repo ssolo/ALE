@@ -32,12 +32,14 @@ int main(int argc, char ** argv)
 
   //simulate
   cout << " First run: \n ./simulation N n"<< endl;
+  cout << "  In this command line, N corresponds to the total number of species, including extinct ones; "<< endl;
+  cout << "  n corresponds to the number of extant species only. "<< endl;
   cout << "  This will produce a species tree in two files S_XXX.tree and R_XXX.tree. "<< endl;
   cout << "  In the two files the tree is the same, but in R_XXX.tree the leaves have been renamed. "<< endl;
   cout << "  XXX here corresponds to the species seed. "<< endl;
   cout << "  if you like the species tree then remember the species seed S_seed and run: "<< endl;
   cout << " ./simulate  N n S_seed  omega delta tau lambda " << endl;
-  cout << " where omega delta tau lambda are the origination, duplication, transfer and loss rate parameters." << endl;
+  cout << " where omega delta tau lambda are the origination at the root, duplication, transfer and loss rate parameters." << endl;
   cout << "  Do this many times to get a lot of gene trees... "<< endl;
   if (argc<3) return 1;
   long int S_seed=good_seed();

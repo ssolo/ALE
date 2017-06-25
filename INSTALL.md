@@ -11,7 +11,7 @@ To use ALE using Docker, you need to install Docker first.
 * Under Windows, you can download the executable file from [there](https://docs.docker.com/docker-for-windows/install/)
 * Under Linux, you need to choose your particular flavor on the left of [this page](https://docs.docker.com/engine/installation/) and then follow the instructions.
 
-### Test Docker 
+### Test Docker
 
 Once Docker has been installed, you can use ALE as follows. As described in `README.md`, you need to run `ALEobserve` then `ALEml` or `ALEmcmc_undated` to get reconciled gene trees, and this is explained below.
 
@@ -19,25 +19,25 @@ Let's assume you have a file named `geneFamily.treelist` containing a distributi
 We will launch the program from the folder containing those data, which means that we will launch the command from the folder `$PWD`. `$PWD` is the usual environmental variable that UNIX-type operating systems use to point to the Present Working Directory.
 If you want to use the example data to test the software, this means your `$PWD` will be `/absolute_path/ALE/example_data`, your species tree will be `S.tree`, and your gene tree file will be either `HBG745965_real.1.treelist.txt` or `HBG745965_real.2.treelist.txt`.
 
-The way the docker image is as follows: you can run all the programs of the ALE suite, and only have to precede the command you would use to launch them with `docker run -v $PWD:$PWD alesuite `.
+The way the docker image is as follows: you can run all the programs of the ALE suite, and only have to precede the command you would use to launch them with `docker run -v $PWD:$PWD  -w $PWD alesuite `.
 
 For instance, we provide below what the typical pipeline would look like.
 
 * The first command to use is:
 ```sh
-docker run -v $PWD:$PWD alesuite ALEobserve $PWD/geneFamily.treelist
+docker run -v $PWD:$PWD  -w $PWD alesuite ALEobserve $PWD/geneFamily.treelist
 ```
 * The second command to use could be:
 ```sh
-docker run -v $PWD:$PWD alesuite ALEml_undated $PWD/species_tree.newick $PWD/geneFamily.treelist.ale
+docker run -v $PWD:$PWD  -w $PWD alesuite ALEml_undated $PWD/species_tree.newick $PWD/geneFamily.treelist.ale
 ```
 or
-```sh 
-docker run -v $PWD:$PWD alesuite ALEmcmc_undated $PWD/species_tree.newick $PWD/geneFamily.treelist.ale
+```sh
+docker run -v $PWD:$PWD  -w $PWD alesuite ALEmcmc_undated $PWD/species_tree.newick $PWD/geneFamily.treelist.ale
 ```
 for instance.
 
-Running ALEobserve then one of those two commands will produce the output files describing scenarios of gene family evolution including events of gene transfer, duplication and loss.
+Those commands will produce the output files describing scenarios of gene family evolution including events of gene transfer, duplication and loss.
 
 ## 2. Building from source
 
@@ -67,7 +67,7 @@ sudo zypper install git cmake gcc gcc-c++
 ```sh                                                                                                         
 sudo apt-get install libboost-dev libboost-serialization-dev libboost-mpi-dev
 ```                                                                                                           
-                                                                                                              
+
 **openSUSE 42.2**:                                                                                          
 ```sh                                                                                                         
 sudo zypper install boost-devel libboost_mpi1_61_0 libboost_serialization_61_0                                                                 
@@ -134,7 +134,7 @@ The precompiled libraries don't always work (see Troubleshooting), our recommend
 ```sh                                                                                                         
 sudo apt-get install libbpp-core-dev libbpp-phyl-dev libbpp-seq-dev libbpp-seq-omics-dev
 ```                                                                                                           
-                                                                                                              
+
 **openSUSE 42.2**:
 
 For openSUSE the Bio++ libraries are in a user's repository which needs to be added to Zypper:
@@ -149,7 +149,7 @@ After that you can install the needed Bio++ libraries:
 sudo zypper install libbpp-core-devel libbpp-phyl-devel libbpp-seq-devel libbpp-seq-omics-devel libbpp-phyl-omics-devel
 ```
 
-### Compiling ALE 
+### Compiling ALE
 
 Clone the git repository:
 ```
@@ -207,4 +207,3 @@ After installing a compiler which has support, you can tell cmake to use it:
 cmake .. -DCMAKE_C_COMPILER=/path/to/bin/c-compiler -DCMAKE_CXX_COMPILER=/path/to/bin/c++-compiler
 make
 ```
-

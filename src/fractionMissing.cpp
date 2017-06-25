@@ -10,6 +10,10 @@ std::map<std::string, scalar_type> readFractionMissingFile(std::string fractionM
    }
    else
    {
+     if (!fexists(fractionMissingFile)) {
+      std::cout << "Error, file "<< fractionMissingFile << " does not seem accessible." <<  std::endl;
+       exit(1);
+     }
      std::ifstream inCoverage (fractionMissingFile.c_str());
      std::vector <std::string> listCoverages;
      std::string line;

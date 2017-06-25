@@ -133,7 +133,7 @@ class exODT_model
 
   void construct_undated(const std::string& Sstring, const std::string& fractionMissingFile=""); //Constructs an object given a species tree and file containing fractions of missing genes per species.
   void calculate_undatedEs();
-  scalar_type pun(approx_posterior *ale);
+  scalar_type pun(approx_posterior *ale, bool verbose=false);
   std::string feSPR(int e, int f);
   std::vector<std::string> NNIs(int e);
 

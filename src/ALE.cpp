@@ -1,4 +1,6 @@
 #include "ALE.h"
+#include "ALE_util.h"
+
 using namespace std;
 using namespace bpp;
 
@@ -56,7 +58,7 @@ void approx_posterior::construct(string tree_string)
   observations=0;
   vector <string > leaves;
   // ? name_separator="+";
-  
+
   if ( tree_string.substr(0,1) !="(")
     {
       boost::trim(tree_string);
@@ -64,12 +66,12 @@ void approx_posterior::construct(string tree_string)
     }
   else
     {
-      tree_type * tree = TreeTemplateTools::parenthesisToTree(tree_string,false);//del-loc  
+      tree_type * tree = TreeTemplateTools::parenthesisToTree(tree_string,false);//del-loc
       leaves = tree->getLeavesNames();//del-loc
     }
   int id=0;
   for (vector <string >::iterator it=leaves.begin();it!=leaves.end();it++ )
-    {      
+    {
 
       id++;
       string leaf_name=(*it);
@@ -84,7 +86,7 @@ void approx_posterior::construct(string tree_string)
     nbint = (Gamma_size + lword - 1) / lword;*/
   //  size_t nbword = (Gamma_size + lword - 1) / lword;
   //  nbint  = nbword * lword / (CHAR_BIT * sizeof(int));
-    
+
     Gamma = boost::dynamic_bitset<> (Gamma_size + 1) ;//new int[nbint];
     //All leaves are present in Gamma:
     for (auto i = 0; i < Gamma_size + 1; i++)
@@ -103,7 +105,7 @@ void approx_posterior::construct(string tree_string)
 
   //XX
   std::unordered_map< pair<long int, long int>,scalar_type> temp ;
-  while (leaves.size()+1 >  Dip_counts.size() ) 
+  while (leaves.size()+1 >  Dip_counts.size() )
     Dip_counts.push_back(temp);
   //XX
   //del-locs
@@ -112,7 +114,7 @@ void approx_posterior::construct(string tree_string)
 }
 
 
-void approx_posterior::save_state(string fname) 
+void approx_posterior::save_state(string fname)
 {
   //constructor_string
   ofstream fout( fname.c_str() );
@@ -146,7 +148,7 @@ void approx_posterior::save_state(string fname)
 	}
       ++index;
     }
-  
+
   fout<< "#last_leafset_id" <<endl;
   fout<< last_leafset_id << endl;
 
@@ -164,19 +166,24 @@ void approx_posterior::save_state(string fname)
                if ( (*it).first[i] ) //if the leaf is present, we print it
                    fout << "\t" << i;
         }
-        
+
    /*   for (set< int>::iterator  jt=(*it).first.begin();jt!=(*it).first.end();jt++)
 	fout << "\t" << (*jt);*/
       fout << endl;
     }
 
   fout<< "#END" << endl;
+  fout.close();
 
 }
 
 void approx_posterior::load_state(string fname)
 {
   string tree_string;
+  if (!fexists(fname)) {
+    cout << "Error, file "<<fname << " does not seem accessible." << endl;
+    exit(1);
+  }
   ifstream file_stream (fname.c_str());
   string reading="#nothing";
   if (file_stream.is_open())  //  ########## read state ############
@@ -185,7 +192,7 @@ void approx_posterior::load_state(string fname)
       {
           string line;
           getline (file_stream,line);
-          
+
           if (boost::find_first(line, "#"))
           {
               boost::trim(line);
@@ -234,7 +241,7 @@ void approx_posterior::load_state(string fname)
                parts.insert(atoi(tokens[2].c_str()));
                Dip_counts[atol(tokens[0].c_str())][parts]=atof(tokens[3].c_str());
                */
-              
+
               parts.first = atoi(tokens[1].c_str());
               parts.second = atoi(tokens[2].c_str());
               if ( atol(tokens[0].c_str()) >= (long int) ( Dip_counts.size() ) )
@@ -258,7 +265,7 @@ void approx_posterior::load_state(string fname)
           {
               //cout << reading << endl;
               boost::trim(line);
-              last_leafset_id=atol(line.c_str());	      
+              last_leafset_id=atol(line.c_str());
           }
           else if (reading=="#leaf-id")
           {
@@ -283,7 +290,7 @@ void approx_posterior::load_state(string fname)
               boost::trim(fields[1]);
               boost::split(tokens,fields[1],boost::is_any_of("\t "),boost::token_compress_on);
               boost::dynamic_bitset<> temp( Gamma_size + 1 );
-              
+
               for (vector<string>::iterator it=tokens.begin();it!=tokens.end();it++) { //Setting the proper bits to 1
                   temp[static_cast<int>(atoi((*it).c_str()))] = 1;
               }
@@ -320,7 +327,7 @@ void approx_posterior::load_state(string fname)
     {
         VectorTools::print ( (*it).second );
     }*/
-    
+
   //cout <<"Bip " <<              Bip_counts.size()<<endl;
   //cout <<"size " <<              size_ordered_bips.size()<<endl;
 
@@ -329,19 +336,19 @@ void approx_posterior::load_state(string fname)
 /*
 string approx_posterior::set2name(set<int> leaf_set)
 {
-  string name=""; 
+  string name="";
   for (set<int>::iterator it=leaf_set.begin();it!=leaf_set.end();it++)
-    name+=id_leaves[(*it)]+name_separator; 
+    name+=id_leaves[(*it)]+name_separator;
   return name.substr(0,name.size()-1);
 }
 
 long int approx_posterior::set2id(set<int> leaf_set)
-{	
+{
   long int id=set_ids[leaf_set];
   if (!id)
     {
       last_leafset_id++;
-      set_ids[leaf_set]=last_leafset_id;  
+      set_ids[leaf_set]=last_leafset_id;
       // TMP for debug
       //Dip_levels[leaf_set.size()].push_back(last_leafset_id);
       //id2name[last_leafset_id]=set2name(leaf_set);
@@ -427,7 +434,7 @@ scalar_type approx_posterior::Tri(int n2,int n3) const
 
 scalar_type approx_posterior::binomial(int n,int m) const
 {
-  //maybe worth caching 
+  //maybe worth caching
   return boost::math::binomial_coefficient<scalar_type>(n,m);
 }
 
@@ -455,7 +462,7 @@ scalar_type approx_posterior::p_dip(set<int> gamma,set<int> gammap,set<int> gamm
 {
   if (Gamma_size<4)
     return 1;
-  long int g_id=set_ids[gamma];  
+  long int g_id=set_ids[gamma];
   long int gp_id=set_ids[gammap];
   long int gpp_id=set_ids[gammapp];
   return p_dip( g_id, gp_id, gpp_id);
@@ -465,7 +472,7 @@ scalar_type approx_posterior::p_dip(set<int> gamma,set<int> gammap,set<int> gamm
 scalar_type approx_posterior::p_bip(boost::dynamic_bitset<> gamma) const
 {
     if (Gamma_size<4)
-        return 1;   
+        return 1;
     long int g_id;
     if (set_ids.count(gamma))
       g_id=set_ids.at(gamma);
@@ -525,7 +532,7 @@ scalar_type approx_posterior::p_bip(long int g_id) const
   //if ( gamma.size()==1 or (int)gamma.size()==Gamma_size-1) Bip_count=observations;
   if (set_sizes.count(g_id)==0 or g_id==-10) Bip_count=0;
   else if (  set_sizes.at(g_id)==1 or set_sizes.at(g_id)==Gamma_size-1) Bip_count=observations;
-  
+
   if ( alpha>0 )
     return Bip_count / ( observations+alpha ) + ( alpha/N_Gamma*Bi ( set_sizes.at ( g_id ) ) ) / ( observations+alpha );
   else
@@ -562,7 +569,7 @@ scalar_type approx_posterior::p_dip(long int g_id,long int gp_id,long int gpp_id
 	  parts.first = gpp_id;
 	  parts.second = gp_id;
 	}
-	
+
       Bip_count=Bip_counts.at(g_id);
       //Dip_count=Dip_counts.at(g_id).at(parts);
       if (gp_id==-10 or gpp_id==-10 or Dip_counts.at(g_id).count(parts)==0 or !gp_id or !gpp_id)
@@ -628,11 +635,11 @@ map < boost::dynamic_bitset<> ,scalar_type > approx_posterior::recompose(string 
   // Name all leaves
   for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
     {
-		
+
       dedge_type dedge=(*it).first;
       Node * from = dedge.first;
       Node * to = dedge.second;
-      //visit dedges from a leaf as these can be named  
+      //visit dedges from a leaf as these can be named
       if (from->isLeaf())
 	{
         if (flat_names.find (dedge) == flat_names.end() ) {
@@ -647,7 +654,7 @@ map < boost::dynamic_bitset<> ,scalar_type > approx_posterior::recompose(string 
         //BipartitionTools::bit1(flat_names.at(dedge), static_cast<int>( leaf_ids.at(from->getName() ) ) );
         flat_names.at(dedge)[ static_cast<int>( leaf_ids.at(from->getName() ) ) ] = 1;
 	 // flat_names[dedge].insert(leaf_ids[from->getName()]);
-	  q[dedge]=1;	
+	  q[dedge]=1;
 	  return_map[flat_names[dedge]]=q[dedge];
 	  //mark named
 	  dedges[dedge]=-1;
@@ -663,7 +670,7 @@ map < boost::dynamic_bitset<> ,scalar_type > approx_posterior::recompose(string 
 	}
     }
 
-  bool edges_left=false;	
+  bool edges_left=false;
   for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
     {
       dedge_type dedge=(*it).first;
@@ -674,13 +681,13 @@ map < boost::dynamic_bitset<> ,scalar_type > approx_posterior::recompose(string 
     {
       for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
 	{
-	  dedge_type dedge=(*it).first;			
+	  dedge_type dedge=(*it).first;
 	  //Process edges that can be named
-	  if (dedges[dedge]==2)	
+	  if (dedges[dedge]==2)
 	    {
 	      Node * from = dedge.first;
 	      Node * to = dedge.second;
-	      vector <dedge_type> dedges_in; //del-loc	      
+	      vector <dedge_type> dedges_in; //del-loc
 	      for( vector<Node*>::iterator it_tos=neighbor[from].begin(); it_tos!=neighbor[from].end(); it_tos++)
 		if (*it_tos!=to)
 		  {
@@ -695,7 +702,7 @@ map < boost::dynamic_bitset<> ,scalar_type > approx_posterior::recompose(string 
 	      set <int> leaf_set_in_2=flat_names[dedges_in[1]];
 	      //flat naming
 	      for (set<int>::iterator sit=leaf_set_in_1.begin();sit!=leaf_set_in_1.end();sit++)
-		flat_names[dedge].insert((*sit));	
+		flat_names[dedge].insert((*sit));
 	      for (set<int>::iterator sit=leaf_set_in_2.begin();sit!=leaf_set_in_2.end();sit++)
 		flat_names[dedge].insert((*sit));
             */
@@ -718,7 +725,7 @@ map < boost::dynamic_bitset<> ,scalar_type > approx_posterior::recompose(string 
             }
           //  BipartitionTools::bitOr(flat_names[dedge], leaf_set_in_1, leaf_set_in_2, nbint);
             flat_names[dedge] = leaf_set_in_1 | leaf_set_in_2 ;
-            
+
 	      //flat naming
 	      //dip_type dip;
 	      //dip.first=set2id(flat_names[dedge]);
@@ -732,7 +739,7 @@ map < boost::dynamic_bitset<> ,scalar_type > approx_posterior::recompose(string 
 
 	      //mark named
 	      dedges[dedge]=-1;
-	      //proceed to dedges in next level -  new dedges can now be named 
+	      //proceed to dedges in next level -  new dedges can now be named
 	      for( vector<Node*>::iterator it_tos=neighbor[to].begin(); it_tos!=neighbor[to].end(); it_tos++)
 		if ((*it_tos)!=from)
 		  {
@@ -744,13 +751,13 @@ map < boost::dynamic_bitset<> ,scalar_type > approx_posterior::recompose(string 
 	      dedges_in.clear();
 	    }
 	}
-      edges_left=false;	
+      edges_left=false;
       for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
 	{
 	  dedge_type dedge=(*it).first;
 	  if (dedges[dedge]!=-1)
 	    edges_left=true;
-	}	
+	}
     }
 
   //del-locs
@@ -820,11 +827,11 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids ,scalar_typ
   // Name all leaves
   for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
     {
-		
+
       dedge_type dedge=(*it).first;
       Node * from = dedge.first;
       Node * to = dedge.second;
-      //visit dedges from a leaf as these can be named  
+      //visit dedges from a leaf as these can be named
       if (from->isLeaf())
 	{
         if (flat_names.find (dedge) == flat_names.end() ) {
@@ -846,9 +853,9 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids ,scalar_typ
 	  //bl - hack
 	  long int g_id=set2id(flat_names[dedge]);
 	  if (from->hasDistanceToFather())
-	    Bip_bls[g_id]+=from->getDistanceToFather();		  
+	    Bip_bls[g_id]+=from->getDistanceToFather();
 	  else
-	    Bip_bls[g_id]+=0;		  
+	    Bip_bls[g_id]+=0;
 	  //mark named
 	  dedges[dedge]=-1;
 	  //proceed to dedges in next level -  dedges from cherries can now be named and at least one cherry must exist
@@ -864,33 +871,33 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids ,scalar_typ
     }
 
 
-  bool edges_left=false;	
+  bool edges_left=false;
   for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
     {
       dedge_type dedge=(*it).first;
       if (dedges[dedge]!=-1)
-	edges_left=true;	
+	edges_left=true;
     }
 
 
   if (G -> getLeaves().size()==2)
     {
       Bip_counts[(long int) 1]+=weight;
-  
+
     }
   else
     while (edges_left)
       {
 	for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
 	  {
-      
-	    dedge_type dedge=(*it).first;			
+
+	    dedge_type dedge=(*it).first;
 	    //Process edges that can be named
-	    if (dedges[dedge]==2)	
+	    if (dedges[dedge]==2)
 	      {
 		Node * from = dedge.first;
 		Node * to = dedge.second;
-		vector <dedge_type> dedges_in; //del-loc	      
+		vector <dedge_type> dedges_in; //del-loc
 		for( vector<Node*>::iterator it_tos=neighbor[from].begin(); it_tos!=neighbor[from].end(); it_tos++)
 		  if (*it_tos!=to)
 		    {
@@ -904,9 +911,9 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids ,scalar_typ
 		set <int> leaf_set_in_2=flat_names[dedges_in[1]];
 		//flat naming
 		for (set<int>::iterator sit=leaf_set_in_1.begin();sit!=leaf_set_in_1.end();sit++)
-		  flat_names[dedge].insert((*sit));	
+		  flat_names[dedge].insert((*sit));
 		for (set<int>::iterator sit=leaf_set_in_2.begin();sit!=leaf_set_in_2.end();sit++)
-		  flat_names[dedge].insert((*sit));		      	       
+		  flat_names[dedge].insert((*sit));
 		//flat naming
 	      */
               boost::dynamic_bitset<>  leaf_set_in_1=flat_names[dedges_in[0]];
@@ -927,14 +934,14 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids ,scalar_typ
               BipartitionTools::bitOr(flat_names[dedge], leaf_set_in_1, leaf_set_in_2, nbint);
                */
               flat_names[dedge] = leaf_set_in_1 | leaf_set_in_2;
-              
+
 		long int g_id=set2id(flat_names[dedge]);
-	      
+
 		//set <long int> parts;
 		//parts.insert(set2id(leaf_set_in_1));
 		//parts.insert(set2id(leaf_set_in_2));
 
-		pair <long int, long int> parts;      
+		pair <long int, long int> parts;
 		long int tmp_id1=set2id(leaf_set_in_1);
 		long int tmp_id2=set2id(leaf_set_in_2);
 		if (tmp_id1<tmp_id2)
@@ -952,9 +959,9 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids ,scalar_typ
 		if (from->hasFather() and from->getFather()==to)
 		  {
 		    if (from->hasDistanceToFather())
-		      Bip_bls[g_id]+=from->getDistanceToFather();		  
+		      Bip_bls[g_id]+=from->getDistanceToFather();
 		    else
-		      Bip_bls[g_id]+=0;		  
+		      Bip_bls[g_id]+=0;
 		  }
 		else if (to->hasFather() and to->getFather()==from)
 		  {
@@ -969,21 +976,21 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids ,scalar_typ
 		  }
 
 		//bl - hack
-		//INTEGRATED COUNTING 
+		//INTEGRATED COUNTING
 		Dip_counts[g_id][parts]+=weight;
 
 		Bip_counts[g_id]+=weight;
 
 		//bipartion naming
 		if (bip_ids!=NULL) bip_ids->insert(g_id);
-	      
+
 		//dip.first=g_id;
 		//dip.second=parts;
 		//return_dips.push_back(dip);
 
 		//mark named
 		dedges[dedge]=-1;
-		//proceed to dedges in next level -  new dedges can now be named 
+		//proceed to dedges in next level -  new dedges can now be named
 		for( vector<Node*>::iterator it_tos=neighbor[to].begin(); it_tos!=neighbor[to].end(); it_tos++)
 		  if ((*it_tos)!=from)
 		    {
@@ -997,13 +1004,13 @@ void approx_posterior::decompose(string G_string, set<int> * bip_ids ,scalar_typ
 	      }
 
 	  }
-	edges_left=false;	
+	edges_left=false;
 	for( map<dedge_type, int>::iterator it=dedges.begin(); it!=dedges.end(); it++)
 	  {
 	    dedge_type dedge=(*it).first;
 	    if (dedges[dedge]!=-1)
 	      edges_left=true;
-	  }	
+	  }
       }
 
   //del-locs
@@ -1030,8 +1037,8 @@ void approx_posterior::observation(vector<string> trees, bool count_topologies, 
       //cout << (*it) << endl;
       if (count_topologies)
 	{
-	  set <int> bip_ids;//del-loc      
-	  decompose(*it,&bip_ids,weight);//del-loc      
+	  set <int> bip_ids;//del-loc
+	  decompose(*it,&bip_ids,weight);//del-loc
 	  string bip_string="|";
 	  for (set <int>::iterator st=bip_ids.begin();st!=bip_ids.end();st++)
 	    bip_string+=(*st)+"|";
@@ -1043,7 +1050,7 @@ void approx_posterior::observation(vector<string> trees, bool count_topologies, 
 	  tree_counts[bipstring_trees[bip_string]]+=1;
 	  bip_ids.clear();
 	}
-      else decompose(*it,NULL,weight);//del-loc            
+      else decompose(*it,NULL,weight);//del-loc
       observations+=weight;
     }
   //cout << "obsdone." << endl;
@@ -1080,7 +1087,7 @@ scalar_type approx_posterior::p(string tree_string) const
       boost::dynamic_bitset<> not_gamma = ~gamma;
 
       not_gamma[0] = 0;
-      
+
 /*        for (auto i=0; i< Gamma_size; ++i) {
             not_gamma[i] = 0;
         }
@@ -1088,7 +1095,7 @@ scalar_type approx_posterior::p(string tree_string) const
    /*   for (set<int>::iterator st=Gamma.begin();st!=Gamma.end();st++)
 	if (gamma.count(*st)==0)
 	  not_gamma.insert(*st);*/
-      
+
       p*=rec_map[not_gamma]*p_bip(gamma);
       if (std::isnan(p) ) p = 0;//NumConstants::VERY_TINY ();
       //std::cout << "rec_map[not_gamma]: "<<rec_map[not_gamma] <<" p_bip(gamma) "<< p_bip(gamma) <<std::endl;
@@ -1113,10 +1120,10 @@ pair<string,scalar_type> approx_posterior::mpp_tree() const
 	    scalar_type max_cp=0;
 	    //Go through all resolutions of clade g_id
 	    for ( auto kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
-	      {	  
+	      {
 		long int gp_id=(*kt).first.first;
 		long int gpp_id=(*kt).first.second;
-		scalar_type cp=p_dip(g_id,gp_id,gpp_id)*qmpp[gp_id]*qmpp[gpp_id];	
+		scalar_type cp=p_dip(g_id,gp_id,gpp_id)*qmpp[gp_id]*qmpp[gpp_id];
 		if (cp>max_cp) max_cp=cp;
 	      }
 	    qmpp[g_id]=max_cp;
@@ -1146,7 +1153,7 @@ pair<string,scalar_type> approx_posterior::mpp_tree() const
       scalar_type pp=qmpp[g_id]*qmpp[not_g_id]*p_bip(g_id);
       sum_pp+=pp;
       if (max_pp<pp) {max_pp=pp; max_bip=g_id; max_not_bip=not_g_id;}
-    }    
+    }
   stringstream bs;
   //we looked at everything twice..
   bs<<max_pp/sum_pp*2<<":"<<min(Bip_bls.at(max_bip)/Bip_counts.at(max_bip),(scalar_type)0.99);
@@ -1184,7 +1191,7 @@ string approx_posterior::mpp_backtrack(long int g_id, map<long int, scalar_type 
   long int max_gp_id=-1;
   long int max_gpp_id=-1;
   for ( auto kt = Dip_counts.at(g_id).begin(); kt != Dip_counts.at(g_id).end(); kt++)
-    {	  
+    {
       long int gp_id= (*kt).first.first;
       long int gpp_id=(*kt).first.second;
       scalar_type cp=p_dip(g_id,gp_id,gpp_id)*(*qmpp).at(gp_id)*(*qmpp).at(gpp_id);
@@ -1195,19 +1202,19 @@ string approx_posterior::mpp_backtrack(long int g_id, map<long int, scalar_type 
   bs<<max_cp/sum_cp<<":"<<Bip_bls.at(g_id)/Bip_counts.at(g_id);
   return "("+mpp_backtrack(max_gp_id,qmpp)+","+mpp_backtrack(max_gpp_id,qmpp)+")"+bs.str();
 }
- 
+
 //random tree from unrooted posterior
 string approx_posterior::random_tree() const
 {
   // we start at an observed partition
-  
+
   boost::dynamic_bitset<> gamma;
-  scalar_type sum=0;  
+  scalar_type sum=0;
   for ( auto it=Bip_counts.begin();it!=Bip_counts.end();it++)
     {
       sum+=(*it).second;
     }
-  scalar_type rnd=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);    
+  scalar_type rnd=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);
   scalar_type re_sum=0;
   long int g_id;
   for (auto it=Bip_counts.begin();it!=Bip_counts.end();it++)
@@ -1234,7 +1241,7 @@ string approx_posterior::random_split(boost::dynamic_bitset<> gamma) const
 {
   // if gamma contains only a leaf we return its name
   vector <int> gamma_v;
-  // std::set-s are ordered and SHOULD have random acces, but don't, hence this 
+  // std::set-s are ordered and SHOULD have random acces, but don't, hence this
 //  for (set<int>::iterator sit=gamma.begin();sit!=gamma.end();sit++) gamma_v.push_back((*sit));
     for (auto i =0 ; i < Gamma_size + 1  ; ++i) {
         if ( gamma[i] )
@@ -1243,9 +1250,9 @@ string approx_posterior::random_split(boost::dynamic_bitset<> gamma) const
     int gamma_size = gamma_v.size();
   if ( gamma_size == 1 )
     return id_leaves.at( gamma_v[0]);
-  scalar_type p_sum=0;  
-  //rnd for choosing directed partition 
-  scalar_type rnd=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);  
+  scalar_type p_sum=0;
+  //rnd for choosing directed partition
+  scalar_type rnd=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);
   long int gp_id,gpp_id,g_id;
   scalar_type Bip_count,beta_switch=1;
   g_id=set_ids.at(gamma);
@@ -1257,14 +1264,14 @@ string approx_posterior::random_split(boost::dynamic_bitset<> gamma) const
       beta_switch=0.;
       Bip_count=0;
     }
-    
+
   for (int gp_size=1 ; gp_size <= (int)gamma_v.size()/2; gp_size++)
     {
       int saw=0;
       //see if a directed partition is the one we choose
-      if (g_id) 
+      if (g_id)
 	for (auto dit=Dip_counts[g_id].begin();dit!=Dip_counts[g_id].end();dit++)
-	  { 
+	  {
 	    vector<long int> parts_v;
 	    gp_id=(*dit).first.first;
 	    gpp_id=(*dit).first.second;
@@ -1293,7 +1300,7 @@ string approx_posterior::random_split(boost::dynamic_bitset<> gamma) const
               gammapp=id_sets.at(gpp_id);
               break;
 	      }
-	  }      
+	  }
       if (p_sum<0)
       	break;
       //sum the prob.s of all unobserved bipartitons
@@ -1302,10 +1309,10 @@ string approx_posterior::random_split(boost::dynamic_bitset<> gamma) const
       int nbip=binomial( gamma_size , gp_size);
       if ( gamma_size - gp_size == gp_size) nbip/=2;
       p_sum+=  ( 0 + (alpha/N_Gamma*Tri(gp_size, gamma_size -gp_size)) + beta_switch*beta/(pow(2.,(int) gamma_size -1)-1) ) / ( Bip_count + (alpha/N_Gamma*Bi( gamma_size )) + beta_switch*beta )*(nbip-saw);
-      
+
       //see if an unsampled directed partition is the one we choose
-      
-      if (rnd<p_sum)	
+
+      if (rnd<p_sum)
 	p_sum=-1;
       if (p_sum<0)
 	{
@@ -1322,7 +1329,7 @@ string approx_posterior::random_split(boost::dynamic_bitset<> gamma) const
                 gammap[i] = 0;
                 gammapp[i] = 0;
              }*/
-            
+
             /* I propose a rewriting for that, using getSample instead of giveIntRandomNumberBetweenZeroAndEntry several times
              for (int i=0;i<gp_size;i++)
              gammap.insert( gamma_v[(RandomTools::giveIntRandomNumberBetweenZeroAndEntry( gamma_size ))] );
@@ -1338,7 +1345,7 @@ string approx_posterior::random_split(boost::dynamic_bitset<> gamma) const
             //BipartitionTools::bitNot( gammapp, gammap, nbint) ;
             gp_id=set_ids.at(gammap);
             gpp_id=set_ids.at(gammapp);
-            
+
             pair <long int, long int> parts;
 	    if (gpp_id>gp_id)
 	      {
@@ -1351,15 +1358,15 @@ string approx_posterior::random_split(boost::dynamic_bitset<> gamma) const
 		parts.second = gp_id;
 	      }
 
-            
+
             if (Dip_counts.at(g_id).at(parts)==0) stop=true;
 	    }
         break;
 	}
-        
+
     }
     return "("+random_split(gammap)+":1,"+random_split(gammapp)+":1)";
-    
+
 }
 
 
@@ -1396,16 +1403,16 @@ vector<string> approx_posterior::all_trees( boost::dynamic_bitset<> gamma) const
                 //BipartitionTools::bit1( st_bitV, (*it) ) ;
                 st_bitV[ (*it) ] = 1;
             }
-            
-            
+
+
 	      vector< string > all_trees_gp=all_trees( st_bitV );//del-loc
-	      
+
 	      for (set<int>::iterator nst=gamma_s.begin();nst!=gamma_s.end();nst++)
 		if ((*st).count(*nst)==0)
 		  not_st.insert(*nst);
-	      
+
            /* int* not_st_bitV = new int[nbint];
-            
+
             for (auto i =0 ; i < nbint  ; ++i) {
                 not_st_bitV[i] = 0;
                 //BipartitionTools::bit0( not_st_bitV, i) ;
@@ -1419,13 +1426,13 @@ vector<string> approx_posterior::all_trees( boost::dynamic_bitset<> gamma) const
                 not_st_bitV[(*it) ] = 1 ;
             }
 
-            
+
 	      vector< string > all_trees_gpp=all_trees( not_st_bitV );//del-loc
-	      
+
 	      for (vector<string>::iterator lt=all_trees_gp.begin();lt!=all_trees_gp.end();lt++)
 		for (vector<string>::iterator rt=all_trees_gpp.begin();rt!=all_trees_gpp.end();rt++)
 		  {
-		    all_trees_g.push_back("("+(*lt)+","+(*rt)+")");	
+		    all_trees_g.push_back("("+(*lt)+","+(*rt)+")");
 		  }
 	      not_st.clear();
 	      all_trees_gp.clear();
@@ -1433,7 +1440,7 @@ vector<string> approx_posterior::all_trees( boost::dynamic_bitset<> gamma) const
 	    }
 	}
 
-      P_gamma.clear();      
+      P_gamma.clear();
     }
 //  if (Gamma==gamma)
     if ( Gamma_size == (int) gamma_s.size() )
@@ -1470,7 +1477,7 @@ scalar_type approx_posterior::count_all_trees(boost::dynamic_bitset<> gamma) con
 	      set <int> not_st;//del-loc
 	      /*
             int* st_bitV = new int[nbint];
-            
+
             for (auto i =0 ; i < nbint  ; ++i) {
                 st_bitV[i] = 0;
                 //BipartitionTools::bit0( st_bitV, i) ;
@@ -1484,9 +1491,9 @@ scalar_type approx_posterior::count_all_trees(boost::dynamic_bitset<> gamma) con
                 st_bitV[ (*it) ] = 1 ;
             }
 
-            
+
 	      scalar_type count_trees_gp=count_all_trees( st_bitV );//del-loc
-	      
+
 	      for (set<int>::iterator nst=gamma_s.begin();nst!=gamma_s.end();nst++)
 		if ((*st).count(*nst)==0)
 		  not_st.insert(*nst);
@@ -1504,7 +1511,7 @@ scalar_type approx_posterior::count_all_trees(boost::dynamic_bitset<> gamma) con
             for (auto it = not_st.begin() ; it != not_st.end()  ; ++it) {
                 not_st_bitV[ (*it) ] = 1 ;
             }
- 
+
 	      scalar_type count_trees_gpp=count_all_trees( not_st_bitV );//del-loc
 
 	      count_trees_g+=count_trees_gp*count_trees_gpp;
@@ -1512,7 +1519,7 @@ scalar_type approx_posterior::count_all_trees(boost::dynamic_bitset<> gamma) con
 	    }
 	}
 
-      P_gamma.clear();      
+      P_gamma.clear();
     }
   return count_trees_g;
 }
@@ -1521,7 +1528,7 @@ scalar_type approx_posterior::count_all_trees(boost::dynamic_bitset<> gamma) con
 scalar_type approx_posterior::count_trees() const
 {
   scalar_type count_trees_g=0;
-  
+
   map<long int,scalar_type> g_id_count;//del-loc
 
   for ( auto it = size_ordered_bips.begin(); it != size_ordered_bips.end(); it++)
@@ -1535,7 +1542,7 @@ scalar_type approx_posterior::count_trees() const
 	  {
 	    g_id_count[g_id]=0;
 	    for ( auto kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
-	      {	  
+	      {
 		pair<long int, long int> parts = (*kt).first;
 		long int gp_id= parts.first;
 		long int gpp_id= parts.second;
@@ -1576,7 +1583,7 @@ scalar_type approx_posterior::count_trees() const
 	count_trees_g+=g_id_count[set_ids.at(gamma)]*g_id_count[set_ids.at(not_gamma)];//count_trees(set_ids[gamma])*count_trees(set_ids[not_gamma]);
       else if ( gamma_size == not_gamma_size )
 	count_trees_g+=g_id_count[set_ids.at(gamma)]*g_id_count[set_ids.at(not_gamma)]/2.0;//count_trees(set_ids[gamma])*count_trees(set_ids[not_gamma])/2.0;
-      //cout << count_trees(gamma) << " " << set2name(gamma) << " " << count_trees(not_gamma) << " " << set2name(not_gamma) <<endl; 
+      //cout << count_trees(gamma) << " " << set2name(gamma) << " " << count_trees(not_gamma) << " " << set2name(not_gamma) <<endl;
     }
   g_id_count.clear();
   return count_trees_g;
@@ -1586,7 +1593,7 @@ scalar_type approx_posterior::count_trees() const
 scalar_type approx_posterior::count_trees(long int g_id) const
 {
   scalar_type count_trees_g=0;
-  //std::map <std::set <int>,long int>  set_ids;//del-loc  
+  //std::map <std::set <int>,long int>  set_ids;//del-loc
   //std::map< long int, std::set <int> > id_sets;//del-loc
   //long int g_id=set_ids[gamma];
   boost::dynamic_bitset<>  gamma=id_sets.at(g_id);
@@ -1604,7 +1611,7 @@ scalar_type approx_posterior::count_trees(long int g_id) const
     }
   else
     {
-      set< long int > P_gamma;//=powerset< set<int> >(gamma);//del-loc  
+      set< long int > P_gamma;//=powerset< set<int> >(gamma);//del-loc
       for ( auto kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
 	{
 	  pair <long int, long int> parts = (*kt).first;
@@ -1624,7 +1631,7 @@ scalar_type approx_posterior::count_trees(long int g_id) const
                 gammap_size++;
             }
         }
-        
+
         for (auto i = 0; i < Gamma_size+1; ++i) {
 //            if (BipartitionTools::testBit(gamma, i) ) {
                 if (gamma[ i] ) {
@@ -1653,7 +1660,7 @@ scalar_type approx_posterior::count_trees(long int g_id) const
 		  not_gammap.insert(*nst);	*/
 	      scalar_type count_trees_gpp=count_trees(set_ids.at(not_gammap));//del-loc
 	     // not_gammap.clear();
-            
+
 	      count_trees_g+=count_trees_gp*count_trees_gpp;
 	    }
 	 // gammap.clear();
@@ -1690,7 +1697,7 @@ void approx_posterior::setAlpha ( scalar_type a ) {
 //Set the value for the beta parameter
 void approx_posterior::setBeta ( scalar_type b ) {
   beta = b;
-  return;	
+  return;
 }
 
 
@@ -1720,7 +1727,6 @@ void approx_posterior::computeOrderedVectorOfClades (vector <long int>&  ids, ve
   ids.push_back(-1);
   id_sizes.push_back(Gamma_size);
   return;
-	
-	
-}
 
+
+}
