@@ -70,6 +70,13 @@ public:
   }
 };
 
+bool findInStringVector(vector<string> vec, string s) {
+  for (size_t i = 0; i<vec.size(); ++i) {
+    if (s == vec[i]) return true;
+  }
+  return false;
+}
+
 
 int main(int argc, char ** argv)
 {
@@ -190,9 +197,15 @@ int main(int argc, char ** argv)
     if (world.rank()==0) cout << "#ML rate optimization.." << endl;
     optimizer->optimize();
     broadcast(world,done,0);
-    delta=optimizer->getParameterValue("delta");
+    if (!findInStringVector(paramsToIgnore, "delta")) {
+      delta=optimizer->getParameterValue("delta");
+    }
+    if (!findInStringVector(paramsToIgnore, "tau")) {
     tau=optimizer->getParameterValue("tau");
-    lambda=optimizer->getParameterValue("lambda");
+    }
+    if (!findInStringVector(paramsToIgnore, "lambda")) {
+      lambda=optimizer->getParameterValue("lambda");
+    }
     if (world.rank()==0 )
     {
       optimizer->getParameters().printParameters(cout);
