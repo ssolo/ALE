@@ -68,7 +68,7 @@ int main(int argc, char ** argv)
 
   if (argc<3) 
     {
-      cout << "usage:\n ./ALEml species_tree.newick gene_tree_sample.ale [gene_name_seperator]" << endl;
+      cout << "usage:\n ./ALEml species_tree.newick gene_tree_sample.ale [gene_name_separator]" << endl;
       return 1;
     }
 
@@ -90,7 +90,7 @@ int main(int argc, char ** argv)
   int D=3;
   if (argc>3)
     model->set_model_parameter("gene_name_separators", argv[3]);
-  model->set_model_parameter("BOOT_STRAP_LABLES","yes");
+  model->set_model_parameter("BOOTSTRAP_LABELS","yes");
 
   model->set_model_parameter("min_D",D);
   model->set_model_parameter("grid_delta_t",0.05);

@@ -102,6 +102,10 @@ int main(int argc, char ** argv)
   //we need a rooted species tree in newick format
   string Sstring;
   string S_treefile=argv[1];
+  if (!fexists(argv[1])) {
+    cout << "Error, file "<<argv[1] << " does not seem accessible." << endl;
+    exit(1);
+  }
   ifstream file_stream_S (argv[1]);
   getline (file_stream_S,Sstring);
   cout << "Read species tree from: " << argv[1] <<".."<<endl;
@@ -121,7 +125,7 @@ int main(int argc, char ** argv)
   bool tau_fixed=false;
   bool lambda_fixed=false;
   scalar_type delta=0.01,tau=0.01,lambda=0.1;
-
+  string fractionMissingFile = "";
   for (int i=3;i<argc;i++)
   {
     string next_field=argv[i];
@@ -158,12 +162,16 @@ int main(int argc, char ** argv)
     {
       beta=atof(tokens[1].c_str());
       cout << "# beta set to " << beta << endl;
-
+    }
+    else if (tokens[0]=="fraction_missing")
+    {
+      fractionMissingFile=tokens[1];
+      cout << "# File containing fractions of missing genes set to " << fractionMissingFile << endl;
     }
   }
 
-  model->set_model_parameter("BOOT_STRAP_LABLES","yes");
-  model->construct_undated(Sstring);
+  model->set_model_parameter("BOOTSTRAP_LABELS","yes");
+  model->construct_undated(Sstring, fractionMissingFile);
 
   model->set_model_parameter("seq_beta", beta);
   model->set_model_parameter("O_R", O_R);
@@ -266,6 +274,7 @@ int main(int argc, char ** argv)
   fout << endl;
   fout << "# of\t Duplications\tTransfers\tLosses\tOriginations\tcopies" <<endl;
   fout << model->counts_string_undated(samples);
+  fout.close();
 
   cout << "Results in: " << outname << endl;
   if (ale->last_leafset_id>3)
@@ -301,6 +310,7 @@ int main(int argc, char ** argv)
 	    tout << "\t" << f;
 	  tout << "\t" << model->T_to_from[e][f]/samples <<  endl;
 	}
+  tout.close();
   cout << "Transfers in: " << t_name << endl;
   return 0;
 }

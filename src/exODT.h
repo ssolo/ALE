@@ -129,10 +129,11 @@ class exODT_model
   std::map<long int, std::vector<int> > gid_branches;             //del-loc
   std::map<long int, std::vector<long int> > gid_gidp;             //del-loc
   std::map<long int, std::vector<long int> > gid_gidpp;             //del-loc
+  std::map<std::string, scalar_type> fraction_missing;
 
-  void construct_undated(std::string Sstring);
+  void construct_undated(const std::string& Sstring, const std::string& fractionMissingFile=""); //Constructs an object given a species tree and file containing fractions of missing genes per species.
   void calculate_undatedEs();
-  scalar_type pun(approx_posterior *ale);
+  scalar_type pun(approx_posterior *ale, bool verbose=false);
   std::string feSPR(int e, int f);
   std::vector<std::string> NNIs(int e);
 
@@ -144,7 +145,7 @@ class exODT_model
 
   //implemented in exODT.cpp
 
-  void construct(std::string Sstring,scalar_type N=1e6); //Constructs an object given a species tree and population size.
+  void construct(const std::string& Sstring, const scalar_type& N=1e6, const std::string& fractionMissingFile=""); //Constructs an object given a species tree, population size and file containing fractions of missing genes per species.
   exODT_model();
   ~exODT_model()
     {

@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(ale CXX)
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-add_definitions(-std=c++11) 
+add_definitions(-std=c++11)
 
 IF(NOT NO_VIRTUAL_COV)
   SET(NO_VIRTUAL_COV FALSE CACHE BOOL
@@ -47,7 +47,7 @@ MACRO(IMPROVED_FIND_LIBRARY OUTPUT_LIBS lib_name include_to_find)
   ELSE(${lib_name}_LIBRARY)
     MESSAGE(FATAL_ERROR "${lib_name} required but not found.")
   ENDIF(${lib_name}_LIBRARY)
-  
+
   #add the dependency:
   INCLUDE_DIRECTORIES(${${lib_name}_INCLUDE_DIR})
   SET(${OUTPUT_LIBS} ${${OUTPUT_LIBS}} ${${lib_name}_LIBRARY})
@@ -67,9 +67,19 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 # Require MPI for this project:
 find_package(MPI REQUIRED)
-include_directories(${MPI_INCLUDE_PATH}) 
+include_directories(${MPI_INCLUDE_PATH})
 set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
 set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
+
+# Require openMP for this project
+include(FindOpenMP)
+if(OPENMP_FOUND)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+else(OPENMP_FOUND)
+  message("ERROR: OpenMP could not be found on your system.")
+endif(OPENMP_FOUND)
 
 # Source Directory
 add_subdirectory(src ${ALE_BINARY_DIR})

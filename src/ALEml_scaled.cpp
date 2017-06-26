@@ -9,7 +9,7 @@
 
 using namespace std;
 using namespace bpp;
- 
+
 class p_fun:
   public virtual Function,
   public AbstractParametrizable
@@ -19,7 +19,7 @@ private:
   exODT_model* model_pointer;
   approx_posterior* ale_pointer;
 public:
-  p_fun(exODT_model* model,approx_posterior* ale, double delta_start=0.01,double tau_start=0.01,double lambda_start=0.1,double sigma_hat_start=1.) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale) 
+  p_fun(exODT_model* model,approx_posterior* ale, double delta_start=0.01,double tau_start=0.01,double lambda_start=0.1,double sigma_hat_start=1.) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale)
   {
     //We declare parameters here:
  //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
@@ -30,11 +30,11 @@ public:
       addParameter_( new Parameter("sigma_hat", sigma_hat_start, constraint) ) ;
 
   }
-  
+
   p_fun* clone() const { return new p_fun(*this); }
-  
+
 public:
-  
+
     void setParameters(const ParameterList& pl)
     throw (ParameterNotFoundException, ConstraintException, Exception)
     {
@@ -47,7 +47,7 @@ public:
         double tau = getParameterValue("tau");
         double lambda = getParameterValue("lambda");
         double sigma_hat = getParameterValue("sigma_hat");
-        
+
         model_pointer->set_model_parameter("delta",delta);
         model_pointer->set_model_parameter("tau",tau);
         model_pointer->set_model_parameter("lambda",lambda);
@@ -64,14 +64,18 @@ int main(int argc, char ** argv)
 {
   cout << "ALEml using ALE v"<< ALE_VERSION <<endl;
 
-  if (argc<3) 
+  if (argc<3)
     {
-      cout << "usage:\n ./ALEml species_tree.newick gene_tree_sample.ale [gene_name_seperator]" << endl;
+      cout << "usage:\n ./ALEml species_tree.newick gene_tree_sample.ale [gene_name_separator]" << endl;
       return 1;
     }
 
   //we need a dared species tree in newick format
   string Sstring;
+  if (!fexists(argv[1])) {
+    cout << "Error, file "<<argv[1] << " does not seem accessible." << endl;
+    exit(1);
+  }
   ifstream file_stream_S (argv[1]);
   getline (file_stream_S,Sstring);
   cout << "Read species tree from: " << argv[1] <<".."<<endl;
@@ -99,9 +103,9 @@ int main(int argc, char ** argv)
   model->set_model_parameter("N",1);
 
   //a set of inital rates
-  scalar_type delta=0.01,tau=0.01,lambda=0.1;  
+  scalar_type delta=0.01,tau=0.01,lambda=0.1;
   if (argc>6)
-    delta=atof(argv[4]),tau=atof(argv[5]),lambda=atof(argv[6]);  
+    delta=atof(argv[4]),tau=atof(argv[5]),lambda=atof(argv[6]);
   model->set_model_parameter("delta", delta);
   model->set_model_parameter("tau", tau);
   model->set_model_parameter("lambda", lambda);
@@ -120,17 +124,17 @@ int main(int argc, char ** argv)
   optimizer->setProfiler(0);
   optimizer->setMessageHandler(0);
   optimizer->setVerbose(2);
-  
+
   optimizer->setConstraintPolicy(AutoParameter::CONSTRAINTS_AUTO);
   optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
 
-    
-    
+
+
  //   FunctionStopCondition stop(optimizer, 1);//1e-1);
  // optimizer->setStopCondition(stop);
     //TEMP
   //optimizer->setMaximumNumberOfEvaluations( 10 );
-    
+
     optimizer->optimize();
 
   //optimizer->getParameters().printParameters(cout);
@@ -141,16 +145,16 @@ int main(int argc, char ** argv)
 
   scalar_type mlll=-optimizer->getFunctionValue();
   cout << endl << "ML rates: " << " delta=" << delta << "; tau=" << tau << "; lambda="<<lambda<<"; sigma="<<sigma_hat<<"."<<endl;
-  
+
   map <string,scalar_type> delta_LL;
   cout << "LL=" << mlll << endl;
 
   cout << "Calculating ML reconciled gene tree.."<<endl;
- 
 
-  pair<string, scalar_type> res = model->p_MLRec(ale);    
+
+  pair<string, scalar_type> res = model->p_MLRec(ale);
   //and output it..
-  string outname=ale_file+".ml_rec"; 
+  string outname=ale_file+".ml_rec";
   ofstream fout( outname.c_str() );
   fout <<  "#ALEml using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl<<endl;
   fout << "S:\t"<<model->string_parameter["S_with_ranks"] <<endl;
@@ -162,13 +166,12 @@ int main(int argc, char ** argv)
 
   fout << "reconciled G:\t"<< res.first <<endl;
   fout << endl;
-  fout << "# of\t Duplications\tTransfers\tLosses\tSpeciations" <<endl; 
-  fout <<"Total \t"<< model->MLRec_events["D"] << "\t" << model->MLRec_events["T"] << "\t" << model->MLRec_events["L"]<< "\t" << model->MLRec_events["S"] <<endl;    
+  fout << "# of\t Duplications\tTransfers\tLosses\tSpeciations" <<endl;
+  fout <<"Total \t"<< model->MLRec_events["D"] << "\t" << model->MLRec_events["T"] << "\t" << model->MLRec_events["L"]<< "\t" << model->MLRec_events["S"] <<endl;
   fout << endl;
-  fout << "# of\t Duplications\tTransfers\tLosses\tgene copies" <<endl; 
+  fout << "# of\t Duplications\tTransfers\tLosses\tgene copies" <<endl;
   fout << model->counts_string();
-  
+  fout.close();
   cout << "Results in: " << outname << endl;
   return 0;
 }
-

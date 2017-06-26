@@ -177,6 +177,10 @@ int main(int argc, char ** argv)
   //we need a rooted species tree in newick format
   string Sstring;
   string S_treefile=argv[1];
+	if (!fexists(argv[1])) {
+		cout << "Error, file "<<argv[1] << " does not seem accessible." << endl;
+		exit(1);
+	}
   ifstream file_stream_S (argv[1]);
   getline (file_stream_S,Sstring);
   cout << "Read species tree from: " << argv[1] <<".."<<endl;
@@ -197,6 +201,7 @@ int main(int argc, char ** argv)
 	size_t sampling_rate = 10;
 	scalar_type beta=1;
 
+	string fractionMissingFile = "";
 
 	for (int i=3;i<argc;i++)
 	{
@@ -238,16 +243,19 @@ int main(int argc, char ** argv)
 		{
 			sampling_rate=atoi(tokens[1].c_str());
 			cout << "# sampling_rate set to " << sampling_rate << endl;
-
 		}
-
+		else if (tokens[0]=="fraction_missing")
+		{
+			fractionMissingFile=tokens[1];
+			cout << "# File containing fractions of missing genes set to " << fractionMissingFile << endl;
+		}
 	}
 
 
-  model->set_model_parameter("BOOT_STRAP_LABLES","yes");
+  model->set_model_parameter("BOOTSTRAP_LABELS","yes");
 	model->set_model_parameter("seq_beta", beta);
 
-  model->construct_undated(Sstring);
+  model->construct_undated(Sstring, fractionMissingFile);
 
   double currentOrigination = RandomTools::randExponential(priorOrigination) ;
   double currentDelta = RandomTools::randExponential(priorDelta) ;
@@ -438,6 +446,7 @@ int main(int argc, char ** argv)
       string con_tree_sup=TreeTemplateTools::treeToParenthesis(*con_tree);
       con_out << con_tree_sup << endl;
       cout << endl<< "Consensus tree in " << con_name<< endl;
+			con_out.close();
     }
 
   string t_name=ale_file+"_mcmc.uTs";
@@ -447,6 +456,7 @@ int main(int argc, char ** argv)
   for(it = tToFrom.begin(); it != tToFrom.end(); it++) {
      tout << "\t" << it->first << "\t" <<  it->second/samples << endl;
   }
+	tout.close();
   cout << "Transfers in: " << t_name << endl;
   return 0;
 }

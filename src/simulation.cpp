@@ -5,7 +5,7 @@ using namespace bpp;
 
 unsigned int good_seed()
 {
-    unsigned int random_seed, random_seed_a, random_seed_b; 
+    unsigned int random_seed, random_seed_a, random_seed_b;
     std::ifstream file ("/dev/random", std::ios::binary);
     if (file.is_open())
     {
@@ -31,34 +31,40 @@ int main(int argc, char ** argv)
 {
 
   //simulate
-  cout << " First run: \n ./simulate N n "<< endl;
-  cout << "  if you like the species tree then remeber S_seed and run: "<< endl;
+  cout << " First run: \n ./simulation N n"<< endl;
+  cout << "  In this command line, N corresponds to the total number of species, including extinct ones; "<< endl;
+  cout << "  n corresponds to the number of extant species only. "<< endl;
+  cout << "  This will produce a species tree in two files S_XXX.tree and R_XXX.tree. "<< endl;
+  cout << "  In the two files the tree is the same, but in R_XXX.tree the leaves have been renamed. "<< endl;
+  cout << "  XXX here corresponds to the species seed. "<< endl;
+  cout << "  if you like the species tree then remember the species seed S_seed and run: "<< endl;
   cout << " ./simulate  N n S_seed  omega delta tau lambda " << endl;
-  cout << "  do this many times to get a lot of gene trees.. "<< endl;
+  cout << " where omega delta tau lambda are the origination at the root, duplication, transfer and loss rate parameters." << endl;
+  cout << "  Do this many times to get a lot of gene trees... "<< endl;
   if (argc<3) return 1;
   long int S_seed=good_seed();
   if (argc>3) S_seed=atol(argv[3]);
   long int G_seed=good_seed();
   //if (argc>2) G_seed=atol(argv[2]);
 
-    
+
   int N=atoi(argv[1]);
   int n=atoi(argv[2]);
 
   scalar_type omega=N*0.;
-  //O rate overall 
+  //O rate overall
   scalar_type delta=0;
   //D rate per gene
   scalar_type tau=0;
   //T rate per gene
   scalar_type lambda=0;
   //L rate per gene
-  int G_n=0;      
+  int G_n=0;
   if (argc>4)
     {
-      G_n=1;      
+      G_n=1;
       omega=N*atof(argv[4]);
-      //O rate overall 
+      //O rate overall
       delta=atof(argv[5]);
       //D rate per gene
       tau=atof(argv[6]);
@@ -74,7 +80,7 @@ int main(int argc, char ** argv)
   cout << "# Genes seed is : "  << G_seed << endl;
 
   RandomTools::setSeed(S_seed);
-  
+
   vector <long int> population;
   long int next_index=0;
   for (int i=0;i<N;i++)
@@ -84,7 +90,7 @@ int main(int argc, char ** argv)
     }
   next_index++;
 
-  //we record history 
+  //we record history
   vector< vector< long int > > families;
   map <long long,scalar_type > event_times;
 
@@ -94,7 +100,7 @@ int main(int argc, char ** argv)
 
   scalar_type t=init_t;
   long long species_event=0;
-  
+
   int Ds=0;
   int Ts=0;
   int Ls=0;
@@ -107,12 +113,12 @@ int main(int argc, char ** argv)
       t-=t_next;
       if (t<0) break;
 
-      int death=RandomTools::giveIntRandomNumberBetweenZeroAndEntry(N);    
+      int death=RandomTools::giveIntRandomNumberBetweenZeroAndEntry(N);
       deaths.push_back(death);
 
       int birth=death;
-      while (birth==death) birth=RandomTools::giveIntRandomNumberBetweenZeroAndEntry(N);    
-      births.push_back(birth);      
+      while (birth==death) birth=RandomTools::giveIntRandomNumberBetweenZeroAndEntry(N);
+      births.push_back(birth);
 
       vector <long int> family;
       long int mother=population[birth];
@@ -139,27 +145,32 @@ int main(int argc, char ** argv)
   vector <int> population_indicies;
   for (int i=0;i<N;i++) population_indicies.push_back(i);
 
-  vector <int> sampled_population_indicies;  
+  vector <int> sampled_population_indicies;
   for (int i=0;i<n;i++) sampled_population_indicies.push_back(-1);
-    
+
   RandomTools::getSample(population_indicies,sampled_population_indicies);
 
   vector<long int> sampled_population;
-  for (int i=0;i<n;i++) sampled_population.push_back(population[ sampled_population_indicies[i] ]);  
+  for (int i=0;i<n;i++) sampled_population.push_back(population[ sampled_population_indicies[i] ]);
 
   //traceback
 
   map<long int,int> sampled_population_counts;
   map<long int,string> strings;
   map<long int,scalar_type> age;
-  for (int i=0;i<n;i++) 
+  for (int i=0;i<n;i++)
     {
       long int extant_species = sampled_population[i];
       stringstream extant_species_name;
+<<<<<<< HEAD
       extant_species_name << i;//extant_species;
       //extant_species_name << extant_species;      
+=======
+      //extant_species_name << i;//extant_species;
+      extant_species_name << extant_species;
+>>>>>>> ff7a74019a1375db192254cbb1c5f03b2fda43e0
       strings[extant_species]=extant_species_name.str();
-      sampled_population_counts[extant_species]=1;  
+      sampled_population_counts[extant_species]=1;
       age[extant_species]=0;
     }
   long int lca;
@@ -169,13 +180,13 @@ int main(int argc, char ** argv)
       scalar_type t_event=event_times[species_event-1];
       long int mother=(*event)[0];
       long int daugther=(*event)[1];
-      long int son=(*event)[2];	      
+      long int son=(*event)[2];
       if (sampled_population_counts[daugther]==1 and sampled_population_counts[son]==1)
 	{
 	  rank++;
-	  sampled_population_counts[daugther]=0; 
-	  sampled_population_counts[son]=0; 
-	  sampled_population_counts[mother]=1; 
+	  sampled_population_counts[daugther]=0;
+	  sampled_population_counts[son]=0;
+	  sampled_population_counts[mother]=1;
 	  stringstream sons_bl;
 	  stringstream daugthers_bl;
 	  stringstream rank_bs;
@@ -188,19 +199,19 @@ int main(int argc, char ** argv)
 	}
       else if (sampled_population_counts[daugther]==1)
 	{
-	  sampled_population_counts[daugther]=0; 
-	  sampled_population_counts[mother]=1; 
+	  sampled_population_counts[daugther]=0;
+	  sampled_population_counts[mother]=1;
 	  strings[mother]=strings[daugther];
 	  age[mother]=age[daugther];
 
 	}
       else if (sampled_population_counts[son]==1)
 	{
-	  sampled_population_counts[son]=0; 
-	  sampled_population_counts[mother]=1; 
+	  sampled_population_counts[son]=0;
+	  sampled_population_counts[mother]=1;
 	  strings[mother]=strings[son];
-	  age[mother]=age[son];	  
-	}	
+	  age[mother]=age[son];
+	}
       species_event--;
     }
   stringstream root_bl;
@@ -212,19 +223,19 @@ int main(int argc, char ** argv)
 
   s_out  << strings[lca] <<":"<<root_bl.str()<<";"<<endl;
   cout  << strings[lca] <<":"<<root_bl.str()<<";"<<endl;
-  
+
   // rates in units corresponding to unit height S
   //delta  /= age[lca];
   //tau    /= age[lca];
   //lambda /= age[lca];
-  
+
   // a random tree on the same labels
   stringstream rfname;
   rfname << "R_" << S_seed << ".tree";
   ofstream r_out( rfname.str().c_str() );
-  vector<string> random_tree_population; 
+  vector<string> random_tree_population;
   map<string,scalar_type> random_tree_ages;
-  for (int i=0;i<n;i++) 
+  for (int i=0;i<n;i++)
   {
     stringstream tmp;
     tmp<<i;
@@ -237,11 +248,11 @@ int main(int argc, char ** argv)
       int Nr=random_tree_population.size();
       scalar_type t_next=RandomTools::randExponential(1./(2*Nr));
       t+=t_next;
-      int i=RandomTools::giveIntRandomNumberBetweenZeroAndEntry(Nr);    
+      int i=RandomTools::giveIntRandomNumberBetweenZeroAndEntry(Nr);
       int j=i;
       while (i==j) j=RandomTools::giveIntRandomNumberBetweenZeroAndEntry(Nr);
       stringstream tmp;
-      tmp<<"("<<random_tree_population[i]<<":"<<t-random_tree_ages[random_tree_population[i]]<<","<<random_tree_population[j]<<":"<<t-random_tree_ages[random_tree_population[j]]<<")";       
+      tmp<<"("<<random_tree_population[i]<<":"<<t-random_tree_ages[random_tree_population[i]]<<","<<random_tree_population[j]<<":"<<t-random_tree_ages[random_tree_population[j]]<<")";
       random_tree_ages[tmp.str()]=t;
        if (j>i)
 	 {
@@ -253,7 +264,7 @@ int main(int argc, char ** argv)
 	   random_tree_population.erase(random_tree_population.begin()+i);
 	   random_tree_population.erase(random_tree_population.begin()+j);
 	 }
-       random_tree_population.push_back(tmp.str());	 
+       random_tree_population.push_back(tmp.str());
     }
   r_out << random_tree_population[0]<<";" << endl;
 
@@ -263,19 +274,19 @@ int main(int argc, char ** argv)
   //we seed genes .. this part is trvilally parallelizable..
   long int gene_count=0;
   map <int,vector<long int> > population_of_genes;
-  for (int i=0;i<N;i++) 
+  for (int i=0;i<N;i++)
     {
       vector <long int> genes_in_species_i;
-      //we could have more genes per species .. 
+      //we could have more genes per species ..
       for (int j=0;j<G_n;j++)
-	{	
+	{
 	  genes_in_species_i.push_back(gene_count);
 	  gene_count++;
 	}
       population_of_genes[i]=genes_in_species_i;
     };
-  
-  //..we replay species history 
+
+  //..we replay species history
   species_event=0;
   //and record gene stories..
   long int next_gene=gene_count;
@@ -290,7 +301,7 @@ int main(int argc, char ** argv)
   boost::progress_display show_progress( number_of_species_events );
   while(species_event<number_of_species_events)
     {
-     
+
       scalar_type rate_sum=gene_count*(delta+tau+lambda)+omega;
       scalar_type t_next=RandomTools::randExponential(1./(rate_sum));
 
@@ -317,10 +328,10 @@ int main(int argc, char ** argv)
 		      gene= (gene_re_count+(long int)population_of_genes[i].size()-gene_r) - 1;
 		      species=i;
 		      break;
-		    }		  
+		    }
 		  gene_re_count+=population_of_genes[i].size();
 		}
-	      
+
 	      if (r<gene_count*delta)
 		//D
 		{
@@ -343,7 +354,7 @@ int main(int argc, char ** argv)
 
 		  gene_event_times[father]=t;
 		  gene_event_types[father]="D";
-      
+
 		  population_of_genes[species][gene]=daugther;
 		  population_of_genes[species].push_back(son);
 		  gene_count++;
@@ -352,11 +363,11 @@ int main(int argc, char ** argv)
 		}
 	      else if (r<gene_count*delta+gene_count*tau)
 		//T
-		{		  
+		{
 		  //cout << "T"<<endl;
 		  Ts+=1;
 		  int T_to=species;
-		  while (T_to==species) T_to=RandomTools::giveIntRandomNumberBetweenZeroAndEntry(N); 	 
+		  while (T_to==species) T_to=RandomTools::giveIntRandomNumberBetweenZeroAndEntry(N);
 		  vector <long int> family;
 		  long int father=population_of_genes[species][gene];
 		  family.push_back(father);
@@ -398,7 +409,7 @@ int main(int argc, char ** argv)
 	    {
 	      //cout << "O"<<endl;
 	      Os+=1;
-	      int species=RandomTools::giveIntRandomNumberBetweenZeroAndEntry(N);	    
+	      int species=RandomTools::giveIntRandomNumberBetweenZeroAndEntry(N);
 	      population_of_genes[species].push_back(next_gene);
 	      next_gene++;
 	      gene_count++;
@@ -406,7 +417,7 @@ int main(int argc, char ** argv)
 	      //cout << "O"<<endl;
 
 	    }
-	  
+
 	}
       //species event happened
       else
@@ -438,7 +449,7 @@ int main(int argc, char ** argv)
 	      gene_count++;
 	      gene_event_types[father]="S";
 	      gene_event_times[father]=t;
-			  
+
 	    }
 
 	  gene_count-=population_of_genes[deaths[species_event]].size();
@@ -448,7 +459,7 @@ int main(int argc, char ** argv)
 	  population_of_genes[deaths[species_event]]=genes_in_son_species;
 
 	  //cout << "S."<<endl;
-	  
+
 
 	  //XX oh my, what a waste of time ..
 	  gene_families.push_back(fam_vec);
@@ -469,7 +480,7 @@ int main(int argc, char ** argv)
   map<long int,string> gene_strings;
   map<long int,scalar_type> gene_age;
   int j=0;
-  for (int i=0;i<n;i++) 
+  for (int i=0;i<n;i++)
     {
       int sampled_i=sampled_population_indicies[i];
       long int extant_species = sampled_population[ i ];
@@ -479,10 +490,14 @@ int main(int argc, char ** argv)
 	    long int extant_gene=(*git);
 	    stringstream extant_gene_name;
 	    //extant_gene_name << i << "_" << j;// extant_species << "_" << extant_gene;
+<<<<<<< HEAD
 	    //extant_gene_name << sampled_i << "_" << j;// extant_species << "_" << extant_gene;
 	    extant_gene_name << strings[extant_species] << "_" << extant_gene;
+=======
+	    extant_gene_name << sampled_i << "_" << j;// extant_species << "_" << extant_gene;
+>>>>>>> ff7a74019a1375db192254cbb1c5f03b2fda43e0
 	    gene_strings[extant_gene]=extant_gene_name.str();
-	    sampled_gene_counts[extant_gene]=1;  
+	    sampled_gene_counts[extant_gene]=1;
 	    gene_age[extant_gene]=0;
 	    j++;
 	  }
@@ -500,15 +515,15 @@ int main(int argc, char ** argv)
 
 	  long int father=(*event)[0];
 	  long int daugther=(*event)[1];
-	  long int son=(*event)[2];	      
+	  long int son=(*event)[2];
 	  scalar_type t_event=gene_event_times[father];
 
 	  if (sampled_gene_counts[daugther]==1 and sampled_gene_counts[son]==1)
 	    {
 	      gene_rank++;
-	      sampled_gene_counts[daugther]=0; 
-	      sampled_gene_counts[son]=0; 
-	      sampled_gene_counts[father]=1; 
+	      sampled_gene_counts[daugther]=0;
+	      sampled_gene_counts[son]=0;
+	      sampled_gene_counts[father]=1;
 	      stringstream sons_bl;
 	      stringstream daugthers_bl;
 	      stringstream gene_rank_bs;
@@ -522,8 +537,8 @@ int main(int argc, char ** argv)
 	    }
 	  else if (sampled_gene_counts[daugther]==1)
 	    {
-	      sampled_gene_counts[daugther]=0; 
-	      sampled_gene_counts[father]=1; 
+	      sampled_gene_counts[daugther]=0;
+	      sampled_gene_counts[father]=1;
 	      gene_strings[father]=gene_strings[daugther];
 	      suffix[father]=suffix[daugther];
 	      gene_age[father]=gene_age[daugther];
@@ -531,18 +546,18 @@ int main(int argc, char ** argv)
 	    }
 	  else if (sampled_gene_counts[son]==1)
 	    {
-	      sampled_gene_counts[son]=0; 
-	      sampled_gene_counts[father]=1; 
+	      sampled_gene_counts[son]=0;
+	      sampled_gene_counts[father]=1;
 	      gene_strings[father]=gene_strings[son];
 	      suffix[father]=suffix[son];
 	      if (gene_event_types[father]=="T") suffix[father]+="T";
-	      gene_age[father]=gene_age[son];	  
-	    }	
+	      gene_age[father]=gene_age[son];
+	    }
 	}
       gene_event--;
       ++show_trace_progress;
     }
-  
+
   int i=0;
   for (map<long int,int>::iterator git=sampled_gene_counts.begin();  git!=sampled_gene_counts.end(); git++)
     if ((*git).second==1 and gene_strings[(*git).first].find("(")!=string::npos )
@@ -554,8 +569,8 @@ int main(int argc, char ** argv)
 	i++;
       }
 
-  
+
   return 1;
-  
+
 
 }
