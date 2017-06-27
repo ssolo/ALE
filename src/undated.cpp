@@ -247,6 +247,7 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
 void exODT_model::calculate_undatedEs()
 {
   uE.clear();
+  fm.clear();
   mPTE_ancestral_correction.clear();
   PD.clear();
   PT.clear();
@@ -270,11 +271,12 @@ void exODT_model::calculate_undatedEs()
     PT.push_back(P_T/tmp);
     PL.push_back(P_L);
     PS.push_back(P_S);
+    uE.push_back(0);
     if (e<last_leaf) { // we are at a leaf
-      uE.push_back(vector_parameter["fraction_missing"][e]);
+      fm.push_back(vector_parameter["fraction_missing"][e]);
     }
     else {
-      uE.push_back(0);
+      fm.push_back(0);
     }
     mPTE_ancestral_correction.push_back(0);
   }
@@ -301,7 +303,9 @@ void exODT_model::calculate_undatedEs()
     for (int e=0;e<last_branch;e++)
     {
       if (e<last_leaf) // we are at a leaf
-      uE[e]=PL[e]+PD[e]*uE[e]*uE[e]+uE[e]*(mPTE- mPTE_ancestral_correction[e]);
+	{
+	  uE[e]= PL[e]+PD[e]*uE[e]*uE[e]+uE[e]*(mPTE- mPTE_ancestral_correction[e]);
+	}
       else
       {
         int f=daughter[e];
@@ -312,6 +316,23 @@ void exODT_model::calculate_undatedEs()
     }
     mPTE=newmPTE;
   }
+  scalar_type newmPTE=0;
+  for (int e=0;e<last_branch;e++)
+    {
+      if (e<last_leaf) // we are at a leaf
+	{
+	  uE[e]= (1-fm[e])*uE[e]+fm[e];
+	}
+      else
+	{
+	  int f=daughter[e];
+	  int g=son[e];
+	  uE[e]=PL[e] + PS[e]*uE[f]*uE[g] + PD[e]*uE[e]*uE[e] + uE[e]*(mPTE- mPTE_ancestral_correction[e]);
+	}
+      newmPTE+=(PT[e]/(scalar_type)last_branch) *uE[e];
+    }
+  mPTE=newmPTE;
+
 }
 
 scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
