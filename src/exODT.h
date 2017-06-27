@@ -99,6 +99,7 @@ class exODT_model
   std::map <int,std::map<int,int> > ancestral;
   std::vector < std::vector <int> > ancestors;
 
+  std::vector<scalar_type> fm;
   std::vector<scalar_type> uE;
   scalar_type mPTE;
   std::vector<scalar_type> mPTE_ancestral_correction;
