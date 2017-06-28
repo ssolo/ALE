@@ -163,7 +163,6 @@ int main(int argc, char ** argv)
       long int extant_species = sampled_population[i];
       stringstream extant_species_name;
       extant_species_name << i;//extant_species;
-      //extant_species_name << extant_species;
       strings[extant_species]=extant_species_name.str();
       sampled_population_counts[extant_species]=1;
       age[extant_species]=0;
