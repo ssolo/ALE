@@ -255,7 +255,7 @@ void exODT_model::calculate_undatedEs()
   PS.clear();
   scalar_type P_T=0;
   for (int f=0;f<last_branch;f++)
-  P_T+=vector_parameter["tau"][f]/(scalar_type)last_branch;
+    P_T+=vector_parameter["tau"][f]/(scalar_type)last_branch;
 
   for (int e=0;e<last_branch;e++)
   {
@@ -282,31 +282,35 @@ void exODT_model::calculate_undatedEs()
   }
 
 
+// In the loop below with 4 iterations, we calculate the mean probability mPTE for a gene to become extinct across all branches.
   mPTE=0;
   for (int i=0;i<4;i++)
   {
     scalar_type newmPTE=0;
     //vector<scalar_type> ancestral_correction;
-    for (int e=0;e<last_branch ;e++)
+    if (i>0) // There should be no need for this loop at the first iteration, because then it leaves mPTE_ancestral_correction at 0.
     {
-      mPTE_ancestral_correction[e]=0;
-      //for (map<int,int>::iterator it=ancestral[e].begin();( it!=ancestral[e].end() and i>0);it++)
-      for (vector<int>::iterator it=ancestors[e].begin();( it!=ancestors[e].end() and i>0);it++)
+      for (int e=0;e<last_branch ;e++)
       {
-        //int f=(*it).first;
-        int f=(*it);
-        //if (ancestral[e][f]==1)
-        mPTE_ancestral_correction[e]+=  (PT[f]/(scalar_type)last_branch)*uE[f];
+        mPTE_ancestral_correction[e]=0;
+        //for (map<int,int>::iterator it=ancestral[e].begin();( it!=ancestral[e].end() and i>0);it++)
+        for (vector<int>::iterator it=ancestors[e].begin();( it!=ancestors[e].end() and i>0);it++)
+        {
+          //int f=(*it).first;
+          int f=(*it);
+          //if (ancestral[e][f]==1)
+          mPTE_ancestral_correction[e]+=  (PT[f]/(scalar_type)last_branch)*uE[f];
+        }
       }
     }
 
     for (int e=0;e<last_branch;e++)
     {
-      if (e<last_leaf) // we are at a leaf
-	{
-	  uE[e]= PL[e]+PD[e]*uE[e]*uE[e]+uE[e]*(mPTE- mPTE_ancestral_correction[e]);
-	}
-      else
+      if (e<last_leaf) // we are at a leaf, there cannot be a speciation event, but the gene has been lost
+      {
+        uE[e]= PL[e]+PD[e]*uE[e]*uE[e]+uE[e]*(mPTE- mPTE_ancestral_correction[e]);
+      }
+      else // Not at a leaf: the gene was lost once on branch e, or on all descendants, including after speciation
       {
         int f=daughter[e];
         int g=son[e];
@@ -315,25 +319,28 @@ void exODT_model::calculate_undatedEs()
       newmPTE+=(PT[e]/(scalar_type)last_branch) *uE[e];
     }
     mPTE=newmPTE;
-  }
+  } // End of the loop to compute mPTE
+
+  // Now we add one more update of mPTE to take into account the fraction of missing genes, which had been ignored so far.
   scalar_type newmPTE=0;
   for (int e=0;e<last_branch;e++)
+  {
+    if (e<last_leaf) // we are at a leaf: either the gene has been lost, or it is one of those missing genes
     {
-      if (e<last_leaf) // we are at a leaf
-	{
-	  uE[e]= (1-fm[e])*uE[e]+fm[e];
-	}
-      else
-	{
-	  int f=daughter[e];
-	  int g=son[e];
-	  uE[e]=PL[e] + PS[e]*uE[f]*uE[g] + PD[e]*uE[e]*uE[e] + uE[e]*(mPTE- mPTE_ancestral_correction[e]);
-	}
-      newmPTE+=(PT[e]/(scalar_type)last_branch) *uE[e];
+      uE[e]= (1-fm[e])*uE[e]+fm[e];
     }
+    else // Not at a leaf: the gene was lost once on branch e, or on all descendants
+    {
+      int f=daughter[e];
+      int g=son[e];
+      uE[e]=PL[e] + PS[e]*uE[f]*uE[g] + PD[e]*uE[e]*uE[e] + uE[e]*(mPTE- mPTE_ancestral_correction[e]);
+    }
+    newmPTE+=(PT[e]/(scalar_type)last_branch) *uE[e];
+  }
   mPTE=newmPTE;
 
 }
+
 
 scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
 {

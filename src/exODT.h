@@ -99,19 +99,19 @@ class exODT_model
   std::map <int,std::map<int,int> > ancestral;
   std::vector < std::vector <int> > ancestors;
 
-  std::vector<scalar_type> fm;
-  std::vector<scalar_type> uE;
-  scalar_type mPTE;
-  std::vector<scalar_type> mPTE_ancestral_correction;
+  std::vector<scalar_type> fm; // Fraction of genes missing at the tips
+  std::vector<scalar_type> uE; // Probability for a gene to become extinct on each branch
+  scalar_type mPTE; // Mean probability for a gene to become extinct across all branches
+  std::vector<scalar_type> mPTE_ancestral_correction; // branch-wise adjustments of mPTE to obtain the branch-wise probability for a gene to become extinct on branch e by doing mPTE - mPTE_ancestral_correction[e]
   int root_i;
   std::vector < std::vector <scalar_type> > uq;
   std::vector < scalar_type > mPTuq;
   std::vector < std::vector <scalar_type> > mPTuq_ancestral_correction;
 
-  std::vector<scalar_type> PD;
-  std::vector<scalar_type> PT;
-  std::vector<scalar_type> PL;
-  std::vector<scalar_type> PS;
+  std::vector<scalar_type> PD; // Duplication probability, per branch
+  std::vector<scalar_type> PT; // Transfer probability, per branch
+  std::vector<scalar_type> PL; // Loss probability, per branch
+  std::vector<scalar_type> PS; // Speciation probability, per branch
   int last_leaf;
   std::map<int,std::map <scalar_type,scalar_type> > Ge;                       //del-loc. Probability (scalar value) that a gene present at a given time slice (whose rank is the int key) actually reaches extant species.
   std::map<long int, std::map< scalar_type, std::map<int, scalar_type> > > q; //del-loc. Map between clade id (from the approx_posterior object) and a map between the time of a subslice and a map between branch id and probability of the clade given the ODTL model.
