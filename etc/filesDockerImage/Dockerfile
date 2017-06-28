@@ -22,7 +22,7 @@ RUN echo "deb http://biopp.univ-montp2.fr/repos/apt/ Trusty main" >> /etc/apt/so
     apt-get install -qy libbpp-phyl-dev
 
 
-RUN git clone git://github.com/maxemil/ALE /usr/local/ALE && \
+RUN git clone git://github.com/ssolo/ALE /usr/local/ALE && \
     mkdir /usr/local/ALE/build
 
 WORKDIR /usr/local/ALE/build
