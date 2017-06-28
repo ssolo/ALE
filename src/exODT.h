@@ -97,12 +97,12 @@ class exODT_model
   std::map <bpp::Node *,std::string> node_name;
   std::map <std::string,std::map<std::string,int> > ancestral_names;
   std::map <int,std::map<int,int> > ancestral;
-  std::vector < std::vector <int> > ancestors;
+  std::vector < std::vector <int> > ancestors; // contains the ancestors of a given branch; useful to forbid transfers to them.
 
   std::vector<scalar_type> fm; // Fraction of genes missing at the tips
   std::vector<scalar_type> uE; // Probability for a gene to become extinct on each branch
-  scalar_type mPTE; // Mean probability for a gene to become extinct across all branches
-  std::vector<scalar_type> mPTE_ancestral_correction; // branch-wise adjustments of mPTE to obtain the branch-wise probability for a gene to become extinct on branch e by doing mPTE - mPTE_ancestral_correction[e]
+  scalar_type mPTE; // Mean probability across all branches for a gene to be transferred to branch h and then become extinct on that branch h
+  std::vector<scalar_type> mPTE_ancestral_correction; // branch-wise adjustments of mPTE to obtain the branch-wise probability for a gene to be transferred to branch h and then become extinct on that branch h by doing mPTE - mPTE_ancestral_correction[e]. These branch-wise corrections are here to forbid transfers to ancestors of a branch.
   int root_i;
   std::vector < std::vector <scalar_type> > uq;
   std::vector < scalar_type > mPTuq;

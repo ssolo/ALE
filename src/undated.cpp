@@ -294,12 +294,12 @@ void exODT_model::calculate_undatedEs()
       {
         mPTE_ancestral_correction[e]=0;
         //for (map<int,int>::iterator it=ancestral[e].begin();( it!=ancestral[e].end() and i>0);it++)
-        for (vector<int>::iterator it=ancestors[e].begin();( it!=ancestors[e].end() and i>0);it++)
+        for (vector<int>::iterator it=ancestors[e].begin(); it!=ancestors[e].end() ;it++)
         {
           //int f=(*it).first;
           int f=(*it);
           //if (ancestral[e][f]==1)
-          mPTE_ancestral_correction[e]+=  (PT[f]/(scalar_type)last_branch)*uE[f];
+          mPTE_ancestral_correction[e]+=  (PT[f]/(scalar_type)last_branch)*uE[f]; //That's how we forbid transfers to ancestors of a branch
         }
       }
     }
