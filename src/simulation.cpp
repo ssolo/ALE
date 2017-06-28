@@ -162,13 +162,8 @@ int main(int argc, char ** argv)
     {
       long int extant_species = sampled_population[i];
       stringstream extant_species_name;
-<<<<<<< HEAD
       extant_species_name << i;//extant_species;
-      //extant_species_name << extant_species;      
-=======
-      //extant_species_name << i;//extant_species;
-      extant_species_name << extant_species;
->>>>>>> ff7a74019a1375db192254cbb1c5f03b2fda43e0
+      //extant_species_name << extant_species;
       strings[extant_species]=extant_species_name.str();
       sampled_population_counts[extant_species]=1;
       age[extant_species]=0;
@@ -489,13 +484,8 @@ int main(int argc, char ** argv)
 	  {
 	    long int extant_gene=(*git);
 	    stringstream extant_gene_name;
-	    //extant_gene_name << i << "_" << j;// extant_species << "_" << extant_gene;
-<<<<<<< HEAD
-	    //extant_gene_name << sampled_i << "_" << j;// extant_species << "_" << extant_gene;
 	    extant_gene_name << strings[extant_species] << "_" << extant_gene;
-=======
-	    extant_gene_name << sampled_i << "_" << j;// extant_species << "_" << extant_gene;
->>>>>>> ff7a74019a1375db192254cbb1c5f03b2fda43e0
+	    // extant_gene_name << sampled_i << "_" << j;// extant_species << "_" << extant_gene;
 	    gene_strings[extant_gene]=extant_gene_name.str();
 	    sampled_gene_counts[extant_gene]=1;
 	    gene_age[extant_gene]=0;

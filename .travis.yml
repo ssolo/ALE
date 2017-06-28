@@ -1,7 +1,10 @@
+sudo: required
 language: cpp
 compiler:
   - clang
   - gcc
+services:
+  - docker
 matrix:
   include:
     # works on Trusty
@@ -18,10 +21,8 @@ matrix:
       env:
         - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 before_install:
-    - eval "${MATRIX_EVAL}"
+  - eval "${MATRIX_EVAL}"
+  - docker build -t boussau/alesuite:latest etc/filesDockerImage/
 
-script: 
-	- mkdir build 
-	- cd build 
-	- cmake .. 
-	- make
+script:
+  - docker run --rm boussau/alesuite:latest ALEobserve
