@@ -1,4 +1,5 @@
 ALE
+[![Build Status](https://travis-ci.org/ssolo/ALE.svg?branch=master)](https://travis-ci.org/ssolo/ALE)
 ===
 ## ALE: Reconstruction of reconciled gene trees and estimation of DTL rates from a sample of gene trees and a rooted species tree.
 
