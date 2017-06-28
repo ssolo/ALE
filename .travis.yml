@@ -8,6 +8,6 @@ services:
   - docker
 install:
   - docker build -t boussau/alesuite:latest etc/filesDockerImage/
-  - docker run -d boussau/alesuite:latest --name alesuite ALEobserve
 script:
-  - docker ps | grep -q alesuite
+  - docker run -d boussau/alesuite:latest ALEobserve
+  - docker run -d boussau/alesuite:latest ALEml_undated
