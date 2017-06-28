@@ -484,7 +484,7 @@ int main(int argc, char ** argv)
 	    long int extant_gene=(*git);
 	    stringstream extant_gene_name;
 	    extant_gene_name << strings[extant_species] << "_" << extant_gene;
-	    // extant_gene_name << sampled_i << "_" << j;// extant_species << "_" << extant_gene;
+	    //extant_gene_name << sampled_i << "_" << j;// extant_species << "_" << extant_gene;
 	    gene_strings[extant_gene]=extant_gene_name.str();
 	    sampled_gene_counts[extant_gene]=1;
 	    gene_age[extant_gene]=0;
