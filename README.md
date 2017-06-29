@@ -34,7 +34,7 @@ The second step infers the reconciled amalgamated gene trees. The DTL rates can 
 #### Maximum likelihood estimation with ALEml_undated
 DTL rates can either be estimated by providing no starting value or fixed to a starting value. Using those rates, the program then outputs a certain number of sampled reconciled amalgamated gene trees.
 ```sh
-ALEml_undated species_tree.newick geneFamily.ale sample=number_of_samples separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence
+ALEml_undated species_tree.newick geneFamily.ale sample=number_of_samples separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence fraction_missing=fraction_missing.txt
 ```
 species_tree.newick : contains the Newick description of the rooted species tree.
 
@@ -53,6 +53,8 @@ tau=TransferRate : transfer rate.
 lambda=LossRate : loss rate.
 
 beta=weight_of_sequence_evidence : how much sequence data will be trusted. Values higher than 1 mean the gene trees coming from the sequences alone is more trusted than by default; values lower than 1 mean that the gene trees seem not very trustworthy. Defaults to 1.
+
+fraction_missing=fraction_missing.txt : file containing the expected fraction of missing genes per species, in the format "species_name:fraction", where species_name should match the species name in the species tree, and fraction should be a floating number between 0 and 1. There should be as many lines as there are species.
 
 #### Bayesian MCMC sampling with ALEmcmc_undated
 DTL rates as well as the origination at the root rate are sampled. A prior value for these rates can be provided:
