@@ -169,9 +169,10 @@ int main(int argc, char ** argv)
 
   if (argc<3)
   {
-    cout << "\nUsage:\n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale sample=number_of_samples separators=gene_name_separator O_R=OriginationAtRootPrior delta=DuplicationRatePrior tau=TransferRatePrior lambda=LossRatePrior sampling_rate=sampling_rate beta=weight_of_sequence_evidence" << endl;
+    cout << "\nUsage:\n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale sample=number_of_samples separators=gene_name_separator O_R=OriginationAtRootPrior delta=DuplicationRatePrior tau=TransferRatePrior lambda=LossRatePrior sampling_rate=sampling_rate beta=weight_of_sequence_evidence fraction_missing=file_with_fraction_of_missing_genes_per_species" << endl;
     cout << "\nExample:\n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ O_R=1 delta=0.01 tau=0.01 lambda=0.1 sampling_rate=10 beta=1\n" << endl;
-    return 1;
+		cout << "\n2nd example: we provide a file giving the expected fraction of missing genes in each species \n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ fraction_missing=fraction_missing.txt\n" << endl;
+    return 0;
   }
 
   //we need a rooted species tree in newick format
