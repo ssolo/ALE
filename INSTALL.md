@@ -99,7 +99,7 @@ sudo ./b2 install
 
 
 **Mac OS X**:
-For Mac OS X, we recommend installing from source, making sure to compile with the gcc installed previously with brew, adding the following options to the cmake command lines below:`  -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc/7.1.0/bin/g++-7`.
+For Mac OS X, we recommend installing from source, making sure to compile with the gcc installed previously with brew, adding the following options to the cmake command lines below:`  -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc/7.1.0/bin/g++-7`
 
 
 ##### Building from source
@@ -199,6 +199,14 @@ make
 
 Using make with the option "-j 4" paralellizes compilation across 4 processes and speeds it up. Those commands will produce executable files in the folder ALE/build/bin.
 
+
+**Mac OS X**:
+For Mac OS X, you need to make sure to compile with the gcc installed previously with brew, adding the following options to the cmake command line, i.e. :
+```
+cmake .. -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc/7.1.0/bin/g++-7
+make
+```
+
 ## Troubleshooting  
 
 ### CMake doesn't find Boost libraries
@@ -222,9 +230,11 @@ cmake .. -DCMAKE_LIBRARY_PATH=/path/to/lib -DCMAKE_INCLUDE_PATH=/path/to/include
 make
 ```
 
+In addition, you need to make sure that you are compiling ALE with the same compiler (e.g. same version of g++, or same version of clang) you used for compiling Bio++.
+
 If this does not work and you have multiple Bio++ library instances installed you can try to remove every instance except one and then try to build ALE.
 
-If still not working a fresh start usually helps: remove all Bio++ libraries and rebuild them, then try to build ALE.
+If it is still not working a fresh start usually helps: remove all Bio++ libraries and rebuild them, then try to build ALE.
 
 ### Default C++ compiler does not support one of the required libraries
 
