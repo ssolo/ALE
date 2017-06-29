@@ -1,6 +1,6 @@
 # Installing ALE
 
-There are two ways to use the ALE suite of programs. The simplest approach is using [Docker](#1.-Using-Docker), the other is [building it from source](#2.-Building-from-source) which uses cmake and requires installing several dependencies.
+There are two ways to use the ALE suite of programs. The simplest approach is using [Docker](#Using-Docker), the other is [building it from source](#Building-from-source) which uses cmake and requires installing several dependencies.
 
 ## 1. Using Docker
 
