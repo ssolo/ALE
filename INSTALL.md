@@ -2,7 +2,7 @@
 
 There are two ways to use the ALE suite of programs. The simplest approach is using [Docker](#Using-Docker), the other is [building it from source](#Building-from-source) which uses cmake and requires installing several dependencies.
 
-## 1. Using Docker
+## Using Docker
 
 ### Install Docker
 
@@ -39,7 +39,7 @@ for instance.
 
 Those commands will produce the output files describing scenarios of gene family evolution including events of gene transfer, duplication and loss.
 
-## 2. Building from source
+## Building from source
 
 Installation from source requires:
 * cmake
