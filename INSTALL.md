@@ -43,7 +43,7 @@ Those commands will produce the output files describing scenarios of gene family
 
 Installation from source requires:
 * cmake
-* a C++ compiler (e.g. g++ or clang)
+* a C++ compiler (e.g. g++ or clang >=3.8.0)
 * the Bio++ libraries bpp-core, bpp-seq, and bpp-phyl
 * the Boost C++ libraries (serialization and mpi)
 
@@ -61,6 +61,15 @@ sudo apt-get install git cmake gcc g++
 sudo zypper install git cmake gcc gcc-c++
 ```
 
+**Mac OS X**:
+At the time of this writing, the version of clang embarked in Mac OS X does not support OpenMP, so we suggest to install gcc. Assuming [homebrew](https://brew.sh/) has been installed on the mac already:
+```sh
+brew install gcc
+brew install git
+brew install cmake
+```
+
+
 #### Boost libraries
 
 **Ubuntu 16.10**:                                                                                           
@@ -73,7 +82,25 @@ sudo apt-get install libboost-dev libboost-serialization-dev libboost-mpi-dev
 sudo zypper install boost-devel libboost_mpi1_61_0 libboost_serialization_61_0                                                                 
 ```
 
+
+**Mac OS X**:
+
+* download boost, a version between 1.55 and 1.63 (included): https://sourceforge.net/projects/boost/files/boost/  
+* unarchive it
+* install it :
+```sh
+cd boost_directory
+./bootstrap.sh --with-libraries=mpi,serialization
+./b2
+sudo ./b2 install
+```
+
 #### Bio++ libraries
+
+
+**Mac OS X**:
+For Mac OS X, we recommend installing from source, making sure to compile with the gcc installed previously with brew, adding the following options to the cmake command lines below:`  -DCMAKE_CXX_COMPILER=/usr/local/Cellar/gcc/7.1.0/bin/g++-7`.
+
 
 ##### Building from source
 
