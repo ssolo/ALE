@@ -19,21 +19,21 @@ Let's assume you have a file named `geneFamily.treelist` containing a distributi
 We will launch the program from the folder containing those data, which means that we will launch the command from the folder `$PWD`. `$PWD` is the usual environmental variable that UNIX-type operating systems use to point to the Present Working Directory.
 If you want to use the example data to test the software, this means your `$PWD` will be `/absolute_path/ALE/example_data`, your species tree will be `S.tree`, and your gene tree file will be either `HBG745965_real.1.treelist.txt` or `HBG745965_real.2.treelist.txt`.
 
-The way the docker image is as follows: you can run all the programs of the ALE suite, and only have to precede the command you would use to launch them with `docker run -v $PWD:$PWD  -w $PWD alesuite `.
+The way the docker image is as follows: you can run all the programs of the ALE suite, and only have to precede the command you would use to launch them with `docker run -v $PWD:$PWD  -w $PWD boussau/alesuite `.
 
 For instance, we provide below what the typical pipeline would look like.
 
 * The first command to use is:
 ```sh
-docker run -v $PWD:$PWD  -w $PWD alesuite ALEobserve $PWD/geneFamily.treelist
+docker run -v $PWD:$PWD  -w $PWD boussau/alesuite ALEobserve $PWD/geneFamily.treelist
 ```
 * The second command to use could be:
 ```sh
-docker run -v $PWD:$PWD  -w $PWD alesuite ALEml_undated $PWD/species_tree.newick $PWD/geneFamily.treelist.ale
+docker run -v $PWD:$PWD  -w $PWD boussau/alesuite ALEml_undated $PWD/species_tree.newick $PWD/geneFamily.treelist.ale
 ```
 or
 ```sh
-docker run -v $PWD:$PWD  -w $PWD alesuite ALEmcmc_undated $PWD/species_tree.newick $PWD/geneFamily.treelist.ale
+docker run -v $PWD:$PWD  -w $PWD boussau/alesuite ALEmcmc_undated $PWD/species_tree.newick $PWD/geneFamily.treelist.ale
 ```
 for instance.
 
