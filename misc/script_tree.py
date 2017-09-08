@@ -310,12 +310,12 @@ def isAncestor(tree,a,b):
                 result = True
         else:
                 result = False
-        current = b
-        while ((not result) and (not isRoot(tree,current))):
-                if current == a:
-                        result = True
-                else:
-                        current = getParent(tree,current)
+                current = b
+                while ((not result) and (not isRoot(tree,current))):
+                        if current == a:
+                                result = True
+                        else:
+                                current = getParent(tree,current)
         return result
  
     

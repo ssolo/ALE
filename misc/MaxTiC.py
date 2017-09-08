@@ -1,4 +1,19 @@
-import sys,script_tree,random,time,math,scipy.stats
+# MaxTiC: Fast ranking of a phylogenetic tree by Maximum Time Consistency with lateral gene transfers
+#
+#
+# python code written by Eric Tannier, Inria
+# Using ideas, comments, suggestions from Cedric Chauve, Akbar Rafiey, Adrian A. Davin, Celine Scornavacca, Philippe Veber, Bastien Boussau, Gergely J Szollosi, Vincent Daubin
+#
+# Software distributed under the cecill licence, rights and permissions are described here:
+# http://www.cecill.info/licences/Licence_CeCILL_V2-en.txt
+#
+# Bug reports, suggestions or help request for usage of MaxTic should be sent to eric.tannier@inria.fr
+#
+# If you use this software please cite
+# MaxTiC: Fast ranking of a phylogenetic tree by Maximum Time Consistency with lateral gene transfers, Biorxiv doi.org/10.1101/127548 
+
+
+import sys,script_tree,random,time,math
 
 MAX_NUMBER = 10000000000
 time0 = time.time()
@@ -6,7 +21,7 @@ time0 = time.time()
 parameters = sys.argv[1:]
 
 if len(parameters) < 2:
-  print "usage: python dating.py species_tree_file constraints_file [ls=LOCAL_SEARCH] [t=TEMPERATURE] [r=RANDOMIZATION_TYPE] [d=MIN_DISTANCE] [rd=RANDOM_TREES]"
+  print "usage: python MaxTiC.py species_tree_file constraints_file [ls=LOCAL_SEARCH] [t=TEMPERATURE] [r=RANDOMIZATION_TYPE] [d=MIN_DISTANCE] [rd=RANDOM_TREES] [ts=THRESHOLD_CONSTRAINTS]"
   exit()
   
 #RANDOMIZATION_TYPE: 0 = take data as it is, 1 = keep nodes, randomize direction, 2 = randomize nodes
@@ -17,6 +32,7 @@ TIME_FOR_SEARCH = 0
 NUMBER_OF_REPEATS = 1
 MIN_TRANSFER_DIST = 0
 RANDOM = 0
+THRESHOLD_CONSTRAINTS = 0.0
 for p in parameters[2:]:
   words = p.split("=")
   if words[0] == "t":
@@ -29,6 +45,8 @@ for p in parameters[2:]:
     MIN_TRANSFER_DIST = int(words[1])
   elif words[0] == "rd":
     RANDOM = int(words[1])
+  elif words[0] == "ts":
+    THRESHOLD_CONSTRAINTS = float(words[1])
   else:
     print "unused parameter (bad format):",p
 
@@ -387,8 +405,10 @@ for n in nodes:
     child = script_tree.getName(tree,n)
     graph[parent].append(child)
 
+print "tree with ",len(internal_nodes),"internal nodes"
+
+
 # parse transfers
-total_transfers = 0
 #by_family = {}
 for line in constraints:
   #print line
@@ -425,6 +445,7 @@ for line in constraints:
 	first = script_tree.getBootstrap(tree,root)
       if second == "None":
 	second = script_tree.getBootstrap(tree,root)
+      # first and second have been chosen or read
       if True or (first in internal_nodes and second in internal_nodes):
 	key = first+","+second
 	if not edge.has_key(key):
@@ -433,9 +454,6 @@ for line in constraints:
             edge[key] = edge[key] + weight
             #if by_family.has_key(family):
             #by_family[family] = by_family[family] + weight
-            if degre_entrant.has_key(second):
-                degre_entrant[second].append(first)
-            total_transfers = total_transfers + weight
   else:
     print line.strip(),"                       ...ignored"
     
@@ -444,8 +462,33 @@ for line in constraints:
 #keys.sort()
 #for f in keys:
   #sortie.write(f+" "+str(by_family[f])+"\n")
-  
-print "tree with ",len(internal_nodes),"internal nodes"
+
+
+edge_keys = edge.keys()
+edge_keys.sort(lambda x,y: cmp(edge[x],edge[y]))
+
+
+total_transfers = 0.0
+for k in edge_keys:
+    if edge[k] < MAX_NUMBER:
+        total_transfers = total_transfers + edge[k]
+
+sub_total = 0.0
+while sub_total < total_transfers*THRESHOLD_CONSTRAINTS:
+    sub_total = sub_total + edge[edge_keys[0]]
+    del edge[edge_keys[0]]
+    del edge_keys[0]
+
+# remove under THRESHOLD_CONSTRAINTS
+total_transfers = 0.0
+for k in edge.keys():
+    if edge[k] < MAX_NUMBER:
+        first = k.split(",")[0]
+        second = k.split(",")[1]
+        if degre_entrant.has_key(second):
+            degre_entrant[second].append(first)
+        total_transfers = total_transfers + edge[k]
+
 print total_transfers,"total weight of constraints from transfers"
 
 # remove uninformative
@@ -519,7 +562,7 @@ print trivial_conflict,"trivially conflicting constraints ("+str(int(trivial_con
 
 order_input = order_from_tree(tree)
 value_input = value(order_input)
-print "value of the order given by the input tree",value_input,"("+str(int(value_input*100/total_transfers))+"%)"
+print "value of the order given by the input tree",value_input,"("+str((value_input*100/total_transfers))+"%)"
 
 #print "("+str(trivial_conflict+value(order_input))+" or "+str(int((trivial_conflict+value(order_input))*100/(total_transfers+2*trivial_conflict)))+"% of total informative constraints)"
 
@@ -540,7 +583,7 @@ for e in edge_keys:
 order_greedy = order_from_graph(graph)
 value_greedy = value(order_greedy)
 
-print "value of the greedy heuristic",value_greedy,"("+str(int(value_greedy*100/total_transfers))+"%)"
+print "value of the greedy heuristic",value_greedy,"("+str((value_greedy*100/total_transfers))+"%)"
 
 edge_keys = edge.keys()
 edge_keys.sort(lambda x,y: cmp(edge[y],edge[x]))
@@ -549,18 +592,24 @@ time0 = time.time()
 order_heuristic = opt(tree,root)
 order_heuristic.reverse()
 value_heuristic = value(order_heuristic)
-print "value of the mixing heuristic:",value_heuristic,"("+str(int(value_heuristic*100/total_transfers))+"%)"
+print "value of the mixing heuristic:",value_heuristic,"("+str((value_heuristic*100/total_transfers))+"%)"
 #print "("+str(trivial_conflict+value(order))+" or ",str(int((trivial_conflict+value(order))*100/(total_transfers+2*trivial_conflict)))+"% of total informative constraints) in",time.time()-time0,"secs"
 
-if value_input <= value_greedy and value_input <= value_heuristic:
-  order = order_input
-  print "best order is the input tree"
-if value_greedy <= value_heuristic and value_greedy <= value_input:
-  order = order_greedy
-  print "best order is the greedy heuristic"
-if value_heuristic <= value_greedy and value_heuristic <= value_input:
-  order = order_heuristic
-  print "best order is the mixing heuristic"
+#if value_input <= value_greedy and value_input <= value_heuristic:
+#  order = order_input
+#  print "best order is the input tree"
+#if value_greedy <= value_heuristic and value_greedy <= value_input:
+  #order = order_greedy
+  #print "best order is the greedy heuristic"
+#if value_heuristic <= value_greedy and value_heuristic <= value_input:
+  #order = order_heuristic
+  #print "best order is the mixing heuristic"
+if value_greedy <= value_heuristic:
+    order = order_greedy
+    print "best order is the greedy heuristic"
+else:
+    order = order_heuristic
+    print "best order is the mixing heuristic"
 print tree_from_order(order)
 #print order
 #print order_input
@@ -608,7 +657,7 @@ if TIME_FOR_SEARCH > 0:
   print "attempting a local search from the best found order, please wait",TIME_FOR_SEARCH,"seconds"
   order = optimisation_locale(order,TIME_FOR_SEARCH)
   print "after local search", value(order),"rejected"
-  print "best found solution",value(order),"("+str(int(value(order)*100/total_transfers))+"%)"
+  print "best found solution",value(order),"("+str((value(order)*100/total_transfers))+"%)"
   print tree_from_order(order)
   print order
 
