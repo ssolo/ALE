@@ -53,9 +53,9 @@ Ultrametricity is not required, but will be used if provided, in order to compar
   * the second and third fields are labels of internal nodes of the species tree, telling that in a ranking, 147 should be older than 149, 197 should be older than 187, 187 should be older than 188
   * the last field is a weight associated with the constraint, which is supposed to be taken as a confidence score you can put on this constraint.
 
-  We typically construct the constraints file from the output of the software ALE. 2 output files are necessary.
+  We typically construct the constraints file from the output of the software ALE. To do so, 2 output files are necessary.
   1. Provided `ALEml_undated` or `ALEmcmc_undated` is run with the option `output_species_tree=y`, an output file with extension `.spTree` is produced. Let's assume this file is named `ALE_species_tree.spTree`.
-  2. `ALEml_undated` or `ALEmcmc_undated` also produce reconciliation files with extension "uml_rec", one per gene family. First we list them all in a file :
+  2. `ALEml_undated` or `ALEmcmc_undated` also produce reconciliation files with extension "uml_rec", one per gene family. We list them all in a file, which will be one of the inputs of the script producing the constraints :
   ```
   ls *uml_rec >all_rec_files
   ```
