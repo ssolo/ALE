@@ -53,13 +53,15 @@ Ultrametricity is not required, but will be used if provided, in order to compar
   * the second and third fields are labels of internal nodes of the species tree, telling that in a ranking, 147 should be older than 149, 197 should be older than 187, 187 should be older than 188
   * the last field is a weight associated with the constraint, which is supposed to be taken as a confidence score you can put on this constraint.
 
-  We typically construct the constraints file from the output of the software ALE. ALE produces a species tree, which we call here `ALE_species_tree`, and also produces reconciliation files with extension "uml_rec", one per gene family. First we list them all in a file :
+  We typically construct the constraints file from the output of the software ALE. 2 output files are necessary.
+  1. Provided `ALEml_undated` or `ALEmcmc_undated` is run with the option `output_species_tree=y`, an output file with extension `.spTree` is produced. Let's assume this file is named `ALE_species_tree.spTree`.
+  2. `ALEml_undated` or `ALEmcmc_undated` also produce reconciliation files with extension "uml_rec", one per gene family. First we list them all in a file :
   ```
   ls *uml_rec >all_rec_files
   ```
   To produce the constraints, we use the script `constraints_from_reconciliations.py`. The command to use is as follows:
   ```
-  python constraints_from_reconciliations.py ALE_species_tree all_rec_files
+  python constraints_from_reconciliations.py ALE_species_tree.spTree all_rec_files
   ```
 
   For each transfer detected by ALE, this script reports that the father of the donor branch should be older than the child of the receptor branch. However constraints can be constructed from any software detecting transfers or any type of data yielding relative time constraints between nodes.
