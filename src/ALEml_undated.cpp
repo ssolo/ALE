@@ -93,11 +93,11 @@ int main(int argc, char ** argv)
 
   if (argc<3)
     {
-      cout << "\nUsage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=number_of_samples separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence fraction_missing=file_with_fraction_of_missing_genes_per_species" << endl;
+      cout << "\nUsage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=number_of_samples separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence fraction_missing=file_with_fraction_of_missing_genes_per_species output_species_tree=n" << endl;
       cout << "\n1st example: we fix the DTL values and do not perform any optimization \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ delta=0.05 tau=0.1 lambda=0.2 " << endl;
       cout << "\n2nd example: we fix the T value to 0 to get a DL-only model and optimize the DL parameters \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ tau=0\n" << endl;
       cout << "\n3rd example: we provide a file giving the expected fraction of missing genes in each species \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ fraction_missing=fraction_missing.txt\n" << endl;
-
+      cout << "\n4th example: same as 3rd, but outputs the annotated species tree to a file \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ fraction_missing=fraction_missing.txt output_species_tree=y\n" << endl;
       return 0;
     }
 
@@ -118,6 +118,11 @@ int main(int argc, char ** argv)
   ale=load_ALE_from_file(ale_file);
   cout << "Read summary of tree sample for "<<ale->observations<<" trees from: " << ale_file <<".."<<endl;
 
+  //Getting the radical for output files:
+  vector<string> tokens;
+  boost::split(tokens,ale_file,boost::is_any_of("/"),boost::token_compress_on);
+  ale_file=tokens[tokens.size()-1];
+
   //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();
 
@@ -128,6 +133,7 @@ int main(int argc, char ** argv)
   bool lambda_fixed=false;
   scalar_type delta=0.01,tau=0.01,lambda=0.1;
   string fractionMissingFile = "";
+  string outputSpeciesTree = "";
   for (int i=3;i<argc;i++)
   {
     string next_field=argv[i];
@@ -170,6 +176,20 @@ int main(int argc, char ** argv)
       fractionMissingFile=tokens[1];
       cout << "# File containing fractions of missing genes set to " << fractionMissingFile << endl;
     }
+    else if (tokens[0]=="output_species_tree")
+    {
+      std::string valArg = boost::algorithm::to_lower_copy(tokens[1]);
+      if (valArg == "y" || valArg == "ye" || valArg == "yes" ) {
+          outputSpeciesTree= ale_file + ".spTree";
+          cout << "# outputting the annotated species tree to "<< outputSpeciesTree << endl;
+      }
+      else {
+        cout << "# NOT outputting the annotated species tree to "<< outputSpeciesTree << endl;
+
+      }
+
+    }
+
   }
 
   model->set_model_parameter("BOOTSTRAP_LABELS","yes");
@@ -250,9 +270,6 @@ int main(int argc, char ** argv)
   pair<string, scalar_type> res = model->p_MLRec(ale);
   //and output it..
   */
-  vector<string> tokens;
-  boost::split(tokens,ale_file,boost::is_any_of("/"),boost::token_compress_on);
-  ale_file=tokens[tokens.size()-1];
   string outname=ale_file+".uml_rec";
   ofstream fout( outname.c_str() );
   fout <<  "#ALEml_undated using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl<<endl;
@@ -277,6 +294,13 @@ int main(int argc, char ** argv)
   fout << "# of\t Duplications\tTransfers\tLosses\tOriginations\tcopies" <<endl;
   fout << model->counts_string_undated(samples);
   fout.close();
+
+// Outputting the species tree to its own file:
+  if (outputSpeciesTree != "") {
+    ofstream fout( outputSpeciesTree.c_str() );
+    fout <<model->string_parameter["S_with_ranks"] <<endl;
+    fout.close();
+  }
 
   cout << "Results in: " << outname << endl;
   if (ale->last_leafset_id>3)
