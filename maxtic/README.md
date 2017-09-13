@@ -4,13 +4,14 @@
 
 ## GENERAL INFORMATION
 
-Python code written by Eric Tannier, Inria
-Using ideas, comments, suggestions from Cédric Chauve, Akbar Rafiey, Adrian A. Davin, Celine Scornavacca, Philippe Veber, Bastien Boussau, Gergely J Szöllosi, Vincent Daubin
+Python code written by Eric Tannier, Inria.
+
+Using ideas, comments, suggestions from Cédric Chauve, Akbar Rafiey, Adrian A. Davin, Celine Scornavacca, Philippe Veber, Bastien Boussau, Gergely J Szöllosi, Vincent Daubin.
 
 Software distributed under the [cecill licence](http://www.cecill.info/licences/Licence_CeCILL_V2-en.txt), rights and permissions are described here:
 http://www.cecill.info/licences/Licence_CeCILL_V2-en.txt
 
-Bug reports, suggestions or help requests for usage of MaxTic should be sent to [eric.tannier@inria.fr](eric.tannier@inria.fr)
+Bug reports, suggestions or help requests for usage of MaxTic should be sent to eric.tannier@inria.fr
 
 If you use this software please cite
 [MaxTiC: Fast ranking of a phylogenetic tree by Maximum Time Consistency with lateral gene transfers, Biorxiv doi.org/10.1101/127548](http://www.biorxiv.org/content/early/2017/04/14/127548)
@@ -18,7 +19,7 @@ If you use this software please cite
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
 
-## INSTALLATION:
+## INSTALLATION
 
 You should have python 2.7 installed and have downloaded the two following Python files:
 
@@ -35,19 +36,20 @@ python MaxTiC.py species_tree_file constraints_file [ls=LOCAL_SEARCH]
 Where:
 * *species_tree_file*
  is the name of a file containing a phylogenetic tree in Newick format, with all internal nodes labeled in the usual bootstrap field. For example an appropriate file would contain:
-(((((E874:71176.953359,E876:71176.953359)147:91861.1927533,(E882:133963.416166,E884:133963.416166)148:29074.7299467)173:200567.267366,(((E906:81440.5931371,(E909:8211.56159025,E910:8211.56159025)149:73229.0315469)174:56454.5197908,E914:137895.112928)187:177491.76707,(E925:297995.062188,(E938:185198.008495,E944:185198.008495)150:112797.053694)175:17391.8178093)188:48218.5334805)197:1490.09088669,(E955:197786.332581,E957:197786.332581)151:167309.171784)203:445.96525336,(E967:274500.929682,((E982:139138.6704,E987:139138.6704)153:83916.622881,E990:223055.293281)154:51445.636401)177:91040.539936)208;
+`(((((E874:71176.953359,E876:71176.953359)147:91861.1927533,(E882:133963.416166,E884:133963.416166)148:29074.7299467)173:200567.267366,(((E906:81440.5931371,(E909:8211.56159025,E910:8211.56159025)149:73229.0315469)174:56454.5197908,E914:137895.112928)187:177491.76707,(E925:297995.062188,(E938:185198.008495,E944:185198.008495)150:112797.053694)175:17391.8178093)188:48218.5334805)197:1490.09088669,(E955:197786.332581,E957:197786.332581)151:167309.171784)203:445.96525336,(E967:274500.929682,((E982:139138.6704,E987:139138.6704)153:83916.622881,E990:223055.293281)154:51445.636401)177:91040.539936)208;`
 
 Ultrametricity is not required, but will be used if provided, in order to compare the output and input rankings in terms of Kendall distance.
 
 * *constraints_file*
- is the name of a file which contains a list of constrains between internal nodes of the species tree. One line of this file is a constraint, like in this example:
-gene_family_1,147,149,0.09
+ is the name of a file which contains a list of constraints between internal nodes of the species tree. One line of this file is a constraint, like in this example:
+```gene_family_1,147,149,0.09
 gene_family_2,197,187,0.12
-gene_family_2,187,188,0.9
- the first field is a gene family identifier, which is not used by the program but has been useful for our results analyses
- the second and third fields are labels of internal nodes of the species tree, telling that in a ranking, 147 should be older than 149, 197 should be older than 187, 187 should be older than 188
- the last field is a weight associated with the constraint, which is supposed to be taken as a confidence score you can put on this constraint
-We construct the constraints file from the output of the software ALE, and the script to do it is available on demand. For each transfer detected by ALE, we report that the father of the donor branch should be older than the child of the receptor branch. However constraints can be constructed from any software detecting transfers or any type of data yielding relative time constraints between nodes.
+gene_family_2,187,188,0.9```
+ * the first field is a gene family identifier, which is not used by the program but has been useful for our results analyses
+ * the second and third fields are labels of internal nodes of the species tree, telling that in a ranking, 147 should be older than 149, 197 should be older than 187, 187 should be older than 188
+ * the last field is a weight associated with the constraint, which is supposed to be taken as a confidence score you can put on this constraint.
+
+We construct the constraints file from the output of the software ALE, and the script to do so is available on demand. For each transfer detected by ALE, we report that the father of the donor branch should be older than the child of the receptor branch. However constraints can be constructed from any software detecting transfers or any type of data yielding relative time constraints between nodes.
 
 * *ls=LOCAL_SEARCH*
  is an optional parameter that can improve your solution. LOCAL_SEARCH is the time in seconds during which you want to try improvements by a local search. Typically we made most analyses with ls=180.
@@ -97,6 +99,6 @@ At the end the solution of the local search from the best heuristic solution is 
 
 
 Then the three output files are:
-* `constraints_file_MT_output_filtered_list_of_weighted_informative_constraints`, input file expurged from noninformative constraints
-* `constraints_file_MT_output_list_of_constraints_conflicting_with_best_order`, list of constraints conflicting with the solution (ranked species tree)
-* `constraints_file_MT_output_partial_order`, list of constraints agreeing with the solution (ranked species tree)
+* `constraints_file_MT_output_filtered_list_of_weighted_informative_constraints`: input file expurged from noninformative constraints
+* `constraints_file_MT_output_list_of_constraints_conflicting_with_best_order`: list of constraints conflicting with the solution (ranked species tree)
+* `constraints_file_MT_output_partial_order`: list of constraints agreeing with the solution (ranked species tree)
