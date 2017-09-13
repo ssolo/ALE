@@ -53,7 +53,16 @@ Ultrametricity is not required, but will be used if provided, in order to compar
   * the second and third fields are labels of internal nodes of the species tree, telling that in a ranking, 147 should be older than 149, 197 should be older than 187, 187 should be older than 188
   * the last field is a weight associated with the constraint, which is supposed to be taken as a confidence score you can put on this constraint.
 
-  We construct the constraints file from the output of the software ALE, and the script to do so is available on demand. For each transfer detected by ALE, we report that the father of the donor branch should be older than the child of the receptor branch. However constraints can be constructed from any software detecting transfers or any type of data yielding relative time constraints between nodes.
+  We construct the constraints file from the output of the software ALE. ALE produces reconciliation files with extension "uml_rec", one per gene family. First list them all in a file :
+  ```
+  ls *uml_rec >all_rec_files
+  ```
+  ALE also produces a species tree, which we call here `ALE_species_tree`. To produce the constraints, we use the script `constraints_from_reconciliations.py`. The command to use it is as follows:
+  ```
+  python constraints_from_reconciliations.py ALE_species_tree all_rec_files
+  ```
+
+  For each transfer detected by ALE, this script reports that the father of the donor branch should be older than the child of the receptor branch. However constraints can be constructed from any software detecting transfers or any type of data yielding relative time constraints between nodes.
 
 * *ls=LOCAL_SEARCH*
   is an optional parameter that can improve your solution. LOCAL_SEARCH is the time in seconds during which you want to try improvements by a local search. Typically we made most analyses with ls=180.
