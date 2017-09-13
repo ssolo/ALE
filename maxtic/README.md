@@ -42,9 +42,11 @@ Ultrametricity is not required, but will be used if provided, in order to compar
 
 * *constraints_file*
  is the name of a file which contains a list of constraints between internal nodes of the species tree. One line of this file is a constraint, like in this example:
-```gene_family_1,147,149,0.09
+```
+gene_family_1,147,149,0.09
 gene_family_2,197,187,0.12
-gene_family_2,187,188,0.9```
+gene_family_2,187,188,0.9
+```
  * the first field is a gene family identifier, which is not used by the program but has been useful for our results analyses
  * the second and third fields are labels of internal nodes of the species tree, telling that in a ranking, 147 should be older than 149, 197 should be older than 187, 187 should be older than 188
  * the last field is a weight associated with the constraint, which is supposed to be taken as a confidence score you can put on this constraint.
