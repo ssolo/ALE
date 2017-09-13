@@ -31,7 +31,9 @@ Those two files **must** be placed in the same directory.
 ## USAGE
 From the directory containing the two Python files type:
 
+```
 python MaxTiC.py species_tree_file constraints_file [ls=LOCAL_SEARCH]
+```
 
 Where:
 * *species_tree_file*
