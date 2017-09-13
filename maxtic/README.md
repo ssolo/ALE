@@ -53,11 +53,11 @@ Ultrametricity is not required, but will be used if provided, in order to compar
   * the second and third fields are labels of internal nodes of the species tree, telling that in a ranking, 147 should be older than 149, 197 should be older than 187, 187 should be older than 188
   * the last field is a weight associated with the constraint, which is supposed to be taken as a confidence score you can put on this constraint.
 
-  We construct the constraints file from the output of the software ALE. ALE produces reconciliation files with extension "uml_rec", one per gene family. First list them all in a file :
+  We typically construct the constraints file from the output of the software ALE. ALE produces a species tree, which we call here `ALE_species_tree`, and also produces reconciliation files with extension "uml_rec", one per gene family. First we list them all in a file :
   ```
   ls *uml_rec >all_rec_files
   ```
-  ALE also produces a species tree, which we call here `ALE_species_tree`. To produce the constraints, we use the script `constraints_from_reconciliations.py`. The command to use it is as follows:
+  To produce the constraints, we use the script `constraints_from_reconciliations.py`. The command to use is as follows:
   ```
   python constraints_from_reconciliations.py ALE_species_tree all_rec_files
   ```
