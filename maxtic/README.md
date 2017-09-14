@@ -23,16 +23,16 @@ If you use this software please cite
 
 You should have python 2.7 installed and have downloaded the two following Python files:
 
-[MaxTic.py](https://github.com/ssolo/ALE/blob/master/misc/MaxTiC.py)
-[script_tree.py](https://github.com/ssolo/ALE/blob/master/misc/script_tree.py)
+[MaxTiC.py](https://github.com/ssolo/ALE/blob/master/maxtic/MaxTiC.py)
+[script_tree.py](https://github.com/ssolo/ALE/blob/master/maxtic/script_tree.py)
 
-Those two files **must** be placed in the same directory.
+Those two files should be placed in the same directory or in a directory indicated in your enviroment variable PYTHONPATH.
 
 ## USAGE
 From the directory containing the two Python files type:
 
 ```
-python MaxTiC.py species_tree_file constraints_file [ls=LOCAL_SEARCH]
+python MaxTiC.py species_tree_file constraints_file [ls=LOCAL_SEARCH, default 0] [rd=NUMBER_RANDOM_TREES, default 0]
 ```
 
 Where:
@@ -53,21 +53,11 @@ Ultrametricity is not required, but will be used if provided, in order to compar
   * the second and third fields are labels of internal nodes of the species tree, telling that in a ranking, 147 should be older than 149, 197 should be older than 187, 187 should be older than 188
   * the last field is a weight associated with the constraint, which is supposed to be taken as a confidence score you can put on this constraint.
 
-  We typically construct the constraints file from the output of the software ALE. To do so, 2 output files are necessary.
-  1. Provided `ALEml_undated` or `ALEmcmc_undated` is run with the option `output_species_tree=y`, an output file with extension `.spTree` is produced. Let's assume this file is named `ALE_species_tree.spTree`.
-  2. `ALEml_undated` or `ALEmcmc_undated` also produce reconciliation files with extension "uml_rec", one per gene family. We list them all in a file, which will be one of the inputs of the script producing the constraints :
-  ```
-  ls *uml_rec >all_rec_files
-  ```
-  To produce the constraints, we use the script `constraints_from_reconciliations.py`. The command to use is as follows:
-  ```
-  python constraints_from_reconciliations.py ALE_species_tree.spTree all_rec_files
-  ```
-
-  For each transfer detected by ALE, this script reports that the father of the donor branch should be older than the child of the receptor branch. However constraints can be constructed from any software detecting transfers or any type of data yielding relative time constraints between nodes.
-
 * *ls=LOCAL_SEARCH*
   is an optional parameter that can improve your solution. LOCAL_SEARCH is the time in seconds during which you want to try improvements by a local search. Typically we made most analyses with ls=180.
+
+* *rd=NUMBER_RANDOM_TREES*
+  is an optional parameter that generates this number of random chronograms and compares them with the input and output chronograms with the Kendall similarity, and produces a p-value.
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -117,3 +107,72 @@ Then the three output files are:
 * `constraints_file_MT_output_filtered_list_of_weighted_informative_constraints`: input file expurged from noninformative constraints
 * `constraints_file_MT_output_list_of_constraints_conflicting_with_best_order`: list of constraints conflicting with the solution (ranked species tree)
 * `constraints_file_MT_output_partial_order`: list of constraints agreeing with the solution (ranked species tree)
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+## CONSTRUCTION OF THE CONSTRAINTS WITH ALE
+
+
+  Constraints might be constructed by any methods detecting transfers or we can imagine other sources for time constraints.
+  We provide here the method we used.
+  We typically construct the constraints file from the output of the software [ALE](https://github.com/ssolo/ALE). We use `ALEml_undated` or `ALEmcmc_undated`. Two output files from are necessary.
+  1. Provided `ALEml_undated` or `ALEmcmc_undated` is run with the option `output_species_tree=y`, an output file with extension `.spTree` is produced. Let's assume this file is named `ALE_species_tree.spTree`.
+  2. `ALEml_undated` or `ALEmcmc_undated` also produce reconciliation files with extension "uml_rec", one per gene family. We list them all in a file, which will be one of the inputs of the script producing the constraints :
+  ```
+  ls *uml_rec >all_rec_files
+  ```
+  To produce the constraints, we use the script `constraints_from_reconciliations.py`. The command to use is as follows:
+  ```
+  python constraints_from_reconciliations.py ALE_species_tree.spTree all_rec_files
+  ```
+  Note that the program also uses `script_tree.py` which should be in the same directory or in a directory indicated in your enviroment variable PYTHONPATH.
+  For each transfer detected by ALE, this script reports that the father of the donor branch should be older than the child of the receptor branch.
+
+  The result is a file named `constraints_from_transfers`, that can directly be used, along with the species tree file `ALE_species_tree.spTree`, by MaxTic.
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+## FULL EXAMPLE WITH A SIMULATED DATASET
+
+
+  We describe here on one condition the simulation protocol that we used to test MaxTiC, reported in the paper [MaxTiC: Fast ranking of a phylogenetic tree by Maximum Time Consistency with lateral gene transfers](http://www.biorxiv.org/content/early/2017/04/14/127548)
+
+  The software used to simulate is [Simphy](https://github.com/adamallo/SimPhy)
+  The parameters given to Simphy are: [RUN_FINAL_2E.params](http://lbbe.univ-lyon1.fr/projets/tannier/MAXTIC/RUN_FINAL_2E.params)
+  The species tree generated by Simphy (labels have been modified to fit the ALE labeling): [species_tree_dated](http://lbbe.univ-lyon1.fr/projets/tannier/MAXTIC/species_tree_dated)
+  The gene trees generated by Simphy [gene_trees.tgz](http://lbbe.univ-lyon1.fr/projets/tannier/MAXTIC/gene_trees.tgz)
+  For each gene tree numbered XXX we run ALE:
+  ```
+  ALEobserve gene_treeXXX
+  ALEml_undated species_tree_dated gene_treeXXX.ale
+  ```
+  The reconciliations found by ALE: [reconciliations.tgz](https://lbbe.univ-lyon1.fr/projets/tannier/MAXTIC/reconciliations.tgz)
+  Then we transform the transfers into time constraints:
+  ```
+  ls *uml_rec > all_rec_files
+  python constraints_from_reconciliations.py species_tree_dated all_rec_files
+  ```
+  The resulting constraints: [constraints_from_transfers](https://lbbe.univ-lyon1.fr/projets/tannier/MAXTIC/constraints_from_transfers)
+  From these we ran MaxTiC:
+  ```
+  python MaxTiC.py species_tree_dated constraints_from_transfers ls=180
+  ```
+  We obtained the following ranked tree: [solution](https://lbbe.univ-lyon1.fr/projets/tannier/MAXTIC/solution)
+  The Kendall Normalized similarity, implemented in MaxTiC, compares the input true ranking (species_tree_dated) with the output infered ranking (solution)
+  
+  
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+## FULL EXAMPLE WITH A CYANOBACTERIA DATASET
+
+
+  Here is how to reproduce the results on the small example on biological data described in the [article](http://www.biorxiv.org/content/early/2017/04/14/127548)
+  You need to dowload 
+[The species tree](http://lbbe.univ-lyon1.fr/projets/tannier/MAXTIC/minitree.tree)
+[The constraints file](http://lbbe.univ-lyon1.fr/projets/tannier/MAXTIC/Cyano_CUTConstraints.tsv) obtained from the detected transfers in [this paper](http://rstb.royalsocietypublishing.org/content/370/1678/20140335)
+  Then with the program files and the data files in the same directory type the command
+```
+python MaxTic.py minitree.tree Cyano_CUTConstraints.tsv
+```
