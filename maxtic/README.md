@@ -24,6 +24,7 @@ If you use this software please cite
 You should have python 2.7 installed and have downloaded the two following Python files:
 
 [MaxTiC.py](https://github.com/ssolo/ALE/blob/master/maxtic/MaxTiC.py)
+
 [script_tree.py](https://github.com/ssolo/ALE/blob/master/maxtic/script_tree.py)
 
 Those two files should be placed in the same directory or in a directory indicated in your enviroment variable PYTHONPATH.
@@ -126,7 +127,7 @@ Then the three output files are:
   ```
   python constraints_from_reconciliations.py ALE_species_tree.spTree all_rec_files
   ```
-  Note that the program also uses `script_tree.py` which should be in the same directory or in a directory indicated in your enviroment variable PYTHONPATH.
+  Note that this program also uses `script_tree.py` (which you can download with MaxTiC, see just above). It should be in the same directory or in a directory indicated in your enviroment variable PYTHONPATH.
   For each transfer detected by ALE, this script reports that the father of the donor branch should be older than the child of the receptor branch.
 
   The result is a file named `constraints_from_transfers`, that can directly be used, along with the species tree file `ALE_species_tree.spTree`, by MaxTic.
@@ -142,8 +143,11 @@ Then the three output files are:
   The software used to simulate was [Simphy](https://github.com/adamallo/SimPhy).
   The parameters given to Simphy were: [RUN_FINAL_2E.params](https://github.com/ssolo/ALE/tree/master/maxtic/RUN_FINAL_2E.params).
 
-  Simphy generated the following
-  - species tree (labels have been modified to fit the ALE labeling): [species_tree_dated](https://github.com/ssolo/ALE/tree/master/maxtic/species_tree_dated)
+  Simphy generated the following [species tree](https://github.com/ssolo/ALE/tree/master/maxtic/instance_RUN_FINAL_2E_1_stree.nhx) with 500 leaves and 1000 gene trees.
+  
+  We elagued it to 87 leaves by randomly removing leaves with probability 4/5.
+  - resulting species tree (labels have been modified to fit the ALE labeling): [species_tree_dated](https://github.com/ssolo/ALE/tree/master/maxtic/species_tree_dated)
+  The gene trees were also elagued to remove the genes from elagued species and this resulted in
   - gene trees: [gene_trees.tgz](https://github.com/ssolo/ALE/tree/master/maxtic/gene_trees.tgz)
 
   For each gene tree numbered XXX we ran ALE:
