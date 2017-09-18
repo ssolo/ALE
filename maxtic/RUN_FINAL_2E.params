@@ -1,0 +1,47 @@
+
+Global settings:
+--------------------
+
+Trees:
+	-Species trees: 5 Birth-death simulations
+		-Speciation rate: Fixed 1.000000e-05,
+		-Extinction rate: Fixed 0.000000e+00,
+		-Outgroup addition: No addition
+		-Stopping rules:
+			-Number of leaves: Fixed 500,
+			-Generations: Not used
+	-Locus trees: Fixed 1000, locus simulations per species tree 
+		-Duplication: Genome-wide parameter: Fixed 0.000000e+00,, Rate: Fixed 0,
+		-Loss: Genome-wide parameter: Fixed 0.000000e+00,, Rate: Fixed 0,
+		-Transfer: Genome-wide parameter: Fixed 0.000000e+00,, Rate: Normal(1.600000e-06,1.000000e-07)
+		-Gene conversion: Genome-wide parameter: Fixed 0.000000e+00,, Rate: Fixed GG,
+		-Transfer (HGT and GC) sampling strategy: Inversely proportional to the distance
+		-Minimum number of leaves: 1
+		-Minimum number of leaves from different species: 0
+
+	-Gene trees: 1 multilocus coalescent simulations
+
+Parameters:
+	-Haploid efective population size: Fixed 2,
+	-Generation time: Fixed 1,
+	-Global substitution rate: Fixed 1.000000e+00,
+	-Substitution rate heterogeneities
+		-Lineage (species) specific rate heterogeneity gamma shape: No heterogeneity
+		-Gene family (locus tree) specific rate heterogeneity gamma shape: No heterogeneity
+		-Gene tree branch specific rate heterogeneity gamma shape: Genome-wide parameter (hyperhyperparameter) No heterogeneity, locus-tree related parameter No heterogeneity, Gamma parameter(gene-tree related) No heterogeneity
+	-Individuals per species: Fixed 1,
+
+Misc parameters:
+	-Rooting method epsilon: 0.000001
+	-Seed: 0
+
+I/O options:
+	-Output files prefix: RUN_FINAL_2E
+	-Verbosity: 1
+	-Stats file: OFF
+	-Mapping: ON
+	-Database: ON
+	-Parameterization: ON 
+	-Command-line arguments: ON
+	-Bounded locus subtrees: ON
+	-Output trees with internal node labels: ON
