@@ -141,34 +141,34 @@ Then the three output files are:
   We describe here on one condition the simulation protocol that we used to test MaxTiC, reported in the paper [MaxTiC: Fast ranking of a phylogenetic tree by Maximum Time Consistency with lateral gene transfers](http://www.biorxiv.org/content/early/2017/04/14/127548)
 
   The software used to simulate was [Simphy](https://github.com/adamallo/SimPhy).
-  The parameters given to Simphy were: [RUN_FINAL_2E.params](https://github.com/ssolo/ALE/tree/master/maxtic/RUN_FINAL_2E.params).
+  The parameters given to Simphy were: [RUN_FINAL_2E.params](https://github.com/ssolo/ALE/tree/master/maxtic/examples/RUN_FINAL_2E.params).
 
-  Simphy generated the following [species tree](https://github.com/ssolo/ALE/tree/master/maxtic/instance_RUN_FINAL_2E_1_stree.nhx) with 500 leaves and 1000 gene trees.
+  Simphy generated the following [species tree](https://github.com/ssolo/ALE/tree/master/maxtic/examples/instance_RUN_FINAL_2E_1_stree.nhx) with 500 leaves and 1000 gene trees.
   
   We elagued it to 87 leaves by randomly removing leaves with probability 4/5.
-  - resulting species tree (labels have been modified to fit the ALE labeling): [species_tree_dated](https://github.com/ssolo/ALE/tree/master/maxtic/species_tree_dated)
+  - resulting species tree (labels have been modified to fit the ALE labeling): [species_tree_dated](https://github.com/ssolo/ALE/tree/master/maxtic/examples/species_tree_dated)
   The gene trees were also elagued to remove the genes from elagued species and this resulted in
-  - gene trees: [gene_trees.tgz](https://github.com/ssolo/ALE/tree/master/maxtic/gene_trees.tgz)
+  - gene trees: [gene_trees.tgz](https://github.com/ssolo/ALE/tree/master/maxtic/examples/gene_trees.tgz)
 
   For each gene tree numbered XXX we ran ALE:
   ```
   ALEobserve gene_treeXXX
   ALEml_undated species_tree_dated gene_treeXXX.ale
   ```
-  ALE produced the following reconciliations: [reconciliations.tgz](https://github.com/ssolo/ALE/tree/master/maxtic/reconciliations.tgz)
+  ALE produced the following reconciliations: [reconciliations.tgz](https://github.com/ssolo/ALE/tree/master/maxtic/examples/reconciliations.tgz)
 
   Then we transformed the transfers into time constraints:
   ```
   ls *uml_rec > all_rec_files
   python constraints_from_reconciliations.py species_tree_dated all_rec_files
   ```
-  The resulting constraints are available here: [constraints_from_transfers](https://github.com/ssolo/ALE/tree/master/maxtic/constraints_from_transfers)
+  The resulting constraints are available here: [constraints_from_transfers](https://github.com/ssolo/ALE/tree/master/maxtic/examples/constraints_from_transfers)
 
   From these we ran MaxTiC:
   ```
   python MaxTiC.py species_tree_dated constraints_from_transfers ls=180
   ```
-  We obtained the following ranked tree: [solution](https://github.com/ssolo/ALE/tree/master/maxtic/solution)
+  We obtained the following ranked tree: [solution](https://github.com/ssolo/ALE/tree/master/maxtic/examples/solution)
 
   The Kendall Normalized similarity, implemented in MaxTiC, compares the input true ranking (species_tree_dated) with the output infered ranking (solution).
 
@@ -181,8 +181,8 @@ Then the three output files are:
   Here is how to reproduce the results on the small example on biological data described in the [article](http://www.biorxiv.org/content/early/2017/04/14/127548).
 
   You need to download:
- - [The species tree](https://github.com/ssolo/ALE/tree/master/maxtic/minitree.tree)
- - [The constraints file](https://github.com/ssolo/ALE/tree/master/maxtic/Cyano_CUTConstraints.tsv) obtained from the detected transfers in [this paper](http://rstb.royalsocietypublishing.org/content/370/1678/20140335)
+ - [The species tree](https://github.com/ssolo/ALE/tree/master/maxtic/examples/minitree.tree)
+ - [The constraints file](https://github.com/ssolo/ALE/tree/master/maxtic/examples/Cyano_CUTConstraints.tsv) obtained from the detected transfers in [this paper](http://rstb.royalsocietypublishing.org/content/370/1678/20140335)
 
   Then with the program files and the data files in the same directory type the command
 ```
