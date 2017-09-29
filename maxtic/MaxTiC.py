@@ -550,15 +550,16 @@ edge_keys = edge.keys()
 edge_keys.sort(lambda x,y: cmp(edge[y],edge[x]))
 sortie = open(name_constraint_file+"_MT_output_filtered_list_of_weighted_informative_constraints","w")
 for k in edge_keys:
-  first = e.split(",")[0]
-  second = e.split(",")[1]
+  first = k.split(",")[0]
+  second = k.split(",")[1]
   if ((edge[k] < MAX_NUMBER) and
       (not (first == second)) and
       (not path(graph,first,second)) and
       (not (second in leaves)) and
       (not (first in leaves)) and
       (not path(graph,second,first))):
-    sortie.write(k+" "+str(edge[k])+"\n")
+      print first,second
+      sortie.write(k+" "+str(edge[k])+"\n")
 sortie.close()
 
 print uninformative,"uninformative (",to_desc,"to a descendant,",to_leaf,"to a leaf",to_anc,"to an ancestor",to_itself,"to itself",
