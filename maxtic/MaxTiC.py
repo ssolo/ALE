@@ -558,7 +558,7 @@ for k in edge_keys:
       (not (second in leaves)) and
       (not (first in leaves)) and
       (not path(graph,second,first))):
-      print first,second
+      #print first,second
       sortie.write(k+" "+str(edge[k])+"\n")
 sortie.close()
 
