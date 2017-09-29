@@ -392,18 +392,6 @@ for n in nodes:
     node = script_tree.getName(tree,n)
     graph[node] = []
 
-# initialise from branches
-for n in nodes:
-  if (not script_tree.isLeaf(tree,n)):
-    if (not script_tree.isRoot(tree,n)):
-      parent = script_tree.getBootstrap(tree,script_tree.getParent(tree,n))
-      child = script_tree.getBootstrap(tree,n)
-      graph[parent].append(child)
-      edge[parent+","+child] = MAX_NUMBER
-  else:
-    parent = script_tree.getBootstrap(tree,script_tree.getParent(tree,n))
-    child = script_tree.getName(tree,n)
-    graph[parent].append(child)
 
 print "tree with ",len(internal_nodes),"internal nodes"
 
@@ -452,6 +440,8 @@ for line in constraints:
             edge[key] = 0
         if not edge[key] >= MAX_NUMBER:
             edge[key] = edge[key] + weight
+        else:
+            print key,weight
             #if by_family.has_key(family):
             #by_family[family] = by_family[family] + weight
   else:
@@ -463,31 +453,44 @@ for line in constraints:
 #for f in keys:
   #sortie.write(f+" "+str(by_family[f])+"\n")
 
+total_transfers = sum(edge.values())
+
+
+to_desc = 0
+uninformative = 0
+# initialise from branches
+for n in nodes:
+  if (not script_tree.isLeaf(tree,n)):
+    if (not script_tree.isRoot(tree,n)):
+      parent = script_tree.getBootstrap(tree,script_tree.getParent(tree,n))
+      child = script_tree.getBootstrap(tree,n)
+      graph[parent].append(child)
+      if edge.has_key(parent+","+child):
+        to_desc = to_desc + edge[parent+","+child]
+        uninformative = uninformative + edge[parent+","+child]
+      edge[parent+","+child] = MAX_NUMBER
+  else:
+    parent = script_tree.getBootstrap(tree,script_tree.getParent(tree,n))
+    child = script_tree.getName(tree,n)
+    graph[parent].append(child)
+
 
 edge_keys = edge.keys()
 edge_keys.sort(lambda x,y: cmp(edge[x],edge[y]))
 
-
-total_transfers = 0.0
-for k in edge_keys:
-    if edge[k] < MAX_NUMBER:
-        total_transfers = total_transfers + edge[k]
-
+# remove under THRESHOLD_CONSTRAINTS
 sub_total = 0.0
 while sub_total < total_transfers*THRESHOLD_CONSTRAINTS:
     sub_total = sub_total + edge[edge_keys[0]]
     del edge[edge_keys[0]]
     del edge_keys[0]
 
-# remove under THRESHOLD_CONSTRAINTS
-total_transfers = 0.0
 for k in edge.keys():
     if edge[k] < MAX_NUMBER:
         first = k.split(",")[0]
         second = k.split(",")[1]
         if degre_entrant.has_key(second):
             degre_entrant[second].append(first)
-        total_transfers = total_transfers + edge[k]
 
 print total_transfers,"total weight of constraints from transfers"
 
@@ -495,10 +498,8 @@ print total_transfers,"total weight of constraints from transfers"
 trivial_conflict = 0
 to_itself = 0
 to_leaf = 0
-from_leaf = 0
-to_desc = 0
 to_anc = 0
-uninformative = 0
+from_leaf = 0
 edge_keys = edge.keys()
 edge_keys.sort(lambda x,y: cmp(edge[y],edge[x]))
 for e in edge_keys:
@@ -549,7 +550,14 @@ edge_keys = edge.keys()
 edge_keys.sort(lambda x,y: cmp(edge[y],edge[x]))
 sortie = open(name_constraint_file+"_MT_output_filtered_list_of_weighted_informative_constraints","w")
 for k in edge_keys:
-  if edge[k] < MAX_NUMBER:
+  first = e.split(",")[0]
+  second = e.split(",")[1]
+  if ((edge[k] < MAX_NUMBER) and
+      (not (first == second)) and
+      (not path(graph,first,second)) and
+      (not (second in leaves)) and
+      (not (first in leaves)) and
+      (not path(graph,second,first))):
     sortie.write(k+" "+str(edge[k])+"\n")
 sortie.close()
 
