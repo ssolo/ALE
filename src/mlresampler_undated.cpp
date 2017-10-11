@@ -2,7 +2,7 @@
 #include "exODT_sim.h"
 
 #include "ALE_util.h"
-#include <omp.h>
+
 #include <boost/progress.hpp>
 
 using namespace std;
