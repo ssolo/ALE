@@ -248,11 +248,11 @@ void approx_posterior::load_state(string fname)
               {
 		//XX
                   std::unordered_map< pair<long int, long int>,scalar_type> temp ;
-		  /*
+		  //10.18		  
 		  while (atol(tokens[0].c_str()) >  (long int) Dip_counts.size() ) {
                       Dip_counts.push_back(temp);
                   }
-		  */
+		  //10.18
                   temp[parts]=atof(tokens[3].c_str());
                   Dip_counts.push_back(temp);
               }
@@ -301,6 +301,7 @@ void approx_posterior::load_state(string fname)
           }
       }
   }
+  /* 10.18. ez mi?
     //Attempt adding something for the root bipartition:
     boost::dynamic_bitset<> temp (Gamma_size +1);
     for (auto i = 1 ; i<Gamma_size +1; ++i) {
@@ -308,6 +309,7 @@ void approx_posterior::load_state(string fname)
     }
     id_sets[-1] = temp;
     set_ids[temp] = -1;
+    10.18. ez mi?  */   
   for ( auto it = id_sets.begin(); it != id_sets.end(); it++ )
     {
         size_t size = 0;
@@ -1530,7 +1532,7 @@ scalar_type approx_posterior::count_trees() const
   scalar_type count_trees_g=0;
 
   map<long int,scalar_type> g_id_count;//del-loc
-
+  cout << "." << endl;
   for ( auto it = size_ordered_bips.begin(); it != size_ordered_bips.end(); it++)
     for ( auto jt = (*it).second.begin(); jt != (*it).second.end(); jt++)
       {
@@ -1541,7 +1543,7 @@ scalar_type approx_posterior::count_trees() const
 	else
 	  {
 	    g_id_count[g_id]=0;
-	    for ( auto kt = Dip_counts[g_id].begin(); kt != Dip_counts[g_id].end(); kt++)
+	    for ( auto kt = Dip_counts.at(g_id).begin(); kt != Dip_counts[g_id].end(); kt++)
 	      {
 		pair<long int, long int> parts = (*kt).first;
 		long int gp_id= parts.first;
@@ -1551,6 +1553,7 @@ scalar_type approx_posterior::count_trees() const
 	      }
 	  }
       }
+  cout << ".." << endl;
 
   for ( auto it = Bip_counts.begin(); it != Bip_counts.end(); it++)
     {
@@ -1585,6 +1588,8 @@ scalar_type approx_posterior::count_trees() const
 	count_trees_g+=g_id_count[set_ids.at(gamma)]*g_id_count[set_ids.at(not_gamma)]/2.0;//count_trees(set_ids[gamma])*count_trees(set_ids[not_gamma])/2.0;
       //cout << count_trees(gamma) << " " << set2name(gamma) << " " << count_trees(not_gamma) << " " << set2name(not_gamma) <<endl;
     }
+  cout << "..." << endl;
+
   g_id_count.clear();
   return count_trees_g;
 }
