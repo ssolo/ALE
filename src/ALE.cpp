@@ -301,15 +301,13 @@ void approx_posterior::load_state(string fname)
           }
       }
   }
-  /* 10.18. ez mi?
-    //Attempt adding something for the root bipartition:
-    boost::dynamic_bitset<> temp (Gamma_size +1);
-    for (auto i = 1 ; i<Gamma_size +1; ++i) {
-        temp[i] = 1;
-    }
-    id_sets[-1] = temp;
-    set_ids[temp] = -1;
-    10.18. ez mi?  */   
+  //Attempt adding something for the root bipartition:
+  boost::dynamic_bitset<> temp (Gamma_size +1);
+  for (auto i = 1 ; i<Gamma_size +1; ++i) {
+    temp[i] = 1;
+  }
+  id_sets[-1] = temp;
+  set_ids[temp] = -1;
   for ( auto it = id_sets.begin(); it != id_sets.end(); it++ )
     {
         size_t size = 0;
