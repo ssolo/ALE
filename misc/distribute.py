@@ -30,7 +30,7 @@ for i in range(CPUs):
     costs[i]=0.
 
 keeps=times.keys()
-
+urkeeps=keeps
 
 
 keeps=filter(lambda t: 0<Sss[t],keeps)
@@ -112,7 +112,7 @@ while old_diff!=new_diff and max(costs.values())-min(costs.values())>1:
 
 print "achived max:",max(costs.values())," min:",min(costs.values())
 
-fout=file(argv[1]+".conservative."+repr(CPUs),"w")
+fout=file(argv[1]+".conservative."+repr(CPUs)+"cpus","w")
 for i in range(CPUs):
     for time in bins[i]:
         fout.write(fnames[time]+"\t"+repr(i)+"\t"+repr(time)+"\n")
@@ -187,7 +187,7 @@ while old_diff!=new_diff and max(costs.values())-min(costs.values())>1:
     stdout.flush()
 print "achived max:",max(costs.values())," min:",min(costs.values())
 
-fout=file(argv[1]+".aggressive."+repr(CPUs),"w")
+fout=file(argv[1]+".aggressive."+repr(CPUs)+"cpus","w")
 for i in range(CPUs):
     for time in bins[i]:
         fout.write(fnames[time]+"\t"+repr(i)+"\t"+repr(time)+"\n")
@@ -198,8 +198,8 @@ fout.close()
 
 
 cut=1.
-cut_keep=keeps
-while len(cut_keep)>len(keeps)*0.25:
+cut_keep=urkeeps
+while len(cut_keep)>len(keeps)*0.25 and cut>0:
     cut-=0.001
     Sbins={}
     cut_keep=[]
@@ -212,12 +212,12 @@ while len(cut_keep)>len(keeps)*0.25:
         cum_Ssum=0.
         for time in sorted(Sbins[S]):
             cum_Ssum+=time
-            if cum_Ssum/Ssum<cut:
+            if cum_Ssum/Ssum<cut or True:
                 cut_keep+=[time]
                 
 optimal_cost=max([sum(cut_keep)/float(CPUs),nu_bound])
 print "cut with ",cut," discards ",-len(cut_keep)+len(keeps),"optimal cost: ",optimal_cost,"max time: ",max(cut_keep)," discarding total of: ",-len(cut_keep)+len(times.keys()), " fams ",int((1-(len(filter(lambda t: S*0.8<Sss[t],cut_keep))/float(len(near_universals))))*1000)/10.," % of ",len(near_universals)," near univ.s" 
-keeps=cut_keep
+keeps=urkeeps
 
 bins={}
 costs={}
@@ -265,7 +265,7 @@ while old_diff!=new_diff and max(costs.values())-min(costs.values())>1:
     stdout.flush()
 print "achived max:",max(costs.values())," min:",min(costs.values())
 
-fout=file(argv[1]+".skeleton."+repr(CPUs),"w")
+fout=file(argv[1]+".all."+repr(CPUs)+"cpus","w")
 for i in range(CPUs):
     for time in bins[i]:
         fout.write(fnames[time]+"\t"+repr(i)+"\t"+repr(time)+"\n")

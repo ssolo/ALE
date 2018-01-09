@@ -29,6 +29,39 @@ approx_posterior * observe_ALE_from_file(vector<string> fnames, int burnin,int e
 		  tree_i++;
 		  if (tree_i>burnin and tree_i%every==0) trees.push_back(line);
 		}
+	      else if (line.find(";")!=line.npos)
+		{
+		  vector <string> tokens;
+		  boost::trim(line);
+		  boost::split(tokens,line,boost::is_any_of(",;: "),boost::token_compress_on);
+		  string name=tokens[0];
+		  
+		  approx_posterior* ale=new approx_posterior();// NO del-loc
+		  string tmp="tmp_single_ale";
+		  ofstream fout( tmp.c_str() );
+		  fout << "#constructor_string\n";
+		  fout << name << endl;
+		  fout << 
+		    "#observations\n"
+		    "1\n"
+		    "#Bip_counts\n"
+		    "#Bip_bls\n"
+		    "1	1\n"
+		    "#Dip_counts\n"
+		    "#last_leafset_id\n"
+		    "1\n"
+		    "#leaf-id\n";	       	      
+		  fout << name <<"	1"<<endl;			    
+		  fout <<
+		    "#set-id\n"
+		    "1	:	1\n"
+		    "#END\n";
+		  fout.close();
+		  
+		  ale->load_state(tmp);
+		  return ale;	      
+		}
+	      
 	    }
 	}
     }
@@ -75,7 +108,6 @@ approx_posterior * observe_ALE_from_file(string fname, int burnin,int every,int 
 	    }
 	  else if (line.find(";")!=line.npos)
 	    {
-	      cout << "fuck me tender" << endl;
 	      vector <string> tokens;
 	      boost::trim(line);
 	      boost::split(tokens,line,boost::is_any_of(",;: "),boost::token_compress_on);

@@ -378,6 +378,8 @@ scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
   root_i=g_ids.size()-1;
 
   // gene<->species mapping
+  // mpi_tree's pun() breaks if mapping is saved.. Sz.G. 12.29/
+  gid_sps.clear();
   if (gid_sps.size() == 0) // If the mapping has not been done yet
   {
     //Test that the species associated to genes are really in the species tree

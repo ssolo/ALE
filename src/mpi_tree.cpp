@@ -126,13 +126,17 @@ void mpi_tree::load_distributed_ales(string fname)
 	      vector <string> tokens;
 	      boost::trim(line);	    
 	      boost::split(tokens,line,boost::is_any_of("\t "),boost::token_compress_on);
-	      int client_i=atoi(tokens[1].c_str());
-	      string ale_file=tokens[0];
-	      if (ale_file.size()>1)
+	      if (tokens.size()==3)
 		{
-		  if (not (client_i<scatter_fnames.size())) {vector<string> tmp; scatter_fnames.push_back(tmp);}
-		  scatter_fnames[client_i].push_back(ale_file);
-		  verify.insert(ale_file);
+		  
+		  int client_i=atoi(tokens[1].c_str());
+		  string ale_file=tokens[0];
+		  if (ale_file.size()>0)
+		    {
+		      if (not (client_i<scatter_fnames.size())) {vector<string> tmp; scatter_fnames.push_back(tmp);}
+		      scatter_fnames[client_i].push_back(ale_file);
+		      verify.insert(ale_file);
+		    }
 		}
 	    }
 	}
@@ -441,8 +445,8 @@ void mpi_tree::gather_counts(scalar_type samples)
 		model->branch_counts[count_name][branch]+=gathered_branch_counts[count_name][i][branch]/samples;
 	    }
 	  cout << "# Tree for " << count_name << " counts:" << endl;
-	  model->show_counts(count_name,false);		      
-	  model->show_counts(count_name,true);
+	  //model->show_counts(count_name,false);		      
+	  //model->show_counts(count_name,true);
 	  model->show_counts(count_name,true,true);
 
 	}  
@@ -880,7 +884,6 @@ scalar_type mpi_tree::calculate_pun(int samples)
   ofstream fout( outname.str().c_str() );
 
   scalar_type ll=0;
-  model->calculate_undatedEs();
   vector<scalar_type> gather_ll;
   model->MLRec_events.clear();
   for (int e=0;e<model->last_branch;e++)	
@@ -902,7 +905,7 @@ scalar_type mpi_tree::calculate_pun(int samples)
   for (int i=0;i<(int)ale_pointers.size();i++)
     {
       //if (rank==server) cout << rank <<" at " <<round(i/(float)ale_pointers.size()*100.)<<" %, strats "<< client_fnames[i] << endl;
-
+      model->calculate_undatedEs();
       scalar_type tmpp=model->pun(ale_pointers[i]);
       fout << "started "<<client_fnames[i] << " ll="<< log(tmpp)<<endl;
       for (int si=0;si< samples;si++)

@@ -1,0 +1,47 @@
+#make the .ale files (single leaf input now accapted cf. e.g. a.tree)
+
+../../build/bin/ALEobserve a.tree
+../../build/bin/ALEobserve b.tree
+../../build/bin/ALEobserve c.tree
+../../build/bin/ALEobserve ab.tree
+../../build/bin/ALEobserve abc.tree
+
+#you can run individual rate inference as before with 'S.tree' being the species tree 
+
+../../build/bin/ALEml_undated S.tree a.tree.ale > a.tree.ale.log
+../../build/bin/ALEml_undated S.tree b.tree.ale > b.tree.ale.log
+../../build/bin/ALEml_undated S.tree c.tree.ale > c.tree.ale.log
+../../build/bin/ALEml_undated S.tree ab.tree.ale > ab.tree.ale.log
+../../build/bin/ALEml_undated S.tree abc.tree.ale > abc.tree.ale.log
+
+#OR you can run global rate inference, but this requires some preperation
+
+#1 determine run times for each and every .ale
+
+../../build/bin/times_undated S.tree a.tree.ale
+../../build/bin/times_undated S.tree b.tree.ale
+../../build/bin/times_undated S.tree c.tree.ale
+../../build/bin/times_undated S.tree ab.tree.ale
+../../build/bin/times_undated S.tree abc.tree.ale
+
+#2 cat-em into a file
+
+less *utimes > ale_list
+
+#3 use the misc/distribute.py script to find a optimal (its just a heuristic) distribution of ale-s
+#the file "ale_list" is from above, while 3 is the number opf CPUs, if you have more put more!
+
+python ../../misc/distribute.py ale_list 3
+
+#4 finally, run mpi_ml_undated as below, where 'S.tree' is the species tree (as above) and 'ale_list.all.3cpus' is output by the misc/distribute.py script
+mpirun -n 3 ../../build/bin/mpi_ml_undated S.tree ale_list.all.3cpus > all_ales.log
+
+#RESULTS
+
+less all_ales.log  | grep rates
+
+#as you can see we get zero rates for all famillies using lobal rate estimation, but 
+
+less *tree*.log  | grep rates
+
+#but nonzero rates for some of the famillies using per family rate estimation.

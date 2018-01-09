@@ -101,6 +101,10 @@ int main(int argc, char ** argv)
   scalar_type delta=0.1;
   scalar_type tau=0.1;
   scalar_type lambda=0.1;
+  scalar_type O_R=1,beta=1;
+  infer_tree->model->set_model_parameter("O_R",O_R);
+  infer_tree->model->set_model_parameter("seq_beta",beta);
+  infer_tree->model->calculate_undatedEs();
 
   if (argc<5)
     {
