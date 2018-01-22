@@ -1,0 +1,50 @@
+\documentclass[preprint, 
+superscriptaddress,aip,author-year]{revtex4-1}
+\usepackage{times}
+\usepackage{amsmath}
+
+\begin{document}
+
+\renewcommand{\theequation}{A\arabic{equation}}
+\addtocounter{equation}{+1}
+
+%It has come to the attention of the authors that a factor has been omitted in equations A.2 and A.4 of the Appendix. 
+The correct form of equation 4 is:
+
+\begin{align}
+ P_e (u,t+\Delta t_i) =& G_e (t+\Delta t,t ) P_e(u,t) \label{Pe}
+ \nonumber \\
+& +2 \left\{\delta \Delta t_i \right\} P_e(v,t) P_e(w,t) \nonumber \\
+& +\left\{\sigma \Delta t_i \right\} \bar P(v,t) P_e(w,t)\nonumber \\
+& +\left\{\sigma \Delta t_i \right\} P_e(v,t) \bar P(w,t)\nonumber \\
+& +\left\{\sigma \Delta t_i \right\} \bar P(u,t) E_e(t). \nonumber 
+\end{align}
+
+The correct form of equation A.2 is:
+
+\begin{align}
+\frac{\mathrm{d}}{\mathrm{d} t} {\bar E} = &+\left\{ \frac{N}{N-n}
+  \sigma + \lambda \right\} (1-\bar E ) \label{bare}  \nonumber\\
+&- \left\{ ( \sigma + \delta + \frac{N-n_i}{N-1}\tau ) (1-\bar E ) \right\} \bar E \nonumber\\
+& - \left\{ \sum_{f \in \mathcal{E}_i(S) } \frac{\tau}{N-1} (1-E_f) \right\}\bar E \nonumber\\
+ \bar E(0)=&1. \nonumber 
+ \end{align}
+
+\addtocounter{equation}{+1}
+
+The correct form of equation A.4 is:
+
+\begin{align}
+ \frac{\mathrm{d}}{\mathrm{d} t} \bar G = & - \left\{ \frac{N}{N-n}
+   \sigma + \lambda \right\} \bar G \label{barg}  \nonumber\\ 
+& - \left\{ (\sigma + \delta + \frac{N-n_i}{N-1}\tau) (1-2\bar E )\right\} \bar G \nonumber\\ 
+& - \left\{ \sum_{f \in \mathcal{E}_i(S) } \frac{\tau}{N-1} (1-E_f) \right\} \bar G \nonumber \\ 
+\bar G(t,t) = & 1. \nonumber 
+\end{align}
+
+%The authors regret these errors along with any inconvenience caused, and would like to thank Zs\'ofia K\'eri and Imre Der\'enyi for bringing them to our attention. 
+
+
+
+ 
+\end{document}
