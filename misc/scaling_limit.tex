@@ -1,0 +1,171 @@
+\documentclass[preprint, 
+superscriptaddress,aip,author-year]{revtex4-1}
+\usepackage{times}
+\usepackage{amsmath}
+
+\begin{document}
+
+The full equations without $G$-s: 
+
+\noindent The $P$-s:
+\begin{align}
+ \frac{\mathrm{d}}{\mathrm{d} t} P_e^u  =&  
++ \delta P_e^v  P_e^w 
++ \frac{1}{N} \tau \sum_f  \left( P_e^v P_f^w + P_f^v P_e^w + P_f^u E_e \right) 
++ \left\{ \sigma + \frac{N-n}{N} \tau \right\}\left(  \bar P^v P_e^w +P_e^v \bar P^w + \bar P^u  E_e\right)  
+\nonumber \\
+&   - \delta (1- 2 E_e) P_e^u -  \frac{1}{N} \tau \sum_{f
+ }(1-E_f) P_e^u   -  \left\{ \sigma  + \frac{N-n}{N} \tau \right\}
+ (1-\bar E)  P_e^u - \lambda P_e^u;
+\tag{PE}\\ 
+\frac{\mathrm{d}}{\mathrm{d} t}  \bar P^u =&  +\left\{ 2 \sigma+
+  \delta + 2 \frac{N-n}{N} \tau \right\} \bar P^v \bar P^w 
++ \frac{1}{N}\tau \sum_e \left( \bar P^v P_e^w +  P_e^v \bar P^w + \bar E P_e^u \right). 
+\nonumber \\
+& -\left\{\sigma + \delta + \frac{N-n}{N} \tau \right\} (1-2\bar E )
+\bar P^u -  \frac{1}{N}\tau\sum_{f} (1-E_f) \bar P^u
+-  \left\{\frac {N}{N-n} \sigma + \lambda \right\}  \bar P^u
+\tag{PB}
+\end{align}
+
+
+\noindent The $E$-s:
+\begin{align}
+\frac{\mathrm{d}}{\mathrm{d} t} E_e &=
++ \lambda  (1-E_e) - \delta (1-E_e) E_e
+-\frac{1}{N} \tau\sum_{f } (1-E_f)  E_e \nonumber \\
+&
+- \left\{\sigma +\frac{N-n}{N} \tau  \right\} (1-\bar E)  E_e;  
+\tag{EE} \\
+\frac{\mathrm{d}}{\mathrm{d} t} {\bar E} &=
++ \left\{\frac{N}{N-n} \sigma + \lambda \right\}(1-\bar E )  
+-  \left\{ \sigma  + \delta +  \frac{N-n}{N} \tau\right\} (1-\bar E ) \bar E \nonumber \\
+&
+- \frac{1}{N} \tau\sum_{f } (1-E_f) \bar E. 
+\tag{EB} 
+ \end{align}
+
+\newpage
+If we gather terms the way Nicolas like them:
+
+\noindent The $P$-s:
+\begin{align}
+ \frac{\mathrm{d}}{\mathrm{d} t} P_e^u  =&  
++ \delta P_e^v  P_e^w + \frac{1}{N} \tau \sum_f  \left( P_e^v P_f^w +
+  P_f^v P_e^w  \right) + \left\{ \sigma + \frac{N-n}{N} \tau
+\right\}\left(  \bar P^v P_e^w +P_e^v \bar P^w \right)\nonumber \\
+&+ 2 \delta P_e^u E_e + \frac{1}{N} \tau \sum_f  \left( P_f^u E_e 
++ E_f P_e^u \right) + \left\{ \sigma +  \frac{N-n}{N} \tau \right\} \left(\bar P^u  E_e + \bar E  P_e^u\right) \nonumber \\
+& -  ( \delta    +  \sigma  + \tau  + \lambda ) P_e^u;
+\tag{PE}\\ 
+\frac{\mathrm{d}}{\mathrm{d} t}  \bar P^u =& 
+ +\left\{ 2 \sigma+  \delta + 2 \frac{N-n}{N} \tau \right\} \bar P^v \bar P^w  + \frac{1}{N}\tau \sum_e \left( P_e^w \bar P^v +  P_e^v \bar P^w \right) \nonumber \\
+&  +\left\{ 2 \sigma+  2\delta + 2 \frac{N-n}{N} \tau \right\} \bar P^v  \bar E  + \frac{1}{N}\tau \sum_e \left( P_e^u \bar E +  E_e \bar P^u \right) 
+\nonumber \\
+& -\left\{\sigma + \delta +\tau + \frac{N}{N-n} \sigma + \lambda \right\}  \bar P^u
+\tag{PB}
+\end{align}
+
+
+\noindent The $E$-s:
+\begin{align}
+\frac{\mathrm{d}}{\mathrm{d} t} E_e =&
++\delta E_e^2 + \frac{1}{N} \tau\sum_{f } E_f  E_e  + \left\{ \sigma  + \frac{N-n}{N} \tau \right\}\bar E  E_e\nonumber \\
+& - \left\{ \delta + \tau + \sigma + \lambda \right\} E_e +\lambda; \tag{EE} \\
+\frac{\mathrm{d}}{\mathrm{d} t} {\bar E} =&
+\left\{ \sigma  + \delta +  \frac{N-n}{N} \tau\right\}  \bar E^2 +\frac{1}{N} \tau\sum_{f } E_f \bar E \nonumber \\
+& - \left\{ \sigma  + \delta +  \tau + \frac{N}{N-n} \sigma +  \lambda \right\}\bar E  +  \left\{\frac{N}{N-n} \sigma +  \lambda \right\}
+\tag{EB} 
+ \end{align}
+\newpage
+Now $\hat \sigma= \sigma/N$, $\bar P^u = \frac{1}{N}\hat P^u $ and $\bar E = 1-\frac{\hat H }{N}$:
+
+\noindent The $P$-s:
+\begin{align}
+ \frac{\mathrm{d}}{\mathrm{d} t} P_e^u  =&  
++ \delta P_e^v  P_e^w + \frac{1}{N} \tau \sum_f  \left( P_e^v P_f^w +
+  P_f^v P_e^w  \right) + \left\{ N \hat \sigma + \frac{N-n}{N} \tau
+\right\}\left(  \frac{1}{N} \hat P^v P_e^w +P_e^v \frac{1}{N} \hat P^w \right)\nonumber \\
+&+ 2 \delta P_e^u E_e + \frac{1}{N} \tau \sum_f  \left( P_f^u E_e 
++ E_f P_e^u \right) + \left\{ N \hat \sigma +  \frac{N-n}{N} \tau \right\} \left(\frac{1}{N} \hat P^u  E_e + (1-\frac{\hat H}{N})  P_e^u\right) \nonumber \\
+& -  ( \delta    +  N \hat \sigma  + \tau  + \lambda ) P_e^u;
+\tag{PE}\\ 
+\frac{\mathrm{d}}{\mathrm{d} t}  \frac{1}{N} \hat P^u =& 
+ +\left\{ 2 N \hat \sigma+  \delta + 2 \frac{N-n}{N} \tau \right\} \frac{1}{N} \hat P^v \frac{1}{N} \hat P^w  + \frac{1}{N}\tau \sum_e \left( P_e^w \frac{1}{N} \hat P^v +  P_e^v \frac{1}{N} \hat P^w \right) \nonumber \\
+&  +\left\{ 2 N \hat \sigma+  2\delta + 2 \frac{N-n}{N} \tau \right\} \frac{1}{N} \hat P^v  (1-\frac{\hat H}{N})  + \frac{1}{N}\tau \sum_e \left( P_e^u (1-\frac{\hat H}{N}) +  E_e \frac{1}{N} \hat P^u \right) 
+\nonumber \\
+& -\left\{N \hat \sigma + \delta +\tau + \frac{N}{N-n} N \hat \sigma + \lambda \right\}  \frac{1}{N} \hat P^u
+\tag{PB}
+\end{align}
+
+
+\noindent The $E$-s:
+\begin{align}
+\frac{\mathrm{d}}{\mathrm{d} t} E_e =&
++\delta E_e^2 + \frac{1}{N} \tau\sum_{f } E_f  E_e  + \left\{ N \hat \sigma  + \frac{N-n}{N} \tau \right\}(1-\frac{\hat H}{N})  E_e\nonumber \\
+& - \left\{ \delta + \tau + N \hat \sigma + \lambda \right\} E_e +\lambda; \tag{EE} \\
+- \frac{\mathrm{d}}{\mathrm{d} t} \frac{\hat H}{N} =&
+\left\{ N \hat \sigma  + \delta +  \frac{N-n}{N} \tau\right\}  \left(1-\frac{\hat H}{N}\right)^2 +\frac{1}{N} \tau\sum_{f } E_f (1-\frac{\hat H}{N}) \nonumber \\
+& - \left\{ N \hat \sigma  + \delta +  \tau + \frac{N}{N-n} N \hat \sigma +  \lambda \right\}(1-\frac{\hat H}{N})  +  \left\{\frac{N}{N-n} N \hat \sigma +  \lambda \right\}
+\tag{EB} 
+ \end{align}
+\newpage
+After $N \to \infty$:
+
+\noindent The $P$-s:
+\begin{align}
+ \frac{\mathrm{d}}{\mathrm{d} t} P_e^u  =&  
++ \delta P_e^v  P_e^w + \hat \sigma 
+\left( \hat P^v P_e^w +P_e^v \hat P^w \right)\nonumber \\
+&+ 2 \delta P_e^u E_e + \hat \sigma \left(\hat P^u  E_e -\hat H  P_e^u\right) \nonumber \\
+& -  \left\{ \delta + \lambda \right\} P_e^u;
+\tag{PE}\\ 
+\frac{\mathrm{d}}{\mathrm{d} t} \hat P^u =& 
+ +2 \hat \sigma \hat P^v P^w   \nonumber \\
+&  - 2 \hat \sigma \hat P^u \hat H + \tau \sum_e P_e^u 
+\nonumber \\
+& -\left\{ n \hat \sigma + \lambda - \delta -\tau \right\}  \hat P^u
+\tag{PB}
+\end{align}
+
+
+\noindent The $E$-s:
+\begin{align}
+\frac{\mathrm{d}}{\mathrm{d} t} E_e =&
++\delta E_e^2 - \hat \sigma \hat H  E_e\nonumber \\
+& - \left\{ \delta + \lambda \right\} E_e +\lambda; \tag{EE} \\
+ \frac{\mathrm{d}}{\mathrm{d} t} \hat H =&
+- \hat \sigma \hat H^2 + \tau \sum_{f } (1-E_f) \nonumber \\
+& - \left\{ n \hat \sigma + \lambda - \delta - \tau \right\} \hat H
+\tag{EB} 
+ \end{align}
+
+
+\newpage
+Organized for implimentation:
+
+\noindent The $P$-s:
+\begin{align}
+ \frac{\mathrm{d}}{\mathrm{d} t} P_e^u  =&  
++ \delta P_e^v  P_e^w + \hat \sigma 
+\left( \hat P^v P_e^w +P_e^v \hat P^w \right) + \hat \sigma \hat P^u E_e \nonumber \\
+&+\left( 2 \delta E_e - \hat \sigma \hat H - \delta - \lambda \right) P_e^u  
+\tag{PE}\\ 
+\frac{\mathrm{d}}{\mathrm{d} t} \hat P^u =& 
+ +2 \hat \sigma \hat P^v P^w  + \tau \sum_e P_e^u  \nonumber \\
+&  + \left( \delta +\tau - \lambda  - n \hat \sigma - 2 \hat \sigma \hat H \right) \hat P^u
+\tag{PB}
+\end{align}
+
+
+\noindent The $E$-s:
+\begin{align}
+\frac{\mathrm{d}}{\mathrm{d} t} E_e =&
++\delta E_e^2 + \left\{ - \hat \sigma \hat H - \delta - \lambda \right\} E_e +\lambda; \tag{EE} \\
+ \frac{\mathrm{d}}{\mathrm{d} t} \hat H =&
+- \hat \sigma \hat H^2 + \left\{  \delta + \tau - \lambda  - n \hat
+  \sigma \right\} \hat H + \tau \sum_{f } (1-E_f)
+\tag{EB} 
+ \end{align}
+
+\end{document}

@@ -1,0 +1,78 @@
+\documentclass[preprint,superscriptaddress,aip,author-year]{revtex4-1}
+\usepackage{times}
+\usepackage{amsmath}
+
+\begin{document}
+
+The probability of a gene on branch $e$ going extinct is:
+\begin{equation}
+E_e = p^L_e + p^S_e E_f E_g  + p^D_e E_e E_e + \left( \frac{1}{|S|} \sum_h p^T_h E_h
+\right) E_e,
+\end{equation}
+where $|S|$ is the number of branches of $S$ including the stem branch
+leading to the root, the sum goes over all of these, and $f$ and
+$g$ are descendants of $e$, if these do not exist the corresponding
+terms must be dropped. The event
+probabilities are derived from DTL "rates'' according to:
+\begin{align}
+ p^S_e =& 1 / (1 + \delta_e + \tau_e + \lambda_e), \nonumber \\
+ p^D_e =& \delta_e / (1 + \delta_e + \tau_e + \lambda_e),\nonumber \\
+ p^T_e =& \tau_e / (1 + \delta_e + \tau_e + \lambda_e),\nonumber \\
+ p^L_e =& \lambda_e / (1 + \delta_e + \tau_e + \lambda_e)\nonumber. \\
+\end{align}
+
+   The same term $\bar E^T = 1/|S| \sum_h p^T_h E_h$ is present
+  for all $e$, hence more compactly  
+\begin{equation}
+E_e = p^L_e + p^S_e E_f E_g  + p^L_eE_e^2 +\bar E^T E_e.
+\end{equation}
+The equation has the problem of depending on itself ($E_e$) and the
+global average $\bar E^T$ -- we already know $E_f$ and $E_g$ by the
+time we get to branch $e$. What I do
+aside of the usual initial conditions is first set all $E_e$ and $\bar
+E^T$  to zero
+and run a initial round of calculation from the leaf toward the root
+during which I also calculate a first estimate of $\bar E^T$.
+Using these values I then repat this to converge toward fix point values for the $E_e$.    
+
+The probability of gene tree branch $u$ on branch $e$ of $S$ is:
+\begin{align}
+P_{e,u} =&  p^S_e \left( P_{g,v} P_{f,w} + P_{g,w} P_{f,v} + E_f P_{g,u} + P_{f,u} E_g
+\right) \nonumber \\
++& 2 p^D_e \left( P_{e,v} P_{e,w} + P_{e,u} E_e \right) \nonumber \\
++&\left( \frac{1}{|S|} \sum_h p^T_h  P_{h,w} \right)  P_{e,v}  +
+   \left( \frac{1}{|S|} \sum_h p^T_h  P_{h,v} \right) P_{e,w}\nonumber \\ +& \left(
+   \frac{1}{|S|} \sum_h p^T_h  E_h \right)  P_{e,u}  + \left( \frac{1}{|S|} \sum_h p^T_h  P_{u,h} \right)  E_e 
+\end{align}
+Here the recurring terms are $\bar P^T_u = 1/|S| \sum_h p^T_h P_{u,h}$,
+using which we have more compactly   
+\begin{align}
+P_{e,u} =&  p^S_e \left( P_{g,v} P_{f,w} + P_{g,w} P_{f,v} + E_f P_{g,u} + P_{f,u} E_g
+\right) \nonumber \\
++& 2 p^D_e \left( P_{e,v} P_{e,w} + P_{e,u} E_e \right) \nonumber \\
++&\bar P^T_w  P_{e,v}  + \bar P^T_v P_{e,w}\nonumber \\ +& \bar E^T P_{e,u}  + \bar P^T_u  E_e,
+\end{align}
+$f$ and
+$g$ are descendants of $e$, $v$ and
+$w$ are descendants of $u$,  if any of these do not exist the corresponding
+terms must be dropped.
+The equation again has the problem of depending on itself ($P_{e,u}$) and
+the global average $\bar P^T_{u}$ -- we already know $\bar P^T_v,\bar
+P^T_w ,P_{v,*}$ and $P_{w,*}$,
+as well as  all the $P_{*,g}$ and $P_{*,f}$ that we need by the
+time we get to branch $e$ of $S$ and $u$ of $G$. What I do
+aside of the usual initial conditions is first set all $P_{e,u}$ and
+the $\bar
+P^T_u$  to zero
+and run a initial round of calculation from the leaf of both $S$ 
+toward the root and using double recursion along $G$,
+during which I also calculate a first estimate of $\bar
+P^T_u$.
+Using these values I then repat this to converge toward fix point values for the $P_{e,u}$.    
+
+Incorporating amalgamation is straightforward. Reconciliations can be
+obtained by stochastic traceback along $P_{e,u}$ such that the $\bar
+P^T_u$ terms are also expanded to decide where a transfer goes.
+  
+
+\end{document}
