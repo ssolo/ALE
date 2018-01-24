@@ -165,7 +165,7 @@ int main(int argc, char ** argv)
   if (world.rank()==0) cout<< ">logl:\t"<< ll_final << endl;
   if (world.rank()==0) cout<< ">Ts:\tfrom\tto"<< endl;
   if (world.rank()==0) infer_tree->print_branch_counts(samples);
-  return 1;
+  return 0;
   if (world.rank()==0)
     for (map <scalar_type, vector< int > >::iterator it=infer_tree->sort_e.begin();it!=infer_tree->sort_e.end();it++)
       {
