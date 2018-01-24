@@ -39,5 +39,5 @@ int main(int argc, char ** argv)
   cout << burnin<<" burn in per file discarded."<<endl;
   ale->save_state(ale_name);
   cout << "# saved in "<< ale_name<<endl;
-  return 1;
+  return 0;
 }
