@@ -1,4 +1,4 @@
-//all code by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;
+//all code by Szollosi GJ et al.; ssolo@elte.hu; GNU GPL 3.0;
 #pragma once
 
 #define ALE_VERSION "0.4"
