@@ -1,4 +1,4 @@
-//all code by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;
+//all code by Szollosi GJ et al.; ssolo@elte.hu; GNU GPL 3.0;
 #include "ALE.h"
 #include <Bpp/Numeric/Random/RandomTools.h>
 
