@@ -57,7 +57,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 	    int n=time_slices[rank].size(); //Number of branches in that time slice
 	    //vector<vector<scalar_type> > vt_i;
 	    vector<map<int, scalar_type> > vt_i;
-	    for (int t_i=0;t_i<(int)time_slice_times[rank].size();t_i++) //Going through the subslices
+	    for (int t_i=0;t_i<(int)time_slice_times[rank].size()+(rank==last_rank-1) ;t_i++) //Going through the subslices
 	      {
 		//cerr<<"\t\tt_i: "<<t_i<<"\n";
 		//scalar_type t=time_slice_times[rank][t_i];
@@ -214,7 +214,7 @@ scalar_type exODT_model::p(approx_posterior *ale)
 		{
 		  tpdt=t_begin[time_slices[rank][0]];
 		  tpdt_rank=rank;
-		  tpdt_t_i=0;
+		  tpdt_t_i=t_i+1;
 		}
 	      	     
 	      //root

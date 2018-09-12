@@ -247,10 +247,10 @@ int main(int argc, char ** argv)
   tout <<"#D|rank|named_branch|g_id\n;";
   tout <<"#T(|rank|t|named_branch|g_id)>(|rank|t|named_branch|gp_id)>.. or \n";
   tout <<"#>(|rank|t|named_branch|-1), where g_id=-1 is the root of G.\n";
-  tout.close();
 
   for (std::vector<std::string>::iterator it=model->Ttokens.begin();it!=model->Ttokens.end();it++)
     tout << (*it) <<endl;
+  tout.close();
 
   cout << "Transfers in: " << t_name << endl;
   return 0;
