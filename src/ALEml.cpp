@@ -227,8 +227,8 @@ int main(int argc, char ** argv)
   cout << "Results in: " << outname << endl;
   if (ale->last_leafset_id>3)
     {
-      cout << "Calculating consensus tree."<<endl;
-      Tree* con_tree= TreeTools::thresholdConsensus(sample_trees,0.5);
+      cout << "Calculating MRP consensus tree."<<endl;
+      Tree* con_tree= TreeTools::MRP(sample_trees);
 
       string con_name=ale_file+".cons_tree";
 

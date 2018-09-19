@@ -305,14 +305,21 @@ int main(int argc, char ** argv)
   cout << "Results in: " << outname << endl;
   if (ale->last_leafset_id>3)
     {
-      cout << "Calculating consensus tree."<<endl;
-      Tree* con_tree= TreeTools::thresholdConsensus(sample_trees,0.5);
+      //      cout << "Calculating consensus tree."<<endl;
+      //cout << TreeTools::treeToParenthesis(sample_trees[0])<<std::endl;
+      cout << "Calculating MRP tree."<<endl;
+      
+      
+      Tree* con_tree= TreeTools::MRP(sample_trees);
+      //cout << "Calculating threshold consensus tree."<<endl;
+      
+      //con_tree= TreeTools::thresholdConsensus(sample_trees,0.5);
 
       string con_name=ale_file+".ucons_tree";
 
       ofstream con_out( con_name.c_str() );
       con_out <<  "#ALEsample using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl;
-      TreeTools::computeBootstrapValues(*con_tree,sample_trees);
+      //TreeTools::computeBootstrapValues(*con_tree,sample_trees);
       string con_tree_sup=TreeTemplateTools::treeToParenthesis(*con_tree);
       con_out << con_tree_sup << endl;
       cout << endl<< "Consensus tree in " << con_name<< endl;
