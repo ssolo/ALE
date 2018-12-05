@@ -93,11 +93,14 @@ int main(int argc, char ** argv)
 
   if (argc<3)
     {
-      cout << "\nUsage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=number_of_samples separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence fraction_missing=file_with_fraction_of_missing_genes_per_species output_species_tree=n" << endl;
+      cout << "\nUsage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=number_of_samples separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence fraction_missing=file_with_fraction_of_missing_genes_per_species output_species_tree=n S_branch_lengths:root_length rate_mutiplier:rate_name:branch_id:value" << endl;
       cout << "\n1st example: we fix the DTL values and do not perform any optimization \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ delta=0.05 tau=0.1 lambda=0.2 " << endl;
       cout << "\n2nd example: we fix the T value to 0 to get a DL-only model and optimize the DL parameters \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ tau=0\n" << endl;
       cout << "\n3rd example: we provide a file giving the expected fraction of missing genes in each species \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ fraction_missing=fraction_missing.txt\n" << endl;
       cout << "\n4th example: same as 3rd, but outputs the annotated species tree to a file \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ fraction_missing=fraction_missing.txt output_species_tree=y\n" << endl;
+      cout << "\n5th example: use species tree branch lengths as fixed rate multipliers with root length specifed as 0.2 (default 1.)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale S_branch_lengths:0.2 \n" << endl;
+      cout << "\n6th example: use fixed branchrate multiplier for rate tau on branch 43 with value 0.0 (no transfer to branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:tau:43:0.0 \n" << endl;
+
       return 0;
     }
 
@@ -179,7 +182,7 @@ int main(int argc, char ** argv)
       fractionMissingFile=tokens[1];
       cout << "# File containing fractions of missing genes set to " << fractionMissingFile << endl;
     }
-    else if (tokens[0]=="bl")
+    else if (tokens[0]=="S_branch_lengths")
       {
 	model->set_model_parameter("undatedBL",true);
 	if (tokens.size()==1)
