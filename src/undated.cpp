@@ -20,7 +20,7 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
   S_root = S->getRootNode();
   vector <Node*> nodes = TreeTemplateTools::getNodes(*S_root);
 
-  for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ ) (*it)->setDistanceToFather(1);
+  //for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ ) (*it)->setDistanceToFather(1);
 
   for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
   if ((*it)->isLeaf())
@@ -50,6 +50,9 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
   {
     Node * node = (*it).second;
     extant_species[last_branch]=node->getName();
+    //stringstream name;
+    //name << extant_species[last_branch] <<"("<< last_branch<<")";
+    //node->setName(name);
     node_ids[node]=last_branch;
     id_nodes[last_branch]=node;
     last_branch++;
@@ -59,6 +62,11 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
     daughter[last_branch]=-1;
     // a leaf
     son[last_branch]=-1;
+    vector_parameter["BL_rate_multiplier"].push_back(node->getDistanceToFather());
+    vector_parameter["rate_multiplier_tau"].push_back(1);
+    vector_parameter["rate_multiplier_delta"].push_back(1);
+    vector_parameter["rate_multiplier_lambda"].push_back(1);
+
   }
   //ad-hoc postorder
   vector<Node*> next_generation;
@@ -87,8 +95,13 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
           id_nodes[last_branch]=father;
           stringstream name;
           name << last_branch;
-          father->setBranchProperty("ID",BppString(name.str()));
 
+	  vector_parameter["BL_rate_multiplier"].push_back(node->getDistanceToFather());
+	  vector_parameter["rate_multiplier_tau"].push_back(1);
+	  vector_parameter["rate_multiplier_delta"].push_back(1);
+	  vector_parameter["rate_multiplier_lambda"].push_back(1);
+
+          father->setBranchProperty("ID",BppString(name.str()));	  
           last_branch++;
 
           saw.insert(father);
@@ -100,6 +113,12 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
     for (vector<Node*>::iterator  it=new_generation.begin();it!=new_generation.end();it++ )
     next_generation.push_back((*it));
   }
+
+  vector_parameter["BL_rate_multiplier"][last_branch]=scalar_parameter["root_BL"];
+  vector_parameter["rate_multiplier_tau"].push_back(1);
+  vector_parameter["rate_multiplier_delta"].push_back(1);
+  vector_parameter["rate_multiplier_lambda"].push_back(1);
+
 
   for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
   {
@@ -251,9 +270,29 @@ void exODT_model::calculate_undatedEs()
   mPTE_ancestral_correction.clear();
   PD.clear();
   PT.clear();
+  tauT.clear();
   PL.clear();
   PS.clear();
   scalar_type P_T=0;
+
+  for (int e=0;e<last_branch;e++)
+    {
+      if (scalar_parameter["undatedBL"]==true)
+	{
+	  vector_parameter["tau"][e]*=vector_parameter["rate_multiplier_tau"][e]*vector_parameter["BL_rate_multiplier"][e];
+	  tauT.push_back(vector_parameter["tau"][e]);
+	  vector_parameter["delta"][e]*=vector_parameter["rate_multiplier_delta"][e]*vector_parameter["BL_rate_multiplier"][e];
+	  vector_parameter["lambda"][e]*=vector_parameter["rate_multiplier_lambda"][e]*vector_parameter["BL_rate_multiplier"][e];
+	}
+      else
+	{
+	  vector_parameter["tau"][e]*=vector_parameter["rate_multiplier_tau"][e];
+	  tauT.push_back(vector_parameter["tau"][e]);
+	  vector_parameter["delta"][e]*=vector_parameter["rate_multiplier_delta"][e];
+	  vector_parameter["lambda"][e]*=vector_parameter["rate_multiplier_lambda"][e];
+	}
+    }
+  
   for (int f=0;f<last_branch;f++)
     P_T+=vector_parameter["tau"][f]/(scalar_type)last_branch;
 
@@ -269,6 +308,7 @@ void exODT_model::calculate_undatedEs()
     P_S/=tmp;
     PD.push_back(P_D);
     PT.push_back(P_T/tmp);
+    tauT[e]/=tmp;
     PL.push_back(P_L);
     PS.push_back(P_S);
     uE.push_back(0);
@@ -299,7 +339,7 @@ void exODT_model::calculate_undatedEs()
           //int f=(*it).first;
           int f=(*it);
           //if (ancestral[e][f]==1)
-          mPTE_ancestral_correction[e]+=  (PT[f]/(scalar_type)last_branch)*uE[f]; //That's how we forbid transfers to ancestors of a branch
+          mPTE_ancestral_correction[e]+=  (tauT[f]/(scalar_type)last_branch)*uE[f]; //That's how we forbid transfers to ancestors of a branch
         }
       }
     }
@@ -316,7 +356,7 @@ void exODT_model::calculate_undatedEs()
         int g=son[e];
         uE[e]=PL[e] + PS[e]*uE[f]*uE[g] + PD[e]*uE[e]*uE[e] + uE[e]*(mPTE- mPTE_ancestral_correction[e]);
       }
-      newmPTE+=(PT[e]/(scalar_type)last_branch) *uE[e];
+      newmPTE+=(tauT[e]/(scalar_type)last_branch) *uE[e];
     }
     mPTE=newmPTE;
   } // End of the loop to compute mPTE
@@ -335,7 +375,7 @@ void exODT_model::calculate_undatedEs()
       int g=son[e];
       uE[e]=PL[e] + PS[e]*uE[f]*uE[g] + PD[e]*uE[e]*uE[e] + uE[e]*(mPTE- mPTE_ancestral_correction[e]);
     }
-    newmPTE+=(PT[e]/(scalar_type)last_branch) *uE[e];
+    newmPTE+=(tauT[e]/(scalar_type)last_branch) *uE[e];
   }
   mPTE=newmPTE;
 
@@ -581,7 +621,7 @@ scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
         uq_sum+=((mPTuq[i]-mPTuq_ancestral_correction[i][e])*uE[e] + uq[i][e]* (mPTE- mPTE_ancestral_correction[e]) );
         if (uq_sum<EPSILON) uq_sum=EPSILON;
         uq[i][e]=uq_sum;
-        new_mPTuq +=(PT[e]/(scalar_type)last_branch)*uq_sum;
+        new_mPTuq +=(tauT[e]/(scalar_type)last_branch)*uq_sum;
         mPTuq_ancestral_correction[i][e]=0;
         //for (map<int,int>::iterator it=ancestral[e].begin(); it!=ancestral[e].end();it++)
         for (vector<int>::iterator it=ancestors[e].begin(); it!=ancestors[e].end();it++)
@@ -589,7 +629,7 @@ scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
           //int f=(*it).first;
           int f=(*it);
           //if (ancestral[e][f]==1)
-          mPTuq_ancestral_correction[i][e]+=(PT[f]/(scalar_type)last_branch)*uq_sum;
+          mPTuq_ancestral_correction[i][e]+=(tauT[f]/(scalar_type)last_branch)*uq_sum;
         }
       }
       mPTuq[i]=new_mPTuq;
@@ -760,8 +800,8 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
       for (int f=0;f<last_branch;f++)
       if (not ancestral[e][f])
       {
-        uq_sum+=uq[gp_i][e]*(PT[f]/(scalar_type)last_branch)*uq[gpp_i][f]*pp+EPSILON;
-        uq_sum+=uq[gpp_i][e]*(PT[f]/(scalar_type)last_branch)*uq[gp_i][f]*pp+EPSILON;
+        uq_sum+=uq[gp_i][e]*(tauT[f]/(scalar_type)last_branch)*uq[gpp_i][f]*pp+EPSILON;
+        uq_sum+=uq[gpp_i][e]*(tauT[f]/(scalar_type)last_branch)*uq[gp_i][f]*pp+EPSILON;
       }
     }
   }
@@ -782,8 +822,8 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
   for (int f=0;f<last_branch;f++)
   if (not ancestral[e][f])
   {
-    uq_sum+=(PT[f]/(scalar_type)last_branch)*uq[i][f]*uE[e]+EPSILON;
-    uq_sum+=(PT[f]/(scalar_type)last_branch)*uE[f]*uq[i][e]+EPSILON;
+    uq_sum+=(tauT[f]/(scalar_type)last_branch)*uq[i][f]*uE[e]+EPSILON;
+    uq_sum+=(tauT[f]/(scalar_type)last_branch)*uE[f]*uq[i][e]+EPSILON;
   }
 
   //######################################################################################################################
@@ -853,7 +893,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
         if (not (f<last_leaf)) fstring << f; else fstring << extant_species[f];
         string fstr=fstring.str();
 
-        uq_resum+=uq[gp_i][e]*(PT[f]/(scalar_type)last_branch)*uq[gpp_i][f]*pp+EPSILON;
+        uq_resum+=uq[gp_i][e]*(tauT[f]/(scalar_type)last_branch)*uq[gpp_i][f]*pp+EPSILON;
         if (r*uq_sum<uq_resum)
         {
           register_Tfrom(e);
@@ -865,7 +905,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
 
           return "("+sample_undated(e,gp_i,"S")+","+sample_undated(f,gpp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
         }
-        uq_resum+=uq[gpp_i][e]*(PT[f]/(scalar_type)last_branch)*uq[gp_i][f]*pp+EPSILON;
+        uq_resum+=uq[gpp_i][e]*(tauT[f]/(scalar_type)last_branch)*uq[gp_i][f]*pp+EPSILON;
         if (r*uq_sum<uq_resum)
         {
           register_Tfrom(e);
@@ -914,7 +954,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
     if (not (f<last_leaf)) fstring << f; else fstring << extant_species[f];
     string fstr=fstring.str();
 
-    uq_resum+=(PT[f]/(scalar_type)last_branch)*uq[i][f]*uE[e]+EPSILON;
+    uq_resum+=(tauT[f]/(scalar_type)last_branch)*uq[i][f]*uE[e]+EPSILON;
     if (r*uq_sum<uq_resum)
     {
       register_Tfrom(e);
@@ -928,7 +968,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
       register_L(e);
       return sample_undated(f,i,"T",".T@"+estr+"->"+fstr+branch_string);
     }
-    uq_resum+=(PT[f]/(scalar_type)last_branch)*uE[f]*uq[i][e]+EPSILON;
+    uq_resum+=(tauT[f]/(scalar_type)last_branch)*uE[f]*uq[i][e]+EPSILON;
     if (r*uq_sum<uq_resum)
     {
       return sample_undated(e,i,"S");
@@ -1088,8 +1128,9 @@ string exODT_model::feSPR(int e, int f)
 
   f_father->addSon(e_node);
 
-  for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ ) (*it)->setDistanceToFather(1);
-
+  //for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ ) (*it)->setDistanceToFather(1);
+  //?
+  
   return TreeTemplateTools::treeToParenthesis(*newS,false,"ID");
 }
 

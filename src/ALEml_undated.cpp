@@ -27,7 +27,7 @@ public:
   {
     //We declare parameters here:
  //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
-      IntervalConstraint* constraint = new IntervalConstraint ( 1e-6, 10-1e-6, true, true );
+      IntervalConstraint* constraint = new IntervalConstraint ( 1e-10, 100-1e-10, true, true );
       delta_fixed=delta_fixed_in;
       tau_fixed=tau_fixed_in;
       lambda_fixed=lambda_fixed_in;
@@ -131,18 +131,21 @@ int main(int argc, char ** argv)
   bool delta_fixed=false;
   bool tau_fixed=false;
   bool lambda_fixed=false;
-  scalar_type delta=0.01,tau=0.01,lambda=0.1;
+  scalar_type delta=1e-6,tau=1e-6,lambda=1e-6;
   string fractionMissingFile = "";
   string outputSpeciesTree = "";
+  map <string, map <int,scalar_type> >rate_multipliers;
+  model->set_model_parameter("undatedBL",false);
   for (int i=3;i<argc;i++)
   {
     string next_field=argv[i];
+
     vector <string> tokens;
-    boost::split(tokens,next_field,boost::is_any_of("="),boost::token_compress_on);
+    boost::split(tokens,next_field,boost::is_any_of("=:"),boost::token_compress_on);
     if (tokens[0]=="sample")
     samples=atoi(tokens[1].c_str());
     else if (tokens[0]=="separators")
-    model->set_model_parameter("gene_name_separators", tokens[1]);
+      model->set_model_parameter("gene_name_separators", tokens[1]);
     else if (tokens[0]=="delta")
     {
       delta=atof(tokens[1].c_str());
@@ -176,6 +179,31 @@ int main(int argc, char ** argv)
       fractionMissingFile=tokens[1];
       cout << "# File containing fractions of missing genes set to " << fractionMissingFile << endl;
     }
+    else if (tokens[0]=="bl")
+      {
+	model->set_model_parameter("undatedBL",true);
+	if (tokens.size()==1)
+	  {
+	    model->set_model_parameter("root_BL", 1);
+	    cout << "# unsing branch lengths of input S tree as rate multipliers with 1 at root! "<< endl;
+	  }
+	else
+	  {
+	    scalar_type root_rm=atof(tokens[1].c_str());
+	    model->set_model_parameter("root_BL", root_rm);
+	    cout << "# unsing branch lengths of input S tree as rate multipliers with "<<root_rm<<" at root! "<< endl;
+
+	  }
+	
+      }
+    else if (tokens[0]=="rate_multiplier")
+      {
+	string rate_name=tokens[1];
+	int e=atoi(tokens[2].c_str());
+	scalar_type rm=atof(tokens[3].c_str());
+	cout << "# rate multiplier for rate " << rate_name << " on branch with ID " << e<< " set to " << rm << endl;
+	rate_multipliers["rate_multiplier_"+rate_name][e]=rm;
+      }
     else if (tokens[0]=="output_species_tree")
     {
       std::string valArg = boost::algorithm::to_lower_copy(tokens[1]);
@@ -194,7 +222,13 @@ int main(int argc, char ** argv)
 
   model->set_model_parameter("BOOTSTRAP_LABELS","yes");
   model->construct_undated(Sstring, fractionMissingFile);
-
+  
+  for (auto it=rate_multipliers.begin();it!=rate_multipliers.end();it++)
+    for (auto jt=(*it).second.begin();jt!=(*it).second.end();jt++)
+      {
+	model->vector_parameter[(*it).first][(*jt).first]=(*jt).second;
+      }
+  
   model->set_model_parameter("seq_beta", beta);
   model->set_model_parameter("O_R", O_R);
   //a set of inital rates
@@ -334,11 +368,11 @@ int main(int argc, char ** argv)
       if  (model->T_to_from[e][f]>0)
 	{
 	  if (e<model->last_leaf)
-	    tout << "\t" << model->node_name[model->id_nodes[e]];
+	    tout  << model->node_name[model->id_nodes[e]] <<"("<<f<<")";
 	  else
 	    tout << "\t" << e;
 	  if (f<model->last_leaf)
-	    tout << "\t" << model->node_name[model->id_nodes[f]];
+	    tout << "\t" << model->node_name[model->id_nodes[f]] <<"("<<f<<")";
 	  else
 	    tout << "\t" << f;
 	  tout << "\t" << model->T_to_from[e][f]/samples <<  endl;
