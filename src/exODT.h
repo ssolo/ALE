@@ -109,7 +109,7 @@ class exODT_model
   std::vector < std::vector <scalar_type> > mPTuq_ancestral_correction;
 
   std::vector<scalar_type> PD; // Duplication probability, per branch
-  std::vector<scalar_type> PT; // Transfer probability, per branch
+  std::vector<scalar_type> wT; // Transfer probability, per branch
   std::vector<scalar_type> tau_norm; // Transfer rate, per branch
 
   std::vector<scalar_type> PL; // Loss probability, per branch
