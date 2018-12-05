@@ -371,7 +371,7 @@ int main(int argc, char ** argv)
       if  (model->T_to_from[e][f]>0)
 	{
 	  if (e<model->last_leaf)
-	    tout  << model->node_name[model->id_nodes[e]] <<"("<<f<<")";
+	    tout  << model->node_name[model->id_nodes[e]] <<"("<<e<<")";
 	  else
 	    tout << "\t" << e;
 	  if (f<model->last_leaf)

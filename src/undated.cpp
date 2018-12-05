@@ -989,7 +989,7 @@ string exODT_model::counts_string_undated(scalar_type samples)
   {
     bool isleaf=e<last_leaf;
     stringstream named_branch;
-    if (e<last_leaf) named_branch << extant_species[e]; else  named_branch << e;
+    if (e<last_leaf) named_branch << extant_species[e] << "("<<e<<")"; else  named_branch << e;
 
     if (not isleaf)
     out<< "S_internal_branch\t"<< named_branch.str() << "\t"
