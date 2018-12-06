@@ -54,6 +54,10 @@ lambda=LossRate : loss rate.
 
 beta=weight_of_sequence_evidence : how much sequence data will be trusted. Values higher than 1 mean the gene trees coming from the sequences alone is more trusted than by default; values lower than 1 mean that the gene trees seem not very trustworthy. Defaults to 1.
 
+S_branch_lengths:value : use species tree branch lengths as fixed rate multipliers with root length specifed with value (default 1.).
+
+rate_multiplier:rate_name:branch_id:value : rate_name one of "tau_to" (fixed branch rate multiplier for rate of Ts _to_ branch), "tau_from" (fixed  branch rate multiplier for rate of Ts _from_ branch); "delta" (fixed  branch rate multiplier for rate of Ds on branch); "lambda" (fixed  branch rate multiplier for rate of Ls on branch); branch_id as shown in .uml_rec;  no defaults.
+
 fraction_missing=fraction_missing.txt : file containing the expected fraction of missing genes per species, in the format "species_name:fraction", where species_name should match the species name in the species tree, and fraction should be a floating number between 0 and 1. There should be as many lines as there are species.
 
 #### Bayesian MCMC sampling with ALEmcmc_undated
