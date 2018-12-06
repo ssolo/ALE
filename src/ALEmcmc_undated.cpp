@@ -173,6 +173,12 @@ int main(int argc, char ** argv)
     cout << "\nExample:\n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ O_R=1 delta=0.01 tau=0.01 lambda=0.1 sampling_rate=10 beta=1\n" << endl;
 		cout << "\n2nd example: we provide a file giving the expected fraction of missing genes in each species \n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ fraction_missing=fraction_missing.txt\n" << endl;
 		cout << "\n3rd example: same as 2nd, but outputs the annotated species tree to a file \n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ fraction_missing=fraction_missing.txt output_species_tree=y\n" << endl;
+		      cout << "\n4th example: use species tree branch lengths as fixed rate multipliers with root length specifed as 0.2 (default 1.)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale S_branch_lengths:0.2 \n" << endl;
+      cout << "\n5.1th example: use fixed branchrate multiplier for rate of Ts _to_ branch 43 with value 0.0 (i.e. no transfer to branch)\n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:tau_to:43:0.0 \n" << endl;
+      cout << "\n5.2th example: use fixed branchrate multiplier for rate of Ts _from_ branch 43 with value 0.0 (i.e no transfer from branch)\n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:tau_from:43:0.0 \n" << endl;
+      cout << "\n5.3th example: use fixed branchrate multiplier for rate Ds on branch 43 with value 0.0 (no duplications on branch)\n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:delta:43:0.0 \n" << endl;
+      cout << "\n5.4th example: use fixed branchrate multiplier for rate Ls on branch 43 with value 0.0 (no losses on branch)\n ./ALEmcmc_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:lambda:43:0.0 \n" << endl;
+
 
     return 0;
   }
@@ -211,13 +217,15 @@ int main(int argc, char ** argv)
 	scalar_type beta=1;
 
 	string fractionMissingFile = "";
+	map <string, map <int,scalar_type> >rate_multipliers;
+
 	string outputSpeciesTree = "";
 
 	for (int i=3;i<argc;i++)
 	{
 		string next_field=argv[i];
 		vector <string> tokens;
-		boost::split(tokens,next_field,boost::is_any_of("="),boost::token_compress_on);
+		boost::split(tokens,next_field,boost::is_any_of("=:"),boost::token_compress_on);
 		if (tokens[0]=="sample")
 		samples=atof(tokens[1].c_str());
 		else if (tokens[0]=="separators")
@@ -267,13 +275,45 @@ int main(int argc, char ** argv)
 					cout << "# outputting the annotated species tree to "<< outputSpeciesTree << endl;
 			}
 		}
+		else if (tokens[0]=="S_branch_lengths")
+		  {
+		    model->set_model_parameter("undatedBL",true);
+		    if (tokens.size()==1)
+		      {
+			model->set_model_parameter("root_BL", 1);
+			cout << "# unsing branch lengths of input S tree as rate multipliers with 1 at root! "<< endl;
+		      }
+		    else
+		      {
+			scalar_type root_rm=atof(tokens[1].c_str());
+			model->set_model_parameter("root_BL", root_rm);
+			cout << "# unsing branch lengths of input S tree as rate multipliers with "<<root_rm<<" at root! "<< endl;
+
+		      }
+		    
+		  }
+		else if (tokens[0]=="rate_multiplier")
+		  {
+		    string rate_name=tokens[1];
+		    int e=atoi(tokens[2].c_str());
+		    scalar_type rm=atof(tokens[3].c_str());
+		    cout << "# rate multiplier for rate " << rate_name << " on branch with ID " << e<< " set to " << rm << endl;
+		    rate_multipliers["rate_multiplier_"+rate_name][e]=rm;
+		  }
+
 
 	}
 
 
   model->set_model_parameter("BOOTSTRAP_LABELS","yes");
-	model->set_model_parameter("seq_beta", beta);
+  model->set_model_parameter("seq_beta", beta);
+  for (auto it=rate_multipliers.begin();it!=rate_multipliers.end();it++)
+    for (auto jt=(*it).second.begin();jt!=(*it).second.end();jt++)
+      {
+	model->vector_parameter[(*it).first][(*jt).first]=(*jt).second;
+      }
 
+  
   model->construct_undated(Sstring, fractionMissingFile);
 
   double currentOrigination = RandomTools::randExponential(priorOrigination) ;
