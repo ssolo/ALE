@@ -68,6 +68,7 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
     wT.push_back(1);
     vector_parameter["rate_multiplier_delta"].push_back(1);
     vector_parameter["rate_multiplier_lambda"].push_back(1);
+    vector_parameter["rate_multiplier_O"].push_back(1);
 
   }
   //ad-hoc postorder
@@ -104,6 +105,7 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
           wT.push_back(1);
 	  vector_parameter["rate_multiplier_delta"].push_back(1);
 	  vector_parameter["rate_multiplier_lambda"].push_back(1);
+	  vector_parameter["rate_multiplier_O"].push_back(1);
 
           father->setBranchProperty("ID",BppString(name.str()));	  
           last_branch++;
@@ -124,6 +126,7 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
   wT.push_back(1);
   vector_parameter["rate_multiplier_delta"].push_back(1);
   vector_parameter["rate_multiplier_lambda"].push_back(1);
+  vector_parameter["rate_multiplier_O"].push_back(1);
 
 
   for (map <Node *,int >::iterator it=node_ids.begin();it!=node_ids.end();it++ )
@@ -658,8 +661,8 @@ scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
     O_norm=0;
     for (int e=0;e<last_branch;e++)
     {
-      scalar_type O_p=1;
-      if ( e==(last_branch-1) ) O_p=scalar_parameter["O_R"];
+      scalar_type O_p=vector_parameter["rate_multiplier_O"][e];
+      if ( e==(last_branch-1) and O_p==1) O_p=scalar_parameter["O_R"];
       O_norm+=O_p;
       root_sum+=uq[root_i][e]*O_p;
       survive+=(1-uE[e]);

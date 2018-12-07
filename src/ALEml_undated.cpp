@@ -103,6 +103,7 @@ int main(int argc, char ** argv)
       cout << "\n6.2th example: use fixed branchrate multiplier for rate of Ts _from_ branch 43 with value 0.0 (i.e no transfer from branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:tau_from:43:0.0 \n" << endl;
       cout << "\n6.3th example: use fixed branchrate multiplier for rate Ds on branch 43 with value 0.0 (no duplications on branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:delta:43:0.0 \n" << endl;
       cout << "\n6.4th example: use fixed branchrate multiplier for rate Ls on branch 43 with value 0.0 (no losses on branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:lambda:43:0.0 \n" << endl;
+      cout << "\n6.5th example: use fixed multiplier for Origination on branch 43 with value 0.0 (no origination on branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:O:43:0.0 \n" << endl;
 
       return 0;
     }
