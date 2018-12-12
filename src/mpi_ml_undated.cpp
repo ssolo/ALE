@@ -148,6 +148,12 @@ int main(int argc, char ** argv)
   infer_tree->model->set_model_parameter("tau",tau);
   infer_tree->model->set_model_parameter("lambda",lambda);  
   infer_tree->calculate_pun();
+  infer_tree->calculate_pun();
+  infer_tree->calculate_pun();
+  infer_tree->calculate_pun();
+  infer_tree->calculate_pun();
+  infer_tree->calculate_pun();
+  infer_tree->calculate_pun();
 
   
   scalar_type samples=1;

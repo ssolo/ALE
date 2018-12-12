@@ -902,10 +902,12 @@ scalar_type mpi_tree::calculate_pun(int samples)
 	model->T_to_from[e][f]=0;
 
   //boost::timer * t = new boost::timer();
+  model->calculate_undatedEs();
+
   for (int i=0;i<(int)ale_pointers.size();i++)
     {
       //if (rank==server) cout << rank <<" at " <<round(i/(float)ale_pointers.size()*100.)<<" %, strats "<< client_fnames[i] << endl;
-      model->calculate_undatedEs();
+      //model->calculate_undatedEs();
       scalar_type tmpp=model->pun(ale_pointers[i]);
       fout << "started "<<client_fnames[i] << " ll="<< log(tmpp)<<endl;
       for (int si=0;si< samples;si++)

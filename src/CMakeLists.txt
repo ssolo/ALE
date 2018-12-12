@@ -67,10 +67,16 @@ target_link_libraries(ls_leaves exODT
   ${BPP_LIBRARIES}
 )
 
-add_executable(times times.cpp)
-target_link_libraries(times exODT
+add_executable(parse_maxtic parse_maxtic.cpp)
+target_link_libraries(parse_maxtic exODT
   ${BPP_LIBRARIES}
 )
+
+add_executable(bls bls.cpp)
+target_link_libraries(bls exODT
+  ${BPP_LIBRARIES}
+)
+
 
 add_executable(times_undated times_undated.cpp)
 target_link_libraries(times_undated exODT
@@ -139,13 +145,13 @@ target_link_libraries(mpi_ml_undated exODT
   ${BPP_LIBRARIES}
 )   
 
-#add_executable(mpi_ml-bw_undated mpi_tree.cpp mpi_ml-bw_undated.cpp)
-#target_link_libraries(mpi_ml-bw_undated exODT
-#  ${Boost_MPI_LIBRARY}
-#  ${Boost_SERIALIZATION_LIBRARY}
-#  ${MPI_LIBRARIES}
-#  ${BPP_LIBRARIES}
-#)
+add_executable(mpi_ml-bw_undated mpi_tree.cpp mpi_ml-bw_undated.cpp)
+target_link_libraries(mpi_ml-bw_undated exODT
+  ${Boost_MPI_LIBRARY}
+  ${Boost_SERIALIZATION_LIBRARY}
+  ${MPI_LIBRARIES}
+  ${BPP_LIBRARIES}
+)
 
 #add_executable(mpi_S_ml mpi_tree.h mpi_tree.cpp mpi_S_ml.cpp)
 #target_link_libraries(mpi_S_ml exODT

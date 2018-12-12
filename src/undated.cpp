@@ -66,6 +66,9 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
     vector_parameter["rate_multiplier_tau_to"].push_back(1);
     vector_parameter["rate_multiplier_tau_from"].push_back(1);
     wT.push_back(1);
+    rmD.push_back(1);
+    rmT.push_back(1);
+    rmL.push_back(1);	    
     vector_parameter["rate_multiplier_delta"].push_back(1);
     vector_parameter["rate_multiplier_lambda"].push_back(1);
     vector_parameter["rate_multiplier_O"].push_back(1);
@@ -103,6 +106,9 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
           vector_parameter["rate_multiplier_tau_to"].push_back(1);
           vector_parameter["rate_multiplier_tau_from"].push_back(1);
           wT.push_back(1);
+          rmD.push_back(1);
+          rmT.push_back(1);
+          rmL.push_back(1);	    
 	  vector_parameter["rate_multiplier_delta"].push_back(1);
 	  vector_parameter["rate_multiplier_lambda"].push_back(1);
 	  vector_parameter["rate_multiplier_O"].push_back(1);
@@ -282,22 +288,46 @@ void exODT_model::calculate_undatedEs()
   PL.clear();
   PS.clear();
   //scalar_type P_T=0;
+  map <string,scalar_type> rm_norms;
+  rm_norms["tau_to"]=0;
+  rm_norms["tau_from"]=0;
+  rm_norms["delta"]=0;
+  rm_norms["lambda"]=0;
+  rm_norms["O"]=0;
+    
+  for (int e=0;e<last_branch;e++)
+    {
+      rm_norms["tau_to"]+=vector_parameter["rate_multiplier_tau_to"][e];
+      rm_norms["tau_from"]+=vector_parameter["rate_multiplier_tau_from"][e];
+      rm_norms["delta"]+=vector_parameter["rate_multiplier_delta"][e];
+      rm_norms["lambda"]+=vector_parameter["rate_multiplier_lambda"][e];
+      rm_norms["O"]+=vector_parameter["rate_multiplier_O"][e];      
+    }
+  for (int e=0;e<0*last_branch;e++)
+    {
+      vector_parameter["rate_multiplier_tau_to"][e]/=rm_norms["tau_to"];
+      vector_parameter["rate_multiplier_tau_from"][e]/=rm_norms["tau_from"];
+      vector_parameter["rate_multiplier_delta"][e]/=rm_norms["delta"];
+      vector_parameter["rate_multiplier_lambda"][e]/=rm_norms["lambda"];
+      vector_parameter["rate_multiplier_O"][e]/=rm_norms["O"];
+    }
 
+  
   for (int e=0;e<last_branch;e++)
     {
       if (scalar_parameter["undatedBL"]==true)
 	{
 	  wT[e]=vector_parameter["rate_multiplier_tau_to"][e]*vector_parameter["BL_rate_multiplier"][e];
-	  vector_parameter["tau"][e]*=vector_parameter["rate_multiplier_tau_from"][e]*vector_parameter["BL_rate_multiplier"][e];
-	  vector_parameter["delta"][e]*=vector_parameter["rate_multiplier_delta"][e]*vector_parameter["BL_rate_multiplier"][e];
-	  vector_parameter["lambda"][e]*=vector_parameter["rate_multiplier_lambda"][e]*vector_parameter["BL_rate_multiplier"][e];
+	  rmT[e]=vector_parameter["tau"][e]*vector_parameter["rate_multiplier_tau_from"][e]*vector_parameter["BL_rate_multiplier"][e];
+	  rmD[e]=vector_parameter["delta"][e]*vector_parameter["rate_multiplier_delta"][e]*vector_parameter["BL_rate_multiplier"][e];
+	  rmL[e]=vector_parameter["lambda"][e]*vector_parameter["rate_multiplier_lambda"][e]*vector_parameter["BL_rate_multiplier"][e];
 	}
       else
 	{
 	  wT[e]=vector_parameter["rate_multiplier_tau_to"][e];
-	  vector_parameter["tau"][e]*=vector_parameter["rate_multiplier_tau_from"][e];
-	  vector_parameter["delta"][e]*=vector_parameter["rate_multiplier_delta"][e];
-	  vector_parameter["lambda"][e]*=vector_parameter["rate_multiplier_lambda"][e];
+	  rmT[e]=vector_parameter["tau"][e]*vector_parameter["rate_multiplier_tau_from"][e];
+	  rmD[e]=vector_parameter["delta"][e]*vector_parameter["rate_multiplier_delta"][e];
+	  rmL[e]=vector_parameter["lambda"][e]*vector_parameter["rate_multiplier_lambda"][e];
 	}
     }
    scalar_type tau_sum=0;
@@ -308,9 +338,9 @@ void exODT_model::calculate_undatedEs()
   for (int e=0;e<last_branch;e++)
   {
     //cout << e << " is " << node_name[id_nodes[e]] << endl;
-    scalar_type P_D=vector_parameter["delta"][e];
-    scalar_type P_T=vector_parameter["tau"][e];
-    scalar_type P_L=vector_parameter["lambda"][e];    
+    scalar_type P_D=rmD[e];
+    scalar_type P_T=rmT[e];
+    scalar_type P_L=rmL[e];    
     scalar_type P_S=1;
 
     scalar_type tmp=P_D+P_T+P_L+P_S;
