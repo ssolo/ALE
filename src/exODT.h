@@ -110,6 +110,11 @@ class exODT_model
 
   std::vector<scalar_type> PD; // Duplication probability, per branch
   std::vector<scalar_type> wT; // Transfer probability, per branch
+
+  std::vector<scalar_type> rmD; // Transfer probability, per branch
+  std::vector<scalar_type> rmT; // Transfer probability, per branch
+  std::vector<scalar_type> rmL; // Transfer probability, per branch
+
   std::vector<scalar_type> tau_norm; // Transfer rate, per branch
 
   std::vector<scalar_type> PL; // Loss probability, per branch
