@@ -67,15 +67,15 @@ target_link_libraries(ls_leaves exODT
   ${BPP_LIBRARIES}
 )
 
-add_executable(parse_maxtic parse_maxtic.cpp)
-target_link_libraries(parse_maxtic exODT
-  ${BPP_LIBRARIES}
-)
+#add_executable(parse_maxtic parse_maxtic.cpp)
+#target_link_libraries(parse_maxtic exODT
+# ${BPP_LIBRARIES}
+#)
 
-add_executable(bls bls.cpp)
-target_link_libraries(bls exODT
-  ${BPP_LIBRARIES}
-)
+#add_executable(bls bls.cpp)
+#target_link_libraries(bls exODT
+# ${BPP_LIBRARIES}
+#)
 
 
 add_executable(times_undated times_undated.cpp)
