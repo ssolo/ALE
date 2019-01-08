@@ -39,7 +39,7 @@ The probability of gene tree branch $u$ on branch $e$ of $S$ is:
 \begin{align}
 P_{e,u} =&  p^S_e \left( P_{g,v} P_{f,w} + P_{g,w} P_{f,v} + E_f P_{g,u} + P_{f,u} E_g
 \right) \nonumber \\
-+& 2 p^D_e \left( P_{e,v} P_{e,w} + P_{e,u} E_e \right) \nonumber \\
++& p^D_e \left( P_{e,v} P_{e,w} + 2 P_{e,u} E_e \right) \nonumber \\
 +&\left( \frac{1}{|S|} \sum_h p^T_h  P_{h,w} \right)  P_{e,v}  +
    \left( \frac{1}{|S|} \sum_h p^T_h  P_{h,v} \right) P_{e,w}\nonumber \\ +& \left(
    \frac{1}{|S|} \sum_h p^T_h  E_h \right)  P_{e,u}  + \left( \frac{1}{|S|} \sum_h p^T_h  P_{u,h} \right)  E_e 
@@ -49,7 +49,7 @@ using which we have more compactly
 \begin{align}
 P_{e,u} =&  p^S_e \left( P_{g,v} P_{f,w} + P_{g,w} P_{f,v} + E_f P_{g,u} + P_{f,u} E_g
 \right) \nonumber \\
-+& 2 p^D_e \left( P_{e,v} P_{e,w} + P_{e,u} E_e \right) \nonumber \\
++& p^D_e \left( P_{e,v} P_{e,w} + 2 P_{e,u} E_e \right) \nonumber \\
 +&\bar P^T_w  P_{e,v}  + \bar P^T_v P_{e,w}\nonumber \\ +& \bar E^T P_{e,u}  + \bar P^T_u  E_e,
 \end{align}
 $f$ and
