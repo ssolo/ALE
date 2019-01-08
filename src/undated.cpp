@@ -651,7 +651,7 @@ scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
               uq_sum+=PS[e]*(uq[gp_i][f]*uq[gpp_i][g] + uq[gp_i][g]*uq[gpp_i][f])*pp;
             }
             // D event
-            uq_sum+=PD[e]*(uq[gp_i][e]*uq[gpp_i][e]*2)*pp;
+            uq_sum+=PD[e]*(uq[gp_i][e]*uq[gpp_i][e])*pp;
             // T event
             uq_sum+=(uq[gp_i][e]*(mPTuq[gpp_i]-mPTuq_ancestral_correction[gpp_i][e])/tau_norm[e]+ uq[gpp_i][e]*(mPTuq[gp_i]-mPTuq_ancestral_correction[gp_i][e])/tau_norm[e])*pp;
           }
