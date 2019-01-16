@@ -60,16 +60,16 @@ IMPROVED_FIND_LIBRARY(BPP_LIBRARIES bpp-phyl Bpp/Phyl/Tree.h)
 IMPROVED_FIND_LIBRARY(BPP_LIBRARIES bpp-seq Bpp/Seq/Alphabet/Alphabet.h)
 IMPROVED_FIND_LIBRARY(BPP_LIBRARIES bpp-core Bpp/Clonable.h)
 
-SET(Boost_USE_STATIC_LIBS ${BUILD_STATIC})
-
-find_package(Boost COMPONENTS mpi serialization REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-
 # Require MPI for this project:
 find_package(MPI REQUIRED)
 include_directories(${MPI_INCLUDE_PATH})
 set(CMAKE_CXX_COMPILE_FLAGS "${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS}")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS}")
+
+SET(Boost_USE_STATIC_LIBS ${BUILD_STATIC})
+
+find_package(Boost COMPONENTS mpi serialization REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
 
 # Require openMP for this project
 include(FindOpenMP)
