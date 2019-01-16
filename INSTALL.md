@@ -119,7 +119,7 @@ yum install boost-devel boost-openmpi-devel boost-serialization openmpi-devel
 * install it :
 ```sh
 cd boost_directory
-make install./bootstrap.sh --with-libraries=mpi,serialization
+./bootstrap.sh --with-libraries=mpi,serialization
 ./b2
 sudo ./b2 install
 ```
