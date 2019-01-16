@@ -1,6 +1,6 @@
 #include "exODT.h"
 #include <boost/mpi.hpp>
-
+#include <boost/serialization/vector.hpp>
 class mpi_tree
 {
  public:
