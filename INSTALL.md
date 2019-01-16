@@ -61,6 +61,25 @@ sudo apt-get install git cmake gcc g++
 sudo zypper install git cmake gcc gcc-c++
 ```
 
+**CentOS 7**:
+```sh
+yum install git cmake gcc gcc-c++
+```
+
+On CentOS and Fedora based systems the MPI (e.g. OpenMPI, MPICH, etc.) libraries and binaries are not included in the `$PATH` environmental variable by default. You have to use the `environment-modules` package to load them manually.
+
+First install the package:
+```sh
+yum install environment-modules
+```
+
+Then **logout** from your current shell and **login** again or open a new shell.
+
+Test that the `module` command is available and working:
+```sh
+module avail
+```
+
 **Mac OS X**:
 At the time of this writing, the version of clang embarked in Mac OS X does not support OpenMP, so we suggest to install gcc. Assuming [homebrew](https://brew.sh/) has been installed on the mac already:
 ```sh
@@ -82,6 +101,10 @@ sudo apt-get install libboost-dev libboost-serialization-dev libboost-mpi-dev
 sudo zypper install boost-devel libboost_mpi1_61_0 libboost_serialization_61_0                                                                 
 ```
 
+**CentOS 7**:
+```sh
+yum install boost-devel boost-openmpi-devel boost-serialization
+```
 
 **Mac OS X**:
 
@@ -121,8 +144,8 @@ git clone https://github.com/BioPP/bpp-phyl
 Afterwards create the build directories:
 ```sh
 mkdir bpp-core-build
-mkdir bpp-phyl-build
 mkdir bpp-seq-build
+mkdir bpp-phyl-build
 ```
 
 Finally build and install the libraries.
@@ -186,10 +209,28 @@ git clone https://github.com/ssolo/ALE.git
 We advise that you create a folder named `build` in the ALE folder:
 
 ```sh
+cd ALE
 mkdir build
 cd build
 ```
 
+
+**On CentOS 7**:
+Before executing `cmake` load the `mpi` module:
+```
+module load mpi
+```
+Failing to do so `cmake` will find neither any MPI library nor the `boost_mpi` library. 
+
+Remember that in case you're going to use ALE with MPI you have to execute the same command above beforehand. 
+
+Then run cmake:
+```sh
+cmake .. -DBUILD_STATIC=OFF
+make
+```
+
+**Any other GNU/Linux**:
 Then run cmake:
 
 ```sh
@@ -213,7 +254,11 @@ make
 
 Provided the Boost libraries are installed, this error can mean that CMake just can't find any _static_ Boost libraries.
 
-Delete the contents of the build directory and try to build ALE with the `BUILD_STATIC` switch set to `OFF`:
+Delete the contents of the build directory:
+```
+rm -rf build/*
+```
+and try to build ALE with the `BUILD_STATIC` switch set to `OFF`:
 
 ```sh
 cmake .. -DBUILD_STATIC=OFF
