@@ -80,6 +80,12 @@ Test that the `module` command is available and working:
 module avail
 ```
 
+This will output something like:
+```
+----------------------------- /us/share/Modules/modulefiles -----------------------------
+dot         module-git  module-info modules      null      use.own
+```
+
 **Mac OS X**:
 At the time of this writing, the version of clang embarked in Mac OS X does not support OpenMP, so we suggest to install gcc. Assuming [homebrew](https://brew.sh/) has been installed on the mac already:
 ```sh
@@ -103,7 +109,7 @@ sudo zypper install boost-devel libboost_mpi1_61_0 libboost_serialization_61_0
 
 **CentOS 7**:
 ```sh
-yum install boost-devel boost-openmpi-devel boost-serialization
+yum install boost-devel boost-openmpi-devel boost-serialization openmpi-devel
 ```
 
 **Mac OS X**:
@@ -113,7 +119,7 @@ yum install boost-devel boost-openmpi-devel boost-serialization
 * install it :
 ```sh
 cd boost_directory
-./bootstrap.sh --with-libraries=mpi,serialization
+make install./bootstrap.sh --with-libraries=mpi,serialization
 ./b2
 sudo ./b2 install
 ```
@@ -206,7 +212,7 @@ Clone the git repository:
 git clone https://github.com/ssolo/ALE.git
 ```
 
-We advise that you create a folder named `build` in the ALE folder:
+It's recommended to create a folder named `build` in the `ALE` folder:
 
 ```sh
 cd ALE
@@ -252,7 +258,7 @@ make
 
 ### CMake doesn't find Boost libraries
 
-Provided the Boost libraries are installed, this error can mean that CMake just can't find any _static_ Boost libraries.
+Provided that the Boost libraries are installed, this error can mean that CMake just can't find any _static_ Boost libraries.
 
 Delete the contents of the build directory:
 ```
@@ -289,3 +295,17 @@ After installing a compiler which has support, you can tell cmake to use it:
 cmake .. -DCMAKE_C_COMPILER=/path/to/bin/c-compiler -DCMAKE_CXX_COMPILER=/path/to/bin/c++-compiler
 make
 ```
+
+### Could not find MPI_CXX
+
+If you get an error like:
+```
+Could not find MPI_CXX (missing: MPI_CXX_LIBRARIES MPI_CXX_INCLUDE_PATH)
+```
+
+Then you either don't have any MPI implementation (e.g. OpenMPI or MPICH) installed or if you're using Red Hat-based OS, then you may have forgot to load the MPI module with:
+```
+module load mpi
+```
+
+
