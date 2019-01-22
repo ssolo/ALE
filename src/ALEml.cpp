@@ -18,19 +18,37 @@ class p_fun:
 {
 private:
   double fval_;
+  bool delta_fixed;
+  bool tau_fixed;
+  bool lambda_fixed;
   exODT_model* model_pointer;
   approx_posterior* ale_pointer;
 public:
   p_fun(exODT_model* model,approx_posterior* ale, double delta_start=0.01,double tau_start=0.01,double lambda_start=0.1//,double sigma_hat_start=1.
-) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale)
+	,bool delta_fixed_in=false,bool tau_fixed_in=false,bool lambda_fixed_in=false) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale)
   {
     //We declare parameters here:
  //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
-      IntervalConstraint* constraint = new IntervalConstraint ( 1e-6, 10-1e-6, true, true );
-      addParameter_( new Parameter("delta", delta_start, constraint) ) ;
-      addParameter_( new Parameter("tau", tau_start, constraint) ) ;
-      addParameter_( new Parameter("lambda", lambda_start, constraint) ) ;
-      //addParameter_( new Parameter("sigma_hat", sigma_hat_start, constraint) ) ;
+      IntervalConstraint* constraint = new IntervalConstraint ( 1e-10, 100-1e-10, true, true );
+      delta_fixed=delta_fixed_in;
+      tau_fixed=tau_fixed_in;
+      lambda_fixed=lambda_fixed_in;
+
+      if (not delta_fixed)
+	{
+	  addParameter_( new Parameter("delta", delta_start, constraint) ) ;
+	  cout << "#optimizing delta rate"<< endl;
+	}
+      if (not tau_fixed)
+	{
+	  addParameter_( new Parameter("tau", tau_start, constraint) ) ;
+	  cout << "#optimizing tau rate"<< endl;
+	}
+      if (not lambda_fixed)
+	{
+	  addParameter_( new Parameter("lambda", lambda_start, constraint) ) ;
+	  cout << "#optimizing lambda rate"<< endl;
+	}
 
   }
 
@@ -46,22 +64,31 @@ public:
     double getValue() const throw (Exception) { return fval_; }
     void fireParameterChanged(const ParameterList& pl)
     {
-        double delta = getParameterValue("delta");
-        double tau = getParameterValue("tau");
-        double lambda = getParameterValue("lambda");
-        //double sigma_hat = getParameterValue("sigma_hat");
+      if (not delta_fixed)
+	{
+	  double delta = getParameterValue("delta");
+	  model_pointer->set_model_parameter("delta",delta);
+	}
+      if (not tau_fixed)
+	{
+	  double tau = getParameterValue("tau");
+	  model_pointer->set_model_parameter("tau",tau);
+	}
+      if (not lambda_fixed)
+	{
+	  double lambda = getParameterValue("lambda");
+	  model_pointer->set_model_parameter("lambda",lambda);
+	}
 
-        model_pointer->set_model_parameter("delta",delta);
-        model_pointer->set_model_parameter("tau",tau);
-        model_pointer->set_model_parameter("lambda",lambda);
-        //model_pointer->set_model_parameter("sigma_hat",sigma_hat);
         model_pointer->calculate_EGb();
         double y=-log(model_pointer->p(ale_pointer));
-        //cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda //<< "\t lambda="<<sigma_hat << "\t ll="
-	//    << -y <<endl;
-        fval_ = y;
+      //cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda //<< "\t lambda="<<sigma_hat << "\t ll="
+      //    << -y <<endl;
+      fval_ = y;
     }
 };
+
+
 
 
 int main(int argc, char ** argv)
@@ -70,8 +97,11 @@ int main(int argc, char ** argv)
 
   if (argc<3)
     {
-      cout << "usage:\n ./ALEml species_tree.newick gene_tree_sample.ale  [samples] [gene_name_separator]" << endl;
-      return 1;
+      cout << "\nUsage:\n ./ALEml species_tree.newick gene_tree_sample.ale sample=number_of_samples separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence fraction_missing=file_with_fraction_of_missing_genes_per_species output_species_tree=n S_branch_lengths:root_length rate_mutiplier:rate_name:branch_id:value" << endl;
+      cout << "\n1st example: we fix the DTL values and do not perform any optimization \n ./ALEml species_tree.newick gene_tree_sample.ale sample=100 separators=_ delta=0.05 tau=0.1 lambda=0.2 " << endl;
+      cout << "\n2nd example: we fix the T value to 0 to get a DL-only model and optimize the DL parameters \n ./ALEml species_tree.newick gene_tree_sample.ale sample=100 separators=_ tau=0\n" << endl;
+
+      return 0;
     }
 
   //we need a dared species tree in newick format
@@ -93,12 +123,78 @@ int main(int argc, char ** argv)
   //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();
 
-  scalar_type samples=100.;
-  if (argc>3)
-    samples=atof(argv[3]);
+  scalar_type samples=100;
+  scalar_type O_R=1,beta=1;
+  bool delta_fixed=false;
+  bool tau_fixed=false;
+  bool lambda_fixed=false;
+  scalar_type delta=1e-6,tau=1e-6,lambda=1e-6;
+  string fractionMissingFile = "";
+  string outputSpeciesTree = "";
+  //############################################################
+    for (int i=3;i<argc;i++)
+  {
+    string next_field=argv[i];
+    
+    vector <string> tokens;
+    boost::split(tokens,next_field,boost::is_any_of("=:"),boost::token_compress_on);
+    if (tokens[0]=="sample")
+    samples=atoi(tokens[1].c_str());
+    else if (tokens[0]=="separators")
+      model->set_model_parameter("gene_name_separators", tokens[1]);
+    else if (tokens[0]=="delta")
+    {
+      delta=atof(tokens[1].c_str());
+      delta_fixed=true;
+      cout << "# delta fixed to " << delta << endl;
+    }
+    else if (tokens[0]=="tau")
+    {
+      tau=atof(tokens[1].c_str());
+      tau_fixed=true;
+      cout << "# tau fixed to " << tau << endl;
+    }
+    else if (tokens[0]=="lambda")
+    {
+      lambda=atof(tokens[1].c_str());
+      lambda_fixed=true;
+      cout << "# lambda fixed to " << lambda << endl;
+    }
+    else if (tokens[0]=="O_R")
+    {
+      O_R=atof(tokens[1].c_str());
+      cout << "# NOT YET IMPLEMENTED O_R set to " << O_R << endl;
+    }
+    else if (tokens[0]=="beta")
+    {
+      beta=atof(tokens[1].c_str());
+      cout << "# beta set to " << beta << endl;
+    }
+    else if (tokens[0]=="fraction_missing")
+    {
+      fractionMissingFile=tokens[1];
+      cout << "# NOT YET IMPLEMENTED File containing fractions of missing genes set to " << fractionMissingFile << endl;
+    }
+    else if (tokens[0]=="output_species_tree")
+    {
+      std::string valArg = boost::algorithm::to_lower_copy(tokens[1]);
+      if (valArg == "y" || valArg == "ye" || valArg == "yes" ) {
+          outputSpeciesTree= ale_file + ".spTree";
+          cout << "# outputting the annotated species tree to "<< outputSpeciesTree << endl;
+      }
+      else {
+        cout << "# NOT outputting the annotated species tree to "<< outputSpeciesTree << endl;
+
+      }
+
+    }
+
+  }
+  //############################################################
+
+
+
   int D=3;
-  if (argc>4)
-    model->set_model_parameter("gene_name_separators", argv[4]);
   model->set_model_parameter("BOOTSTRAP_LABELS","yes");
 
   model->set_model_parameter("min_D",D);
@@ -109,10 +205,6 @@ int main(int argc, char ** argv)
   model->set_model_parameter("leaf_events",1);
   model->set_model_parameter("N",1);
 
-  //a set of inital rates
-  scalar_type delta=0.1,tau=0.1,lambda=0.2;
-  if (argc>7)
-    delta=atof(argv[5]),tau=atof(argv[6]),lambda=atof(argv[7]);
 
   model->set_model_parameter("delta", delta);
   model->set_model_parameter("tau", tau);
@@ -122,14 +214,11 @@ int main(int argc, char ** argv)
   //calculate_EGb() must always be called after changing rates to calculate E-s and G-s
   //cf. http://arxiv.org/abs/1211.4606
   model->calculate_EGb();
-  scalar_type mlll;
-  if (!(argc>7))
-    {
+  
   cout << "Reconciliation model initialised, starting DTL rate optimisation" <<".."<<endl;
 
   //we use the Nelder–Mead method implemented in Bio++
-  Function* f = new p_fun(model,ale,delta,tau,lambda//,1
-			  );
+  Function* f = new p_fun(model,ale,delta,tau,lambda,delta_fixed,tau_fixed,lambda_fixed);
   Optimizer* optimizer = new DownhillSimplexMethod(f);
 
   optimizer->setProfiler(0);
@@ -138,33 +227,25 @@ int main(int argc, char ** argv)
 
   optimizer->setConstraintPolicy(AutoParameter::CONSTRAINTS_AUTO);
   optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
-
-
-
-
- //   FunctionStopCondition stop(optimizer, 1);//1e-1);
- // optimizer->setStopCondition(stop);
-    //TEMP
-  //optimizer->setMaximumNumberOfEvaluations( 10 );
-
-  optimizer->optimize();
-
-  //optimizer->getParameters().printParameters(cout);
-  delta=optimizer->getParameterValue("delta");
-  tau=optimizer->getParameterValue("tau");
-  lambda=optimizer->getParameterValue("lambda");
-  //scalar_type sigma_hat=optimizer->getParameterValue("sigma_hat");
-
-  mlll=-optimizer->getFunctionValue();
-  cout << endl << "ML rates: " << " delta=" << delta << "; tau=" << tau << "; lambda="<<lambda//<<"; sigma="<<sigma_hat
-       <<"."<<endl;
-
-
+  scalar_type mlll;
+    if (not (delta_fixed and tau_fixed and lambda_fixed) )
+    {
+      cout << "#optimizing rates" << endl;
+      optimizer->optimize();
+      if (not delta_fixed) delta=optimizer->getParameterValue("delta");
+      if (not tau_fixed) tau=optimizer->getParameterValue("tau");
+      if (not lambda_fixed) lambda=optimizer->getParameterValue("lambda");
+      mlll=-optimizer->getFunctionValue();
     }
   else
     {
       mlll=log(model->p(ale));
     }
+  cout << endl << "ML rates: " << " delta=" << delta << "; tau=" << tau << "; lambda="<<lambda//<<"; sigma="<<sigma_hat
+       <<"."<<endl;
+
+
+
   cout << "LL=" << mlll << endl;
 
   cout << "Sampling reconciled gene trees.."<<endl;
@@ -223,6 +304,13 @@ int main(int argc, char ** argv)
   fout << "# of\t Duplications\tTransfers\tLosses\tcopies" <<endl;
   fout << model->counts_string(samples);
   fout.close();
+
+  // Outputting the species tree to its own file:
+  if (outputSpeciesTree != "") {
+    ofstream fout( outputSpeciesTree.c_str() );
+    fout <<model->string_parameter["S_with_ranks"] <<endl;
+    fout.close();
+  }
 
   cout << "Results in: " << outname << endl;
   if (ale->last_leafset_id>3)
