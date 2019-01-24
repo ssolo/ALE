@@ -119,6 +119,10 @@ int main(int argc, char ** argv)
   approx_posterior * ale;
   ale=load_ALE_from_file(ale_file);
   cout << "Read summary of tree sample for "<<ale->observations<<" trees from: " << ale_file <<".."<<endl;
+  //Getting the radical for output files:
+  vector<string> tokens;
+  boost::split(tokens,ale_file,boost::is_any_of("/"),boost::token_compress_on);
+  ale_file=tokens[tokens.size()-1];
 
   //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();
