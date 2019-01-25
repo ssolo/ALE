@@ -129,6 +129,9 @@ int main(int argc, char ** argv)
   vector<string> tokens;
   boost::split(tokens,ale_file,boost::is_any_of("/"),boost::token_compress_on);
   ale_file=tokens[tokens.size()-1];
+  boost::split(tokens,S_treefile,boost::is_any_of("/"),boost::token_compress_on);
+  
+  ale_file=tokens[tokens.size()-1]+"_"+ale_file;
 
   //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();

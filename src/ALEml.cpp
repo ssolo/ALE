@@ -106,6 +106,7 @@ int main(int argc, char ** argv)
 
   //we need a dared species tree in newick format
   string Sstring;
+  string S_treefile=argv[1];
   if (!fexists(argv[1])) {
     cout << "Error, file "<<argv[1] << " does not seem accessible." << endl;
     exit(1);
@@ -123,6 +124,8 @@ int main(int argc, char ** argv)
   vector<string> tokens;
   boost::split(tokens,ale_file,boost::is_any_of("/"),boost::token_compress_on);
   ale_file=tokens[tokens.size()-1];
+  boost::split(tokens,S_treefile,boost::is_any_of("/"),boost::token_compress_on);
+  ale_file=tokens[tokens.size()-1]+"_"+ale_file;
 
   //we initialise a coarse grained reconciliation model for calculating the sum
   exODT_model* model=new exODT_model();
