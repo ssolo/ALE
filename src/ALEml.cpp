@@ -201,7 +201,7 @@ int main(int argc, char ** argv)
 
 
 
-  int D=3;
+  int D=10;
   model->set_model_parameter("BOOTSTRAP_LABELS","yes");
 
   model->set_model_parameter("min_D",D);
