@@ -366,6 +366,8 @@ void exODT_model::calculate_undatedEs()
     else {
       fm.push_back(0);
     }
+    //uE.push_back(fm[e]);
+    
     mPTE_ancestral_correction.push_back(0);
   }
 
@@ -410,6 +412,7 @@ void exODT_model::calculate_undatedEs()
   } // End of the loop to compute mPTE
 
   // Now we add one more update of mPTE to take into account the fraction of missing genes, which had been ignored so far.
+  
   scalar_type newmPTE=0;
   for (int e=0;e<last_branch;e++)
   {
@@ -422,10 +425,12 @@ void exODT_model::calculate_undatedEs()
       int f=daughter[e];
       int g=son[e];
       uE[e]=PL[e] + PS[e]*uE[f]*uE[g] + PD[e]*uE[e]*uE[e] + uE[e]*(mPTE- mPTE_ancestral_correction[e])/tau_norm[e];
+
     }
     newmPTE+=(wT[e]) *uE[e];
   }
   mPTE=newmPTE;
+  
 
 }
 
@@ -666,7 +671,7 @@ scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
         // DL event
         uq_sum+=PD[e]*(uq[i][e]*uE[e]*2);
         // TL event
-        uq_sum+=((mPTuq[i]-mPTuq_ancestral_correction[i][e])/tau_norm[e]*uE[e] + uq[i][e]* (mPTE- mPTE_ancestral_correction[e]) )/tau_norm[e];
+        uq_sum+=((mPTuq[i]-mPTuq_ancestral_correction[i][e])/tau_norm[e]*uE[e] + uq[i][e]* (mPTE- mPTE_ancestral_correction[e])/tau_norm[e]);
         if (uq_sum<EPSILON) uq_sum=EPSILON;
         uq[i][e]=uq_sum;
         new_mPTuq +=(wT[e])*uq_sum;

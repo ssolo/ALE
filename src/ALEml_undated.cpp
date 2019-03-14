@@ -22,12 +22,14 @@ private:
   exODT_model* model_pointer;
   approx_posterior* ale_pointer;
 public:
-  p_fun(exODT_model* model,approx_posterior* ale, double delta_start=0.01,double tau_start=0.01,double lambda_start=0.1//,double sigma_hat_start=1.
+  p_fun(exODT_model* model,approx_posterior* ale,vector<int> ml_branch_ids,vector<string> ml_ratetype_names,double delta_start=0.01,double tau_start=0.01,double lambda_start=0.1//,double sigma_hat_start=1.
 	,bool delta_fixed_in=false,bool tau_fixed_in=false,bool lambda_fixed_in=false) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale)
   {
     //We declare parameters here:
  //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
       IntervalConstraint* constraint = new IntervalConstraint ( 1e-10, 100-1e-10, true, true );
+      IntervalConstraint* rate_multiplier_constraint = new IntervalConstraint ( 1e-10, 10000-1e-10, true, true );
+
       delta_fixed=delta_fixed_in;
       tau_fixed=tau_fixed_in;
       lambda_fixed=lambda_fixed_in;
@@ -48,13 +50,29 @@ public:
 	  cout << "#optimizing lambda rate"<< endl;
 	}
 
+      //vector<int> ml_branch_ids;
+      //vector<string> ml_ratetype_names;
+
+      for (int i=0;i<ml_branch_ids.size();i++ )
+	{
+	  int e=ml_branch_ids[i];
+	  public_ml_branch_ids.push_back(e);
+	  string name=ml_ratetype_names[i];
+	  public_ml_ratetype_names.push_back(name);
+	  stringstream branch;
+	  branch<<e;
+	  addParameter_( new Parameter("rm_"+name+"_"+branch.str(), 1, rate_multiplier_constraint) ) ;
+	  cout << "#optimizing for branch "<< e <<" ratemultiplier "<< name << endl;
+	}
   }
 
   p_fun* clone() const { return new p_fun(*this); }
 
 public:
+  vector<int> public_ml_branch_ids;
+  vector<string> public_ml_ratetype_names;
 
-    void setParameters(const ParameterList& pl)
+  void setParameters(const ParameterList& pl)
     throw (ParameterNotFoundException, ConstraintException, Exception)
     {
         matchParametersValues(pl);
@@ -77,6 +95,17 @@ public:
 	  double lambda = getParameterValue("lambda");
 	  model_pointer->set_model_parameter("lambda",lambda);
 	}
+      
+      for (int i=0;i<public_ml_branch_ids.size();i++ )
+	{
+	  int e=public_ml_branch_ids[i];
+	  string name=public_ml_ratetype_names[i];
+	  stringstream branch;
+	  branch<<e;
+	  scalar_type multiplier = getParameterValue("rm_"+name+"_"+branch.str());
+	  model_pointer->vector_parameter[name][e]=multiplier;
+	}
+
 
       model_pointer->calculate_undatedEs();
       double y=-log(model_pointer->pun(ale_pointer));
@@ -103,6 +132,7 @@ int main(int argc, char ** argv)
       cout << "\n6.2th example: use fixed branchrate multiplier for rate of Ts _from_ branch 43 with value 0.0 (i.e no transfer from branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:tau_from:43:0.0 \n" << endl;
       cout << "\n6.3th example: use fixed branchrate multiplier for rate Ds on branch 43 with value 0.0 (no duplications on branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:delta:43:0.0 \n" << endl;
       cout << "\n6.4th example: use fixed branchrate multiplier for rate Ls on branch 43 with value 0.0 (no losses on branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:lambda:43:0.0 \n" << endl;
+      cout << "\n6.1.1 example: optimize branchrate multiplier for rate of Ts _to_ branch 43 (same syntax for all other multipliers!)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale S_branch_lengths:-1 \n" << endl;
       cout << "\n6.5th example: use fixed multiplier for Origination on branch 43 with value 0.0 (no origination on branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:O:43:0.0 \n" << endl;
 
       return 0;
@@ -145,6 +175,9 @@ int main(int argc, char ** argv)
   string fractionMissingFile = "";
   string outputSpeciesTree = "";
   map <string, map <int,scalar_type> >rate_multipliers;
+  vector<int> ml_branch_ids;
+  vector<string> ml_ratetype_names;
+
   model->set_model_parameter("undatedBL",false);
   for (int i=3;i<argc;i++)
   {
@@ -211,8 +244,17 @@ int main(int argc, char ** argv)
 	string rate_name=tokens[1];
 	int e=atoi(tokens[2].c_str());
 	scalar_type rm=atof(tokens[3].c_str());
-	cout << "# rate multiplier for rate " << rate_name << " on branch with ID " << e<< " set to " << rm << endl;
-	rate_multipliers["rate_multiplier_"+rate_name][e]=rm;
+	if (rm>=0)
+	  {
+	    cout << "# rate multiplier for rate " << rate_name << " on branch with ID " << e<< " set to " << rm << endl;
+	    rate_multipliers["rate_multiplier_"+rate_name][e]=rm;
+	  }
+	else
+	  {
+	    cout << "# rate multiplier for rate " << rate_name << " on branch with ID " << e<< " to be optimized " << endl;
+	    ml_branch_ids.push_back(e);
+	    ml_ratetype_names.push_back("rate_multiplier_"+rate_name);
+	  }
       }
     else if (tokens[0]=="output_species_tree")
     {
@@ -252,7 +294,8 @@ int main(int argc, char ** argv)
   cout << "Reconciliation model initialised, starting DTL rate optimisation" <<".."<<endl;
 
   //we use the Nelder–Mead method implemented in Bio++
-  Function* f = new p_fun(model,ale,delta,tau,lambda,delta_fixed,tau_fixed,lambda_fixed);
+
+  Function* f = new p_fun(model,ale,ml_branch_ids,ml_ratetype_names,delta,tau,lambda,delta_fixed,tau_fixed,lambda_fixed);
   Optimizer* optimizer = new DownhillSimplexMethod(f);
 
   optimizer->setProfiler(0);
@@ -263,6 +306,7 @@ int main(int argc, char ** argv)
   optimizer->init(f->getParameters()); //Here we optimize all parameters, and start with the default values.
 
   scalar_type mlll;
+  
   if (not (delta_fixed and tau_fixed and lambda_fixed) )
     {
       cout << "#optimizing rates" << endl;
@@ -270,15 +314,29 @@ int main(int argc, char ** argv)
       if (not delta_fixed) delta=optimizer->getParameterValue("delta");
       if (not tau_fixed) tau=optimizer->getParameterValue("tau");
       if (not lambda_fixed) lambda=optimizer->getParameterValue("lambda");
+      
       mlll=-optimizer->getFunctionValue();
+      
     }
   else
     {
       mlll=log(model->pun(ale));
     }
+  stringstream ml_rate_multipliers;
+  for (int i=0;i<ml_branch_ids.size();i++ )
+    {
+      int e=ml_branch_ids[i];
+      string name=ml_ratetype_names[i];
+      stringstream branch;
+      branch<<e;
+      scalar_type multiplier = optimizer->getParameterValue("rm_"+name+"_"+branch.str());
+      ml_rate_multipliers << name << "\t" << e << "\t" << multiplier << ";\n";
+     }
+
   cout << endl << "ML rates: " << " delta=" << delta << "; tau=" << tau << "; lambda="<<lambda//<<"; sigma="<<sigma_hat
        <<"."<<endl;
 
+  if (ml_branch_ids.size()>0) cout << "ML rate multipliers:\n" << ml_rate_multipliers.str(); 
 
   cout << "LL=" << mlll << endl;
 
@@ -324,7 +382,11 @@ int main(int argc, char ** argv)
   fout << "rate of\t Duplications\tTransfers\tLosses" <<endl;
   fout << "ML \t"<< delta << "\t" << tau << "\t" << lambda //<< "'t" << sigma_hat
        << endl;
-  fout << endl;
+  if (ml_branch_ids.size()>0)
+    {
+      fout << "ML rate multipliers:\n" << ml_rate_multipliers.str(); 
+      fout << endl;
+    }
   fout << samples << " reconciled G-s:\n"<<endl;
   for (int i=0;i<samples;i++)
     {
