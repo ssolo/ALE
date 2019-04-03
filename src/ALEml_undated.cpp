@@ -177,7 +177,8 @@ int main(int argc, char ** argv)
   map <string, map <int,scalar_type> >rate_multipliers;
   vector<int> ml_branch_ids;
   vector<string> ml_ratetype_names;
-
+  bool MRP=false;
+	
   model->set_model_parameter("undatedBL",false);
   for (int i=3;i<argc;i++)
   {
@@ -269,6 +270,16 @@ int main(int argc, char ** argv)
       }
 
     }
+    else if (tokens[0]=="seed")
+      {
+	long  seed = atoi(tokens[1].c_str());
+	cout << "Set random seed to " <<seed<<endl;
+	RandomTools::setSeed(seed);
+      }
+    else if (tokens[0]=="MRP")
+      {
+	bool MRP=true;
+      }
 
   }
 
@@ -350,7 +361,7 @@ int main(int argc, char ** argv)
       ++pd;
       string sample_tree=model->sample_undated();
       sample_strings.push_back(sample_tree);
-      if (ale->last_leafset_id>3)
+      if (ale->last_leafset_id>3 and MRP)
 	{
 
 	  tree_type * G=TreeTemplateTools::parenthesisToTree(sample_tree,false);
@@ -409,13 +420,12 @@ int main(int argc, char ** argv)
   }
 
   cout << "Results in: " << outname << endl;
-  if (ale->last_leafset_id>3)
+  if (ale->last_leafset_id>3 and MRP)
     {
       //      cout << "Calculating consensus tree."<<endl;
       //cout << TreeTools::treeToParenthesis(sample_trees[0])<<std::endl;
-      cout << "Calculating MRP tree."<<endl;
       
-      
+      cout << "Calculating MRP tree."<<endl;           
       Tree* con_tree= TreeTools::MRP(sample_trees);
       //cout << "Calculating threshold consensus tree."<<endl;
       
