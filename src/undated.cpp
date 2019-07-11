@@ -1052,7 +1052,7 @@ string exODT_model::counts_string_undated(scalar_type samples)
     << branch_counts["Ts"][e]/samples << "\t"
     << branch_counts["Ls"][e]/samples << "\t"
     << branch_counts["Os"][e]/samples << "\t"
-    << branch_counts["singleton"][e] << "\t"
+    << branch_counts["singleton"][e]/samples  << "\t"
     << branch_counts["copies"][e]/samples << "\t"
     << uE[e] << "\n";
 
