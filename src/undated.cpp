@@ -303,14 +303,6 @@ void exODT_model::calculate_undatedEs()
       rm_norms["lambda"]+=vector_parameter["rate_multiplier_lambda"][e];
       rm_norms["O"]+=vector_parameter["rate_multiplier_O"][e];      
     }
-  for (int e=0;e<0*last_branch;e++)
-    {
-      vector_parameter["rate_multiplier_tau_to"][e]/=rm_norms["tau_to"];
-      vector_parameter["rate_multiplier_tau_from"][e]/=rm_norms["tau_from"];
-      vector_parameter["rate_multiplier_delta"][e]/=rm_norms["delta"];
-      vector_parameter["rate_multiplier_lambda"][e]/=rm_norms["lambda"];
-      vector_parameter["rate_multiplier_O"][e]/=rm_norms["O"];
-    }
 
   
   for (int e=0;e<last_branch;e++)
@@ -1050,16 +1042,19 @@ string exODT_model::counts_string_undated(scalar_type samples)
     << branch_counts["Ts"][e]/samples << "\t"
     << branch_counts["Ls"][e]/samples << "\t"
     << branch_counts["Os"][e]/samples << "\t"
-    //<< branch_counts["singleton"][e]/samples << "\t"
-    << branch_counts["copies"][e]/samples << "\n";
+    << branch_counts["singleton"][e]/samples << "\t"
+    << branch_counts["copies"][e]/samples << "\t"
+    << uE[e] << "\n";
+    
     else
     out<< "S_terminal_branch\t"<< named_branch.str() << "\t"
     << branch_counts["Ds"][e]/samples << "\t"
     << branch_counts["Ts"][e]/samples << "\t"
     << branch_counts["Ls"][e]/samples << "\t"
     << branch_counts["Os"][e]/samples << "\t"
-    //<< branch_counts["singleton"][e] << "\t"
-    << branch_counts["copies"][e]/samples << "\n";
+    << branch_counts["singleton"][e] << "\t"
+    << branch_counts["copies"][e]/samples << "\t"
+    << uE[e] << "\n";
 
   }
   return out.str();
