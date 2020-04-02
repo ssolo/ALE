@@ -77,6 +77,10 @@ target_link_libraries(ls_leaves exODT
 # ${BPP_LIBRARIES}
 #)
 
+add_executable(ALEprune ALEprune.cpp)
+target_link_libraries(ALEprune 
+  ${BPP_LIBRARIES}
+)
 
 add_executable(times_undated times_undated.cpp)
 target_link_libraries(times_undated exODT
