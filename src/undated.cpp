@@ -224,6 +224,9 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
   branch_counts["Tfroms"].clear();
   branch_counts["Ls"].clear();
   branch_counts["count"].clear();
+  branch_counts["presence"].clear();
+  branch_counts["saw"].clear();
+  branch_counts["O_LL"].clear();  
   branch_counts["copies"].clear();
   branch_counts["singleton"].clear();
 
@@ -235,6 +238,9 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
     branch_counts["Tfroms"].push_back(0);
     branch_counts["Ls"].push_back(0);
     branch_counts["count"].push_back(0);
+    branch_counts["presence"].push_back(0);
+    branch_counts["saw"].push_back(0);
+    branch_counts["O_LL"].push_back(0);
     branch_counts["copies"].push_back(0);
     branch_counts["singleton"].push_back(0);
 
@@ -694,7 +700,15 @@ scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
       root_sum+=uq[root_i][e]*O_p;
       survive+=(1-uE[e]);
     }
+    for (int e=0;e<last_branch;e++)
+      {
+	scalar_type O_p=vector_parameter["rate_multiplier_O"][e];
+	if ( e==(last_branch-1) and O_p==1) O_p=scalar_parameter["O_R"];
+	branch_counts["O_LL"].at(e) = log(uq[root_i][e]) + log(O_p) - log(O_norm);
+      }
     //cout << root_sum/survive << endl;
+
+    
   }
   return root_sum/survive/O_norm*(last_branch);
 
@@ -706,21 +720,20 @@ string exODT_model::sample_undated()
   scalar_type r=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);
 
   scalar_type root_sum=0;
-
+  scalar_type O_norm=0;
   for (int e=0;e<last_branch;e++)
   {
-    scalar_type O_p=1;
-    if ( e==(last_branch-1) ) O_p=scalar_parameter["O_R"];
+    branch_counts["saw"].at(e)=0;
+    scalar_type O_p=vector_parameter["rate_multiplier_O"][e];
+    if ( e==(last_branch-1) and O_p==1) O_p=scalar_parameter["O_R"];
+    O_norm+=O_p;
     root_sum+=uq[g_ids.size()-1][e]*O_p+EPSILON;
   }
   scalar_type root_resum=0;
-  scalar_type O_norm=0;
-
   for (int e=0;e<last_branch;e++)
   {
-    scalar_type O_p=1;
-    if ( e==(last_branch-1) ) O_p=scalar_parameter["O_R"];
-
+    scalar_type O_p=vector_parameter["rate_multiplier_O"][e];
+    if ( e==(last_branch-1) and O_p==1) O_p=scalar_parameter["O_R"];
     root_resum+=uq[root_i][e]*O_p+EPSILON;
     if (r*root_sum<root_resum)
     {
@@ -1044,7 +1057,9 @@ string exODT_model::counts_string_undated(scalar_type samples)
     << branch_counts["Os"][e]/samples << "\t"
     << branch_counts["copies"][e]/samples << "\t"
     << branch_counts["singleton"][e]/samples << "\t"
-    << uE[e] << "\n";
+    << uE[e] << "\t"
+    << branch_counts["presence"][e]/samples << "\t"
+    << branch_counts["O_LL"][e] << "\n";      
     
     else
     out<< "S_terminal_branch\t"<< named_branch.str() << "\t"
@@ -1054,7 +1069,10 @@ string exODT_model::counts_string_undated(scalar_type samples)
     << branch_counts["Os"][e]/samples << "\t"
     << branch_counts["copies"][e]/samples << "\t"
     << branch_counts["singleton"][e]/samples  << "\t"
-    << uE[e] << "\n";
+    << uE[e] << "\t"
+    << branch_counts["presence"][e]/samples << "\t"
+    << branch_counts["O_LL"][e] << "\n";      
+
 
   }
   return out.str();
@@ -1069,6 +1087,9 @@ void exODT_model::register_Su(int e,string last_event)
     int g=son[e];
     if (last_event=="S" or last_event=="O") branch_counts["singleton"].at(e)+=1;
     branch_counts["copies"].at(e)+=1;
+    if (branch_counts["saw"].at(e)==0) branch_counts["presence"].at(e)+=1;
+    branch_counts["saw"].at(e)=1;
+    
     branch_counts["count"].at(f)+=1;
     branch_counts["count"].at(g)+=1;
   }
@@ -1079,6 +1100,8 @@ void exODT_model::register_leafu(int e,string last_event)
   if (e>-1)
   {
     branch_counts["copies"].at(e)+=1;
+    if (branch_counts["saw"].at(e)==0) branch_counts["presence"].at(e)+=1;
+    branch_counts["saw"].at(e)=1;
     if (last_event=="S" or  last_event=="O") branch_counts["singleton"].at(e)+=1;
   }
   //MLRec_events["genes"]+=1;

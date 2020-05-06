@@ -388,6 +388,9 @@ void exODT_model::construct(const string& Sstring, const scalar_type& N, const s
       branch_counts["Tfroms"].push_back(0);
       branch_counts["Ls"].push_back(0);
       branch_counts["count"].push_back(0);
+      branch_counts["saw"].push_back(0);
+      branch_counts["O_LL"].push_back(0);
+      branch_counts["presence"].push_back(0);
       branch_counts["copies"].push_back(0);
       branch_counts["singleton"].push_back(0);
     }
