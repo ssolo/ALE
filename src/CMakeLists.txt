@@ -141,21 +141,21 @@ target_link_libraries(simulation exODT
 #  ${BPP_LIBRARIES}
 #)
    
-add_executable(mpi_ml_undated mpi_tree.cpp mpi_ml_undated.cpp)
-target_link_libraries(mpi_ml_undated exODT
-  ${Boost_MPI_LIBRARY}
-  ${Boost_SERIALIZATION_LIBRARY}
-  ${MPI_LIBRARIES}
-  ${BPP_LIBRARIES}
-)   
+#add_executable(mpi_ml_undated mpi_tree.cpp mpi_ml_undated.cpp)
+#target_link_libraries(mpi_ml_undated exODT
+#  ${Boost_MPI_LIBRARY}
+#  ${Boost_SERIALIZATION_LIBRARY}
+#  ${MPI_LIBRARIES}
+#  ${BPP_LIBRARIES}
+#)   
 
-add_executable(mpi_ml-bw_undated mpi_tree.cpp mpi_ml-bw_undated.cpp)
-target_link_libraries(mpi_ml-bw_undated exODT
-  ${Boost_MPI_LIBRARY}
-  ${Boost_SERIALIZATION_LIBRARY}
-  ${MPI_LIBRARIES}
-  ${BPP_LIBRARIES}
-)
+#add_executable(mpi_ml-bw_undated mpi_tree.cpp mpi_ml-bw_undated.cpp)
+#target_link_libraries(mpi_ml-bw_undated exODT
+#  ${Boost_MPI_LIBRARY}
+#  ${Boost_SERIALIZATION_LIBRARY}
+#  ${MPI_LIBRARIES}
+#  ${BPP_LIBRARIES}
+#)
 
 #add_executable(mpi_S_ml mpi_tree.h mpi_tree.cpp mpi_S_ml.cpp)
 #target_link_libraries(mpi_S_ml exODT
