@@ -27,8 +27,8 @@ public:
   {
     //We declare parameters here:
  //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
-      IntervalConstraint* constraint = new IntervalConstraint ( 1e-10, 100-1e-10, true, true );
-      IntervalConstraint* rate_multiplier_constraint = new IntervalConstraint ( 1e-10, 10000-1e-10, true, true );
+      std::shared_ptr<IntervalConstraint> constraint = std::make_shared<IntervalConstraint> ( 1e-10, 100-1e-10, true, true );
+      std::shared_ptr<IntervalConstraint> rate_multiplier_constraint = std::make_shared<IntervalConstraint>( 1e-10, 10000-1e-10, true, true );
 
       delta_fixed=delta_fixed_in;
       tau_fixed=tau_fixed_in;

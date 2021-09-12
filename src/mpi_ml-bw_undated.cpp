@@ -27,7 +27,7 @@ public:
     world=world_in;
     //We declare parameters here:
     //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
-    IntervalConstraint* constraint = new IntervalConstraint ( 1e-10, 1e3, true, true );
+    std::shared_ptr<IntervalConstraint> constraint = std::make_shared<IntervalConstraint> ( 1e-10, 1e3, true, true );
     for (int e=0;e<last_branch;e++)
 	{
 	  stringstream deltae;

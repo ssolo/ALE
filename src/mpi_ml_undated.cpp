@@ -26,7 +26,7 @@ public:
 
     //We declare parameters here:
  //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
-      IntervalConstraint* constraint = new IntervalConstraint ( 0, 4, true, true );
+      std::shared_ptr<IntervalConstraint> constraint = std::make_shared<IntervalConstraint> ( 0, 4, true, true );
       addParameter_( new Parameter("delta", delta_start, constraint) ) ;
       addParameter_( new Parameter("tau", tau_start, constraint) ) ;
       addParameter_( new Parameter("lambda", lambda_start, constraint) ) ;
