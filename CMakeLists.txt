@@ -34,9 +34,9 @@ MACRO(IMPROVED_FIND_LIBRARY OUTPUT_LIBS lib_name include_to_find)
   #start:
   FIND_PATH(${lib_name}_INCLUDE_DIR ${include_to_find})
   IF(${BUILD_STATIC})
-    SET(${lib_name}_NAMES lib${lib_name}.a)
+    SET(${lib_name}_NAMES lib${lib_name}.a lib${lib_name}3.a)
   ELSE(${BUILD_STATIC})
-    SET(${lib_name}_NAMES ${lib_name} ${lib_name}lib ${lib_name}dll)
+    SET(${lib_name}_NAMES ${lib_name} ${lib_name}lib ${lib_name}dll ${lib_name}3 ${lib_name}3lib ${lib_name}3dll)
   ENDIF(${BUILD_STATIC})
   FIND_LIBRARY(${lib_name}_LIBRARY NAMES ${${lib_name}_NAMES})
 
