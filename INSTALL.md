@@ -147,6 +147,17 @@ git clone https://github.com/BioPP/bpp-seq
 git clone https://github.com/BioPP/bpp-phyl
 ```
 
+ALE is only compatible up to BPP version 2.4.1, to select the proper version issue the following commands:
+```sh
+cd bpp-core
+git git checkout tags/v2.4.1 -b version2.4.1
+cd ../bpp-seq
+git git checkout tags/v2.4.1 -b version2.4.1
+cd ../bpp-phyl
+git git checkout tags/v2.4.1 -b version2.4.1
+cd ..
+```
+
 Afterwards create the build directories:
 ```sh
 mkdir bpp-core-build
@@ -159,6 +170,9 @@ Finally build and install the libraries.
 The default installation locations are `${CMAKE_INSTALL_PREFIX}/include` and `${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}`. `$LIB_SUFFIX` is empty by default.
 
 To install locally (e.g. to your home directory) just replace the `CMAKE_INSTALL_PREFIX` switch with the desired path. In this case you don't need sudo rights to `make install`.
+
+Depending on the g++ version a modification in `bpp-core/src/Bpp/Graph/GlobalGraph.cpp` may be necessary: add the line `#include <limits>` at line 45.
+
 
 ```sh
 cd bpp-core-build/
@@ -309,3 +323,9 @@ module load mpi
 ```
 
 
+### Eigen not found
+
+Create symlink and recompile:
+```
+ln -s /usr/include/eigen3/Eigen /usr/include/Eigen
+```
