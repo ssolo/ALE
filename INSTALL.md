@@ -150,11 +150,11 @@ git clone https://github.com/BioPP/bpp-phyl
 ALE is only compatible up to BPP version 2.4.1, to select the proper version issue the following commands:
 ```sh
 cd bpp-core
-git git checkout tags/v2.4.1 -b version2.4.1
+git checkout tags/v2.4.1 -b version2.4.1
 cd ../bpp-seq
-git git checkout tags/v2.4.1 -b version2.4.1
+git checkout tags/v2.4.1 -b version2.4.1
 cd ../bpp-phyl
-git git checkout tags/v2.4.1 -b version2.4.1
+git checkout tags/v2.4.1 -b version2.4.1
 cd ..
 ```
 

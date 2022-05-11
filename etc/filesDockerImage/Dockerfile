@@ -25,7 +25,7 @@ WORKDIR /opt
 # Install libboost
 RUN mkdir -p {bpp/bpp-core-build,bpp/bpp-seq-build,bpp/bpp-phyl-build}
 
-# Install Bio++ v3 developmental version
+# Install Bio++ v2.4.1
 WORKDIR /opt/bpp
 
 # pull repositories
@@ -33,7 +33,7 @@ RUN git clone https://github.com/BioPP/bpp-core
 RUN git clone https://github.com/BioPP/bpp-seq
 RUN git clone https://github.com/BioPP/bpp-phyl
 
-# freeze to version 3.0
+# freeze to version 2.4.1
 WORKDIR /opt/bpp/bpp-core
 RUN git checkout tags/v2.4.1 -b version2.4.1
 RUN sed -i '45i#include <limits>' src/Bpp/Graph/GlobalGraph.cpp
