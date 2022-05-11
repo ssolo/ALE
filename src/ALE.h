@@ -4,14 +4,14 @@
 #define ALE_VERSION "1.0"
 
 #include <iostream>
-#include <Bpp/Phyl/BipartitionTools.h>
+#include <Bpp/Phyl/Tree/BipartitionTools.h>
 #include <Bpp/Numeric/Random/RandomTools.h>
 #include <Bpp/Numeric/NumConstants.h>
-#include <Bpp/Phyl/TreeTemplate.h>
-#include <Bpp/Phyl/TreeTemplateTools.h>
+#include <Bpp/Phyl/Tree/TreeTemplate.h>
+#include <Bpp/Phyl/Tree/TreeTemplateTools.h>
 #include <Bpp/Phyl/Io/Newick.h>
-#include <Bpp/Phyl/Node.h>
-#include <Bpp/Phyl/TreeTools.h>
+#include <Bpp/Phyl/Tree/Node.h>
+#include <Bpp/Phyl/Tree/TreeTools.h>
 #include <set>
 #include <map>
 #include<unordered_map>
