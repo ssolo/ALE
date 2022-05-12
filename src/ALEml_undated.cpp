@@ -6,6 +6,7 @@
 #include <Bpp/Phyl/OptimizationTools.h>
 #include <Bpp/Numeric/AutoParameter.h>
 #include <Bpp/Numeric/Function/DownhillSimplexMethod.h>
+#include <Bpp/Numeric/Function/SimpleMultiDimensions.h>
 
 using namespace std;
 using namespace bpp;
@@ -19,11 +20,13 @@ private:
   bool delta_fixed;
   bool tau_fixed;
   bool lambda_fixed;
+  bool DT_fixed;
+  
   exODT_model* model_pointer;
   approx_posterior* ale_pointer;
 public:
   p_fun(exODT_model* model,approx_posterior* ale,vector<int> ml_branch_ids,vector<string> ml_ratetype_names,double delta_start=0.01,double tau_start=0.01,double lambda_start=0.1//,double sigma_hat_start=1.
-	,bool delta_fixed_in=false,bool tau_fixed_in=false,bool lambda_fixed_in=false) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale)
+	,bool delta_fixed_in=false,bool tau_fixed_in=false,bool lambda_fixed_in=false, bool DT_fixed_in=false) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale)
   {
     //We declare parameters here:
  //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
@@ -33,13 +36,14 @@ public:
       delta_fixed=delta_fixed_in;
       tau_fixed=tau_fixed_in;
       lambda_fixed=lambda_fixed_in;
+      DT_fixed=DT_fixed_in;      
 
-      if (not delta_fixed)
+      if (not delta_fixed  and not DT_fixed)
 	{
 	  addParameter_( new Parameter("delta", delta_start, constraint) ) ;
 	  cout << "#optimizing delta rate"<< endl;
 	}
-      if (not tau_fixed)
+      if (not tau_fixed  and not DT_fixed)
 	{
 	  addParameter_( new Parameter("tau", tau_start, constraint) ) ;
 	  cout << "#optimizing tau rate"<< endl;
@@ -48,6 +52,11 @@ public:
 	{
 	  addParameter_( new Parameter("lambda", lambda_start, constraint) ) ;
 	  cout << "#optimizing lambda rate"<< endl;
+	}
+      if (DT_fixed)
+	{
+	  addParameter_( new Parameter("tau", tau_start, constraint) ) ;
+	  cout << "#optimizing delta and tau rates with fixed D/T ratio"<< endl;
 	}
 
       //vector<int> ml_branch_ids;
@@ -80,20 +89,27 @@ public:
     double getValue() const throw (Exception) { return fval_; }
     void fireParameterChanged(const ParameterList& pl)
     {
-      if (not delta_fixed)
+      if (not delta_fixed and not DT_fixed)
 	{
 	  double delta = getParameterValue("delta");
 	  model_pointer->set_model_parameter("delta",delta);
 	}
-      if (not tau_fixed)
+      if (not tau_fixed and not DT_fixed)
 	{
 	  double tau = getParameterValue("tau");
 	  model_pointer->set_model_parameter("tau",tau);
 	}
-      if (not lambda_fixed)
+      if (not lambda_fixed and not DT_fixed)
 	{
 	  double lambda = getParameterValue("lambda");
 	  model_pointer->set_model_parameter("lambda",lambda);
+	}
+      if (DT_fixed)
+	{
+	  double tau = getParameterValue("tau");
+	  model_pointer->set_model_parameter("tau",tau);
+	  double delta = tau * model_pointer->scalar_parameter["DT_ratio"]; 
+	  model_pointer->set_model_parameter("delta",delta);
 	}
       
       for (int i=0;i<public_ml_branch_ids.size();i++ )
@@ -125,9 +141,10 @@ int main(int argc, char ** argv)
       cout << "\nUsage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=number_of_samples seed=integer separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence fraction_missing=file_with_fraction_of_missing_genes_per_species output_species_tree=n S_branch_lengths:root_length rate_mutiplier:rate_name:branch_id:value" << endl;
       cout << "\n1st example: we fix the DTL values and do not perform any optimization \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ delta=0.05 tau=0.1 lambda=0.2 " << endl;
       cout << "\n2nd example: we fix the T value to 0 to get a DL-only model and optimize the DL parameters \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ tau=0\n" << endl;
-      cout << "\n3rd example: we provide a file giving the expected fraction of missing genes in each species \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ fraction_missing=fraction_missing.txt\n" << endl;
-      cout << "\n4th example: same as 3rd, but outputs the annotated species tree to a file \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ fraction_missing=fraction_missing.txt output_species_tree=y\n" << endl;
-      cout << "\n5th example: use species tree branch lengths as fixed rate multipliers with root length specifed as 0.2 (default 1.)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale S_branch_lengths:0.2 \n" << endl;
+      cout << "\n3rd example: we fix the ratio of D and T rates to D/T=1/20\n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ DT=0.05\n" << endl;
+      cout << "\n4th example: we provide a file giving the expected fraction of missing genes in each species \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ fraction_missing=fraction_missing.txt\n" << endl;
+      cout << "\n5th example: same as 3rd, but outputs the annotated species tree to a file \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ fraction_missing=fraction_missing.txt output_species_tree=y\n" << endl;
+      cout << "\n6th example: use species tree branch lengths as fixed rate multipliers with root length specifed as 0.2 (default 1.)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale S_branch_lengths:0.2 \n" << endl;
       cout << "\n6.1th example: use fixed branchrate multiplier for rate of Ts _to_ branch 43 with value 0.0 (i.e. no transfer to branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:tau_to:43:0.0 \n" << endl;
       cout << "\n6.2th example: use fixed branchrate multiplier for rate of Ts _from_ branch 43 with value 0.0 (i.e no transfer from branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:tau_from:43:0.0 \n" << endl;
       cout << "\n6.3th example: use fixed branchrate multiplier for rate Ds on branch 43 with value 0.0 (no duplications on branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:delta:43:0.0 \n" << endl;
@@ -171,7 +188,9 @@ int main(int argc, char ** argv)
   bool delta_fixed=false;
   bool tau_fixed=false;
   bool lambda_fixed=false;
-  scalar_type delta=1e-6,tau=1e-6,lambda=1e-6;
+  bool DT_fixed=false;
+  
+  scalar_type delta=1e-6,tau=1e-6,lambda=1e-6,DT_ratio=0.05;
   string fractionMissingFile = "";
   string outputSpeciesTree = "";
   map <string, map <int,scalar_type> >rate_multipliers;
@@ -207,6 +226,13 @@ int main(int argc, char ** argv)
       lambda=atof(tokens[1].c_str());
       lambda_fixed=true;
       cout << "# lambda fixed to " << lambda << endl;
+    }
+    else if (tokens[0]=="DT")
+    {
+      DT_ratio=atof(tokens[1].c_str());
+      DT_fixed=true;
+      model->set_model_parameter("DT_ratio", DT_ratio);
+      cout << "# D/T ratio fixed to " << model->scalar_parameter["DT_ratio"]  << endl;
     }
     else if (tokens[0]=="O_R")
     {
@@ -306,9 +332,9 @@ int main(int argc, char ** argv)
 
   //we use the Nelder–Mead method implemented in Bio++
 
-  Function* f = new p_fun(model,ale,ml_branch_ids,ml_ratetype_names,delta,tau,lambda,delta_fixed,tau_fixed,lambda_fixed);
+  Function* f = new p_fun(model,ale,ml_branch_ids,ml_ratetype_names,delta,tau,lambda,delta_fixed,tau_fixed,lambda_fixed,DT_fixed);
   Optimizer* optimizer = new DownhillSimplexMethod(f);
-
+  if (delta_fixed or tau_fixed or lambda_fixed or DT_fixed) Optimizer* optimizer = new SimpleMultiDimensions(f);
   optimizer->setProfiler(0);
   optimizer->setMessageHandler(0);
   optimizer->setVerbose(2);
@@ -318,14 +344,15 @@ int main(int argc, char ** argv)
 
   scalar_type mlll;
   
-  if (not (delta_fixed and tau_fixed and lambda_fixed) )
+  if (not (delta_fixed and tau_fixed and lambda_fixed) ) // not all rates fixed
     {
       cout << "#optimizing rates" << endl;
       optimizer->optimize();
-      if (not delta_fixed) delta=optimizer->getParameterValue("delta");
+      if (not delta_fixed and not DT_fixed) delta=optimizer->getParameterValue("delta");
       if (not tau_fixed) tau=optimizer->getParameterValue("tau");
+      if (DT_fixed) delta = tau * model->scalar_parameter["DT_ratio"];
       if (not lambda_fixed) lambda=optimizer->getParameterValue("lambda");
-      
+
       mlll=-optimizer->getFunctionValue();
       
     }
