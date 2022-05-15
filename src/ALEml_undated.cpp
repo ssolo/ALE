@@ -6,10 +6,12 @@
 #include <Bpp/Phyl/OptimizationTools.h>
 #include <Bpp/Numeric/AutoParameter.h>
 #include <Bpp/Numeric/Function/DownhillSimplexMethod.h>
-#include <Bpp/Numeric/Function/SimpleMultiDimensions.h>
 
 using namespace std;
 using namespace bpp;
+
+
+
 
 class p_fun:
   public virtual Function,
@@ -25,7 +27,7 @@ private:
   exODT_model* model_pointer;
   approx_posterior* ale_pointer;
 public:
-  p_fun(exODT_model* model,approx_posterior* ale,vector<int> ml_branch_ids,vector<string> ml_ratetype_names,double delta_start=0.01,double tau_start=0.01,double lambda_start=0.1//,double sigma_hat_start=1.
+  p_fun(exODT_model* model,approx_posterior* ale,vector<int> ml_branch_ids,vector<string> ml_ratetype_names,double delta_start=0.05,double tau_start=0.05,double lambda_start=0.1//,double sigma_hat_start=1.
 	,bool delta_fixed_in=false,bool tau_fixed_in=false,bool lambda_fixed_in=false, bool DT_fixed_in=false) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale)
   {
     //We declare parameters here:
@@ -99,7 +101,7 @@ public:
 	  double tau = getParameterValue("tau");
 	  model_pointer->set_model_parameter("tau",tau);
 	}
-      if (not lambda_fixed and not DT_fixed)
+      if (not lambda_fixed)
 	{
 	  double lambda = getParameterValue("lambda");
 	  model_pointer->set_model_parameter("lambda",lambda);
@@ -108,7 +110,7 @@ public:
 	{
 	  double tau = getParameterValue("tau");
 	  model_pointer->set_model_parameter("tau",tau);
-	  double delta = tau * model_pointer->scalar_parameter["DT_ratio"]; 
+	  double delta = tau * model_pointer->scalar_parameter["DT_ratio"];
 	  model_pointer->set_model_parameter("delta",delta);
 	}
       
@@ -125,8 +127,8 @@ public:
 
       model_pointer->calculate_undatedEs();
       double y=-log(model_pointer->pun(ale_pointer));
-      //cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda //<< "\t lambda="<<sigma_hat << "\t ll="
-      //    << -y <<endl;
+      //      cout <<endl<< "delta=" << model_pointer->scalar_parameter["delta_avg"] << "\t tau=" <<model_pointer->scalar_parameter["tau_avg"] << "\t lambda=" << model_pointer->scalar_parameter["lambda_avg"] //<< "\t lambda="<<sigma_hat << "\t ll="
+      //          << -y <<endl;
       fval_ = y;
     }
 };
@@ -333,8 +335,21 @@ int main(int argc, char ** argv)
   //we use the Nelder–Mead method implemented in Bio++
 
   Function* f = new p_fun(model,ale,ml_branch_ids,ml_ratetype_names,delta,tau,lambda,delta_fixed,tau_fixed,lambda_fixed,DT_fixed);
-  Optimizer* optimizer = new DownhillSimplexMethod(f);
-  if (delta_fixed or tau_fixed or lambda_fixed or DT_fixed) Optimizer* optimizer = new SimpleMultiDimensions(f);
+
+  //ReparametrizationFunctionWrapper rpf(f, false);
+  //ThreePointsNumericalDerivative tpnd(&rpf);
+  //tpnd.setParametersToDerivate(rpf.getParameters().getParameterNames());
+
+  
+  Optimizer* optimizer;
+  if (delta_fixed or tau_fixed or lambda_fixed or DT_fixed)
+    {
+     optimizer = new DownhillSimplexMethod(f);
+    }
+  else
+    {
+     optimizer = new DownhillSimplexMethod(f);
+    }
   optimizer->setProfiler(0);
   optimizer->setMessageHandler(0);
   optimizer->setVerbose(2);
