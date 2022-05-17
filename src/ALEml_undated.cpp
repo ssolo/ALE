@@ -1,4 +1,3 @@
-
 #include "exODT.h"
 #include "ALE_util.h"
 
@@ -31,50 +30,50 @@ public:
 	,bool delta_fixed_in=false,bool tau_fixed_in=false,bool lambda_fixed_in=false, bool DT_fixed_in=false) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale)
   {
     //We declare parameters here:
- //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
-      IntervalConstraint* constraint = new IntervalConstraint ( 1e-10, 100-1e-10, true, true );
-      IntervalConstraint* rate_multiplier_constraint = new IntervalConstraint ( 1e-10, 10000-1e-10, true, true );
+    //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
+    IntervalConstraint* constraint = new IntervalConstraint ( 1e-10, 100-1e-10, true, true );
+    IntervalConstraint* rate_multiplier_constraint = new IntervalConstraint ( 1e-10, 10000-1e-10, true, true );
 
-      delta_fixed=delta_fixed_in;
-      tau_fixed=tau_fixed_in;
-      lambda_fixed=lambda_fixed_in;
-      DT_fixed=DT_fixed_in;      
+    delta_fixed=delta_fixed_in;
+    tau_fixed=tau_fixed_in;
+    lambda_fixed=lambda_fixed_in;
+    DT_fixed=DT_fixed_in;      
 
-      if (not delta_fixed  and not DT_fixed)
-	{
-	  addParameter_( new Parameter("delta", delta_start, constraint) ) ;
-	  cout << "#optimizing delta rate"<< endl;
-	}
-      if (not tau_fixed  and not DT_fixed)
-	{
-	  addParameter_( new Parameter("tau", tau_start, constraint) ) ;
-	  cout << "#optimizing tau rate"<< endl;
-	}
-      if (not lambda_fixed)
-	{
-	  addParameter_( new Parameter("lambda", lambda_start, constraint) ) ;
-	  cout << "#optimizing lambda rate"<< endl;
-	}
-      if (DT_fixed)
-	{
-	  addParameter_( new Parameter("tau", tau_start, constraint) ) ;
-	  cout << "#optimizing delta and tau rates with fixed D/T ratio"<< endl;
-	}
+    if (not delta_fixed  and not DT_fixed)
+      {
+	addParameter_( new Parameter("delta", delta_start, constraint) ) ;
+	cout << "#optimizing delta rate"<< endl;
+      }
+    if (not tau_fixed  and not DT_fixed)
+      {
+	addParameter_( new Parameter("tau", tau_start, constraint) ) ;
+	cout << "#optimizing tau rate"<< endl;
+      }
+    if (not lambda_fixed)
+      {
+	addParameter_( new Parameter("lambda", lambda_start, constraint) ) ;
+	cout << "#optimizing lambda rate"<< endl;
+      }
+    if (DT_fixed)
+      {
+	addParameter_( new Parameter("tau", tau_start, constraint) ) ;
+	cout << "#optimizing delta and tau rates with fixed D/T ratio"<< endl;
+      }
 
-      //vector<int> ml_branch_ids;
-      //vector<string> ml_ratetype_names;
+    //vector<int> ml_branch_ids;
+    //vector<string> ml_ratetype_names;
 
-      for (int i=0;i<ml_branch_ids.size();i++ )
-	{
-	  int e=ml_branch_ids[i];
-	  public_ml_branch_ids.push_back(e);
-	  string name=ml_ratetype_names[i];
-	  public_ml_ratetype_names.push_back(name);
-	  stringstream branch;
-	  branch<<e;
-	  addParameter_( new Parameter("rm_"+name+"_"+branch.str(), 1, rate_multiplier_constraint) ) ;
-	  cout << "#optimizing for branch "<< e <<" ratemultiplier "<< name << endl;
-	}
+    for (int i=0;i<ml_branch_ids.size();i++ )
+      {
+	int e=ml_branch_ids[i];
+	public_ml_branch_ids.push_back(e);
+	string name=ml_ratetype_names[i];
+	public_ml_ratetype_names.push_back(name);
+	stringstream branch;
+	branch<<e;
+	addParameter_( new Parameter("rm_"+name+"_"+branch.str(), 1, rate_multiplier_constraint) ) ;
+	cout << "#optimizing for branch "<< e <<" ratemultiplier "<< name << endl;
+      }
   }
 
   p_fun* clone() const { return new p_fun(*this); }
@@ -85,52 +84,52 @@ public:
 
   void setParameters(const ParameterList& pl)
     throw (ParameterNotFoundException, ConstraintException, Exception)
-    {
-        matchParametersValues(pl);
-    }
-    double getValue() const throw (Exception) { return fval_; }
-    void fireParameterChanged(const ParameterList& pl)
-    {
-      if (not delta_fixed and not DT_fixed)
-	{
-	  double delta = getParameterValue("delta");
-	  model_pointer->set_model_parameter("delta",delta);
-	}
-      if (not tau_fixed and not DT_fixed)
-	{
-	  double tau = getParameterValue("tau");
-	  model_pointer->set_model_parameter("tau",tau);
-	}
-      if (not lambda_fixed)
-	{
-	  double lambda = getParameterValue("lambda");
-	  model_pointer->set_model_parameter("lambda",lambda);
-	}
-      if (DT_fixed)
-	{
-	  double tau = getParameterValue("tau");
-	  model_pointer->set_model_parameter("tau",tau);
-	  double delta = tau * model_pointer->scalar_parameter["DT_ratio"];
-	  model_pointer->set_model_parameter("delta",delta);
-	}
+  {
+    matchParametersValues(pl);
+  }
+  double getValue() const throw (Exception) { return fval_; }
+  void fireParameterChanged(const ParameterList& pl)
+  {
+    if (not delta_fixed and not DT_fixed)
+      {
+	double delta = getParameterValue("delta");
+	model_pointer->set_model_parameter("delta",delta);
+      }
+    if (not tau_fixed and not DT_fixed)
+      {
+	double tau = getParameterValue("tau");
+	model_pointer->set_model_parameter("tau",tau);
+      }
+    if (not lambda_fixed)
+      {
+	double lambda = getParameterValue("lambda");
+	model_pointer->set_model_parameter("lambda",lambda);
+      }
+    if (DT_fixed)
+      {
+	double tau = getParameterValue("tau");
+	model_pointer->set_model_parameter("tau",tau);
+	double delta = tau * model_pointer->scalar_parameter["DT_ratio"];
+	model_pointer->set_model_parameter("delta",delta);
+      }
       
-      for (int i=0;i<public_ml_branch_ids.size();i++ )
-	{
-	  int e=public_ml_branch_ids[i];
-	  string name=public_ml_ratetype_names[i];
-	  stringstream branch;
-	  branch<<e;
-	  scalar_type multiplier = getParameterValue("rm_"+name+"_"+branch.str());
-	  model_pointer->vector_parameter[name][e]=multiplier;
-	}
+    for (int i=0;i<public_ml_branch_ids.size();i++ )
+      {
+	int e=public_ml_branch_ids[i];
+	string name=public_ml_ratetype_names[i];
+	stringstream branch;
+	branch<<e;
+	scalar_type multiplier = getParameterValue("rm_"+name+"_"+branch.str());
+	model_pointer->vector_parameter[name][e]=multiplier;
+      }
 
 
-      model_pointer->calculate_undatedEs();
-      double y=-log(model_pointer->pun(ale_pointer));
-      //      cout <<endl<< "delta=" << model_pointer->scalar_parameter["delta_avg"] << "\t tau=" <<model_pointer->scalar_parameter["tau_avg"] << "\t lambda=" << model_pointer->scalar_parameter["lambda_avg"] //<< "\t lambda="<<sigma_hat << "\t ll="
-      //          << -y <<endl;
-      fval_ = y;
-    }
+    model_pointer->calculate_undatedEs();
+    double y=-log(model_pointer->pun(ale_pointer));
+    //      cout <<endl<< "delta=" << model_pointer->scalar_parameter["delta_avg"] << "\t tau=" <<model_pointer->scalar_parameter["tau_avg"] << "\t lambda=" << model_pointer->scalar_parameter["lambda_avg"] //<< "\t lambda="<<sigma_hat << "\t ll="
+    //          << -y <<endl;
+    fval_ = y;
+  }
 };
 
 
@@ -140,19 +139,20 @@ int main(int argc, char ** argv)
 
   if (argc<3)
     {
-      cout << "\nUsage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=number_of_samples seed=integer separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence fraction_missing=file_with_fraction_of_missing_genes_per_species output_species_tree=n S_branch_lengths:root_length rate_mutiplier:rate_name:branch_id:value" << endl;
+      cout << "\nUsage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=number_of_samples seed=integer separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence fraction_missing=file_with_fraction_of_missing_genes_per_species output_species_tree=n S_branch_lengths:root_length rate_multiplier:rate_name:branch_id:value" << endl;
       cout << "\n1st example: we fix the DTL values and do not perform any optimization \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ delta=0.05 tau=0.1 lambda=0.2 " << endl;
       cout << "\n2nd example: we fix the T value to 0 to get a DL-only model and optimize the DL parameters \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ tau=0\n" << endl;
       cout << "\n3rd example: we fix the ratio of D and T rates to D/T=1/20\n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ DT=0.05\n" << endl;
       cout << "\n4th example: we provide a file giving the expected fraction of missing genes in each species \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ fraction_missing=fraction_missing.txt\n" << endl;
       cout << "\n5th example: same as 3rd, but outputs the annotated species tree to a file \n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=100 separators=_ fraction_missing=fraction_missing.txt output_species_tree=y\n" << endl;
       cout << "\n6th example: use species tree branch lengths as fixed rate multipliers with root length specifed as 0.2 (default 1.)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale S_branch_lengths:0.2 \n" << endl;
-      cout << "\n6.1th example: use fixed branchrate multiplier for rate of Ts _to_ branch 43 with value 0.0 (i.e. no transfer to branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:tau_to:43:0.0 \n" << endl;
-      cout << "\n6.2th example: use fixed branchrate multiplier for rate of Ts _from_ branch 43 with value 0.0 (i.e no transfer from branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:tau_from:43:0.0 \n" << endl;
-      cout << "\n6.3th example: use fixed branchrate multiplier for rate Ds on branch 43 with value 0.0 (no duplications on branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:delta:43:0.0 \n" << endl;
-      cout << "\n6.4th example: use fixed branchrate multiplier for rate Ls on branch 43 with value 0.0 (no losses on branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:lambda:43:0.0 \n" << endl;
-      cout << "\n6.1.1 example: optimize branchrate multiplier for rate of Ts _to_ branch 43 (same syntax for all other multipliers!)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale S_branch_lengths:-1 \n" << endl;
-      cout << "\n6.5th example: use fixed multiplier for Origination on branch 43 with value 0.0 (no origination on branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_mutiplier:O:43:0.0 \n" << endl;
+      cout << "\n6.1th example: use fixed branchrate multiplier for rate of Ts _to_ branch 43 with value 0.0 (i.e. no transfer to branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_multiplier:tau_to:43:0.0 \n" << endl;
+      cout << "\n6.2th example: use fixed branchrate multiplier for rate of Ts _from_ branch 43 with value 0.0 (i.e no transfer from branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_multiplier:tau_from:43:0.0 \n" << endl;
+      cout << "\n6.3th example: use fixed branchrate multiplier for rate Ds on branch 43 with value 0.0 (no duplications on branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_≈repl:delta:43:0.0 \n" << endl;
+      cout << "\n6.4th example: use fixed branchrate multiplier for rate Ls on branch 43 with value 0.0 (no losses on branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_multiplier:lambda:43:0.0 \n" << endl;
+      cout << "\n6.1.1 example: optimize branchrate multiplier for rate of Ts _to_ branch 43 (same syntax for all other multipliers!)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale S_branch_lengths:-2 \n" << endl;
+      cout << "\n6.5th example: use fixed multiplier for Origination on branch 43 with value 0.0 (no origination on branch)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_multiplier:O:43:0.0 \n" << endl;
+      cout << "\n6.6th example: fixed multiplier for Origination on branch 43 to 1 and zero elsewhere (no origination outside 43)\n ./ALEml_undated species_tree.newick gene_tree_sample.ale rate_multiplier:O:43:-1 \n" << endl;
 
       return 0;
     }
@@ -202,114 +202,114 @@ int main(int argc, char ** argv)
 	
   model->set_model_parameter("undatedBL",false);
   for (int i=3;i<argc;i++)
-  {
-    string next_field=argv[i];
+    {
+      string next_field=argv[i];
 
-    vector <string> tokens;
-    boost::split(tokens,next_field,boost::is_any_of("=:"),boost::token_compress_on);
-    if (tokens[0]=="sample")
-    samples=atoi(tokens[1].c_str());
-    else if (tokens[0]=="separators")
-      model->set_model_parameter("gene_name_separators", tokens[1]);
-    else if (tokens[0]=="delta")
-    {
-      delta=atof(tokens[1].c_str());
-      delta_fixed=true;
-      cout << "# delta fixed to " << delta << endl;
-    }
-    else if (tokens[0]=="tau")
-    {
-      tau=atof(tokens[1].c_str());
-      tau_fixed=true;
-      cout << "# tau fixed to " << tau << endl;
-    }
-    else if (tokens[0]=="lambda")
-    {
-      lambda=atof(tokens[1].c_str());
-      lambda_fixed=true;
-      cout << "# lambda fixed to " << lambda << endl;
-    }
-    else if (tokens[0]=="DT")
-    {
-      DT_ratio=atof(tokens[1].c_str());
-      DT_fixed=true;
-      model->set_model_parameter("DT_ratio", DT_ratio);
-      cout << "# D/T ratio fixed to " << model->scalar_parameter["DT_ratio"]  << endl;
-    }
-    else if (tokens[0]=="O_R")
-    {
-      O_R=atof(tokens[1].c_str());
-      cout << "# O_R set to " << O_R << endl;
-    }
-    else if (tokens[0]=="beta")
-    {
-      beta=atof(tokens[1].c_str());
-      cout << "# beta set to " << beta << endl;
-    }
-    else if (tokens[0]=="fraction_missing")
-    {
-      fractionMissingFile=tokens[1];
-      cout << "# File containing fractions of missing genes set to " << fractionMissingFile << endl;
-    }
-    else if (tokens[0]=="S_branch_lengths")
-      {
-	model->set_model_parameter("undatedBL",true);
-	if (tokens.size()==1)
-	  {
-	    model->set_model_parameter("root_BL", 1);
-	    cout << "# unsing branch lengths of input S tree as rate multipliers with 1 at root! "<< endl;
-	  }
-	else
-	  {
-	    scalar_type root_rm=atof(tokens[1].c_str());
-	    model->set_model_parameter("root_BL", root_rm);
-	    cout << "# unsing branch lengths of input S tree as rate multipliers with "<<root_rm<<" at root! "<< endl;
+      vector <string> tokens;
+      boost::split(tokens,next_field,boost::is_any_of("=:"),boost::token_compress_on);
+      if (tokens[0]=="sample")
+	samples=atoi(tokens[1].c_str());
+      else if (tokens[0]=="separators")
+	model->set_model_parameter("gene_name_separators", tokens[1]);
+      else if (tokens[0]=="delta")
+	{
+	  delta=atof(tokens[1].c_str());
+	  delta_fixed=true;
+	  cout << "# delta fixed to " << delta << endl;
+	}
+      else if (tokens[0]=="tau")
+	{
+	  tau=atof(tokens[1].c_str());
+	  tau_fixed=true;
+	  cout << "# tau fixed to " << tau << endl;
+	}
+      else if (tokens[0]=="lambda")
+	{
+	  lambda=atof(tokens[1].c_str());
+	  lambda_fixed=true;
+	  cout << "# lambda fixed to " << lambda << endl;
+	}
+      else if (tokens[0]=="DT")
+	{
+	  DT_ratio=atof(tokens[1].c_str());
+	  DT_fixed=true;
+	  model->set_model_parameter("DT_ratio", DT_ratio);
+	  cout << "# D/T ratio fixed to " << model->scalar_parameter["DT_ratio"]  << endl;
+	}
+      else if (tokens[0]=="O_R")
+	{
+	  O_R=atof(tokens[1].c_str());
+	  cout << "# O_R set to " << O_R << endl;
+	}
+      else if (tokens[0]=="beta")
+	{
+	  beta=atof(tokens[1].c_str());
+	  cout << "# beta set to " << beta << endl;
+	}
+      else if (tokens[0]=="fraction_missing")
+	{
+	  fractionMissingFile=tokens[1];
+	  cout << "# File containing fractions of missing genes set to " << fractionMissingFile << endl;
+	}
+      else if (tokens[0]=="S_branch_lengths")
+	{
+	  model->set_model_parameter("undatedBL",true);
+	  if (tokens.size()==1)
+	    {
+	      model->set_model_parameter("root_BL", 1);
+	      cout << "# unsing branch lengths of input S tree as rate multipliers with 1 at root! "<< endl;
+	    }
+	  else
+	    {
+	      scalar_type root_rm=atof(tokens[1].c_str());
+	      model->set_model_parameter("root_BL", root_rm);
+	      cout << "# unsing branch lengths of input S tree as rate multipliers with "<<root_rm<<" at root! "<< endl;
 
-	  }
+	    }
 	
-      }
-    else if (tokens[0]=="rate_multiplier")
-      {
-	string rate_name=tokens[1];
-	int e=atoi(tokens[2].c_str());
-	scalar_type rm=atof(tokens[3].c_str());
-	if (rm>=0)
-	  {
-	    cout << "# rate multiplier for rate " << rate_name << " on branch with ID " << e<< " set to " << rm << endl;
-	    rate_multipliers["rate_multiplier_"+rate_name][e]=rm;
+	}
+      else if (tokens[0]=="rate_multiplier")
+	{
+	  string rate_name=tokens[1];
+	  int e=atoi(tokens[2].c_str());
+	  scalar_type rm=atof(tokens[3].c_str());
+	  if (rm>=-1)
+	    {
+	      cout << "# rate multiplier for rate " << rate_name << " on branch with ID " << e<< " set to " << rm << endl;
+	      rate_multipliers["rate_multiplier_"+rate_name][e]=rm;
+	    }
+	  else
+	    {
+	      cout << "# rate multiplier for rate " << rate_name << " on branch with ID " << e<< " to be optimized " << endl;
+	      ml_branch_ids.push_back(e);
+	      ml_ratetype_names.push_back("rate_multiplier_"+rate_name);
+	    }
+	}
+      else if (tokens[0]=="output_species_tree")
+	{
+	  std::string valArg = boost::algorithm::to_lower_copy(tokens[1]);
+	  if (valArg == "y" || valArg == "ye" || valArg == "yes" ) {
+	    outputSpeciesTree= ale_file + ".spTree";
+	    cout << "# outputting the annotated species tree to "<< outputSpeciesTree << endl;
 	  }
-	else
-	  {
-	    cout << "# rate multiplier for rate " << rate_name << " on branch with ID " << e<< " to be optimized " << endl;
-	    ml_branch_ids.push_back(e);
-	    ml_ratetype_names.push_back("rate_multiplier_"+rate_name);
-	  }
-      }
-    else if (tokens[0]=="output_species_tree")
-    {
-      std::string valArg = boost::algorithm::to_lower_copy(tokens[1]);
-      if (valArg == "y" || valArg == "ye" || valArg == "yes" ) {
-          outputSpeciesTree= ale_file + ".spTree";
-          cout << "# outputting the annotated species tree to "<< outputSpeciesTree << endl;
-      }
-      else {
-        cout << "# NOT outputting the annotated species tree to "<< outputSpeciesTree << endl;
+	  else {
+	    cout << "# NOT outputting the annotated species tree to "<< outputSpeciesTree << endl;
 
-      }
+	  }
+
+	}
+      else if (tokens[0]=="seed")
+	{
+	  long  seed = atoi(tokens[1].c_str());
+	  cout << "Set random seed to " <<seed<<endl;
+	  RandomTools::setSeed(seed);
+	}
+      else if (tokens[0]=="MRP")
+	{
+	  bool MRP=true;
+	}
 
     }
-    else if (tokens[0]=="seed")
-      {
-	long  seed = atoi(tokens[1].c_str());
-	cout << "Set random seed to " <<seed<<endl;
-	RandomTools::setSeed(seed);
-      }
-    else if (tokens[0]=="MRP")
-      {
-	bool MRP=true;
-      }
-
-  }
 
   model->set_model_parameter("BOOTSTRAP_LABELS","yes");
   model->construct_undated(Sstring, fractionMissingFile);
@@ -344,11 +344,11 @@ int main(int argc, char ** argv)
   Optimizer* optimizer;
   if (delta_fixed or tau_fixed or lambda_fixed or DT_fixed)
     {
-     optimizer = new DownhillSimplexMethod(f);
+      optimizer = new DownhillSimplexMethod(f);
     }
   else
     {
-     optimizer = new DownhillSimplexMethod(f);
+      optimizer = new DownhillSimplexMethod(f);
     }
   optimizer->setProfiler(0);
   optimizer->setMessageHandler(0);
@@ -384,7 +384,7 @@ int main(int argc, char ** argv)
       branch<<e;
       scalar_type multiplier = optimizer->getParameterValue("rm_"+name+"_"+branch.str());
       ml_rate_multipliers << name << "\t" << e << "\t" << multiplier << ";\n";
-     }
+    }
 
   cout << endl << "ML rates: " << " delta=" << delta << "; tau=" << tau << "; lambda="<<lambda//<<"; sigma="<<sigma_hat
        <<"."<<endl;
@@ -422,9 +422,9 @@ int main(int argc, char ** argv)
 	}
     }
   /*cout << "Calculating ML reconciled gene tree.."<<endl;
-  pair<string, scalar_type> res = model->p_MLRec(ale);
-  //and output it..
-  */
+    pair<string, scalar_type> res = model->p_MLRec(ale);
+    //and output it..
+    */
   string outname=ale_file+".uml_rec";
   ofstream fout( outname.c_str() );
   fout <<  "#ALEml_undated using ALE v"<< ALE_VERSION <<" by Szollosi GJ et al.; ssolo@elte.hu; CC BY-SA 3.0;"<<endl<<endl;
@@ -454,7 +454,7 @@ int main(int argc, char ** argv)
   fout << model->counts_string_undated(samples);
   fout.close();
 
-// Outputting the species tree to its own file:
+  // Outputting the species tree to its own file:
   if (outputSpeciesTree != "") {
     ofstream fout( outputSpeciesTree.c_str() );
     fout <<model->string_parameter["S_with_ranks"] <<endl;
