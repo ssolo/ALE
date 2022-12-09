@@ -39,5 +39,7 @@ int main(int argc, char ** argv)
   cout << burnin<<" burn in per file discarded."<<endl;
   ale->save_state(ale_name);
   cout << "# saved in "<< ale_name<<endl;
+  cout << "# mpp tree from sample: "<<endl;  
+  cout << ale->mpp_tree().first << endl; 
   return 0;
 }

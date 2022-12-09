@@ -51,6 +51,16 @@ exODT_model::exODT_model()
 
 }
 
+double exODT_model::height(Node *node)
+{
+  if( not node->isLeaf())
+    {
+      vector<Node*> sons = node->getSons();
+      return 0.5*(sons[0]->getDistanceToFather()+height(sons[0]) + sons[1]->getDistanceToFather()+height(sons[1]));      
+    }
+  else
+    return 0;
+}
 
 void exODT_model::construct(const string& Sstring, const scalar_type& N, const string& fractionMissingFile)
 {
@@ -61,7 +71,6 @@ void exODT_model::construct(const string& Sstring, const scalar_type& N, const s
 
   S=TreeTemplateTools::parenthesisToTree(string_parameter["S_in"],  (string_parameter["BOOTSTRAP_LABELS"]=="yes")
 );//del-loc
-
   S_root = S->getRootNode();//del-loc
   vector <Node*> leaves = TreeTemplateTools::getLeaves(*S_root);//del-loc
   //sort leaves according to name

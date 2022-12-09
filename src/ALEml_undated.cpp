@@ -9,9 +9,6 @@
 using namespace std;
 using namespace bpp;
 
-
-
-
 class p_fun:
   public virtual Function,
   public AbstractParametrizable
@@ -22,31 +19,36 @@ private:
   bool tau_fixed;
   bool lambda_fixed;
   bool DT_fixed;
+  bool MLOR;
   
+  bool no_T=false;
   exODT_model* model_pointer;
   approx_posterior* ale_pointer;
 public:
-  p_fun(exODT_model* model,approx_posterior* ale,vector<int> ml_branch_ids,vector<string> ml_ratetype_names,double delta_start=0.05,double tau_start=0.05,double lambda_start=0.1//,double sigma_hat_start=1.
-	,bool delta_fixed_in=false,bool tau_fixed_in=false,bool lambda_fixed_in=false, bool DT_fixed_in=false) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale)
+  p_fun(exODT_model* model,approx_posterior* ale,vector<int> ml_branch_ids,vector<string> ml_ratetype_names,double delta_start=0.1,double tau_start=0.1,double lambda_start=0.5//,double sigma_hat_start=1.
+	,bool delta_fixed_in=false,bool tau_fixed_in=false,bool lambda_fixed_in=false, bool DT_fixed_in=false, bool MLOR_in=false) : AbstractParametrizable(""), fval_(0), model_pointer(model), ale_pointer(ale)
   {
     //We declare parameters here:
     //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
-    IntervalConstraint* constraint = new IntervalConstraint ( 1e-10, 100-1e-10, true, true );
-    IntervalConstraint* rate_multiplier_constraint = new IntervalConstraint ( 1e-10, 10000-1e-10, true, true );
+    IntervalConstraint* constraint;
+    if (no_T) constraint= new IntervalConstraint ( 1e-6, 100-1e-7, true, true );
+    else constraint= new IntervalConstraint ( 1e-10, 100-1e-7, true, true );
 
+    IntervalConstraint* rate_multiplier_constraint = new IntervalConstraint ( 1e-7, 10000-1e-7, true, true );
     delta_fixed=delta_fixed_in;
     tau_fixed=tau_fixed_in;
     lambda_fixed=lambda_fixed_in;
-    DT_fixed=DT_fixed_in;      
-
+    DT_fixed=DT_fixed_in;
+    MLOR=MLOR_in;
+    if (tau_start<1e-10) no_T=true;
     if (not delta_fixed  and not DT_fixed)
       {
-	addParameter_( new Parameter("delta", delta_start, constraint) ) ;
+	addParameter_( new Parameter("delta", delta_start , constraint) ) ;
 	cout << "#optimizing delta rate"<< endl;
       }
     if (not tau_fixed  and not DT_fixed)
       {
-	addParameter_( new Parameter("tau", tau_start, constraint) ) ;
+	addParameter_( new Parameter("tau",tau_start, constraint) ) ;
 	cout << "#optimizing tau rate"<< endl;
       }
     if (not lambda_fixed)
@@ -58,6 +60,13 @@ public:
       {
 	addParameter_( new Parameter("tau", tau_start, constraint) ) ;
 	cout << "#optimizing delta and tau rates with fixed D/T ratio"<< endl;
+      }
+    if (MLOR)
+      {
+	IntervalConstraint* OR_constraint= new IntervalConstraint ( 1e-10, 1000-1e-7, true, true );
+	addParameter_( new Parameter("O_R", 1., OR_constraint) ) ;
+	cout << "#optimizing O_R"<< endl;
+
       }
 
     //vector<int> ml_branch_ids;
@@ -99,6 +108,7 @@ public:
       {
 	double tau = getParameterValue("tau");
 	model_pointer->set_model_parameter("tau",tau);
+	if (tau<1e-10) no_T=true;
       }
     if (not lambda_fixed)
       {
@@ -112,7 +122,12 @@ public:
 	double delta = tau * model_pointer->scalar_parameter["DT_ratio"];
 	model_pointer->set_model_parameter("delta",delta);
       }
-      
+    if (MLOR)
+      {
+	double O_R = getParameterValue("O_R");
+	model_pointer->set_model_parameter("O_R",O_R);	
+      }
+    
     for (int i=0;i<public_ml_branch_ids.size();i++ )
       {
 	int e=public_ml_branch_ids[i];
@@ -125,8 +140,8 @@ public:
 
 
     model_pointer->calculate_undatedEs();
-    double y=-log(model_pointer->pun(ale_pointer));
-    //      cout <<endl<< "delta=" << model_pointer->scalar_parameter["delta_avg"] << "\t tau=" <<model_pointer->scalar_parameter["tau_avg"] << "\t lambda=" << model_pointer->scalar_parameter["lambda_avg"] //<< "\t lambda="<<sigma_hat << "\t ll="
+    double y=-log(model_pointer->pun(ale_pointer,false,no_T));
+    //cout <<endl<< "delta=" << model_pointer->scalar_parameter["delta_avg"] << "\t tau=" <<model_pointer->scalar_parameter["tau_avg"] << "\t lambda=" << model_pointer->scalar_parameter["lambda_avg"] << "\t ll="
     //          << -y <<endl;
     fval_ = y;
   }
@@ -136,7 +151,7 @@ public:
 int main(int argc, char ** argv)
 {
   cout << "ALEml_undated using ALE v"<< ALE_VERSION <<endl;
-
+  bool no_T=false; 
   if (argc<3)
     {
       cout << "\nUsage:\n ./ALEml_undated species_tree.newick gene_tree_sample.ale sample=number_of_samples seed=integer separators=gene_name_separator O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate lambda=LossRate beta=weight_of_sequence_evidence fraction_missing=file_with_fraction_of_missing_genes_per_species output_species_tree=n S_branch_lengths:root_length rate_multiplier:rate_name:branch_id:value" << endl;
@@ -192,15 +207,19 @@ int main(int argc, char ** argv)
   bool lambda_fixed=false;
   bool DT_fixed=false;
   
-  scalar_type delta=1e-6,tau=1e-6,lambda=1e-6,DT_ratio=0.05;
+  scalar_type delta=1e-2,tau=1e-2,lambda=1e-1,DT_ratio=0.05;
   string fractionMissingFile = "";
   string outputSpeciesTree = "";
   map <string, map <int,scalar_type> >rate_multipliers;
   vector<int> ml_branch_ids;
   vector<string> ml_ratetype_names;
   bool MRP=false;
+  bool MLOR=false;
 	
   model->set_model_parameter("undatedBL",false);
+  model->set_model_parameter("reldate",false);
+  MLOR=false;
+
   for (int i=3;i<argc;i++)
     {
       string next_field=argv[i];
@@ -221,7 +240,13 @@ int main(int argc, char ** argv)
 	{
 	  tau=atof(tokens[1].c_str());
 	  tau_fixed=true;
-	  cout << "# tau fixed to " << tau << endl;
+	  if (tau<1e-10)
+	    {
+	      no_T=true;
+	      cout << "# tau fixed to no transfer!" << endl;
+	      tau=1e-19;
+	    }
+	  else cout << "# tau fixed to " << tau << endl;
 	}
       else if (tokens[0]=="lambda")
 	{
@@ -268,6 +293,17 @@ int main(int argc, char ** argv)
 	    }
 	
 	}
+      else if (tokens[0]=="reldate")
+	{
+	  cout << "Respecting realtive ages from input S tree, please make sure input S tree is ultrametric!" << endl;
+	  model->set_model_parameter("reldate",true);	
+	}
+      else if (tokens[0]=="MLOR")
+	{
+	  cout << "Optimizing root origination multiplier." << endl;
+	  MLOR=true;
+	}
+
       else if (tokens[0]=="rate_multiplier")
 	{
 	  string rate_name=tokens[1];
@@ -334,7 +370,7 @@ int main(int argc, char ** argv)
 
   //we use the Nelder–Mead method implemented in Bio++
 
-  Function* f = new p_fun(model,ale,ml_branch_ids,ml_ratetype_names,delta,tau,lambda,delta_fixed,tau_fixed,lambda_fixed,DT_fixed);
+  Function* f = new p_fun(model,ale,ml_branch_ids,ml_ratetype_names,delta,tau,lambda,delta_fixed,tau_fixed,lambda_fixed,DT_fixed,MLOR);
 
   //ReparametrizationFunctionWrapper rpf(f, false);
   //ThreePointsNumericalDerivative tpnd(&rpf);
@@ -359,7 +395,7 @@ int main(int argc, char ** argv)
 
   scalar_type mlll;
   
-  if (not (delta_fixed and tau_fixed and lambda_fixed) ) // not all rates fixed
+  if (not (delta_fixed and tau_fixed and lambda_fixed and not MLOR )  ) // not all rates fixed
     {
       cout << "#optimizing rates" << endl;
       optimizer->optimize();
@@ -367,13 +403,13 @@ int main(int argc, char ** argv)
       if (not tau_fixed) tau=optimizer->getParameterValue("tau");
       if (DT_fixed) delta = tau * model->scalar_parameter["DT_ratio"];
       if (not lambda_fixed) lambda=optimizer->getParameterValue("lambda");
-
+      if (MLOR) O_R=optimizer->getParameterValue("O_R");
       mlll=-optimizer->getFunctionValue();
       
     }
   else
     {
-      mlll=log(model->pun(ale));
+      mlll=log(model->pun(ale,false,no_T));
     }
   stringstream ml_rate_multipliers;
   for (int i=0;i<ml_branch_ids.size();i++ )
@@ -386,7 +422,7 @@ int main(int argc, char ** argv)
       ml_rate_multipliers << name << "\t" << e << "\t" << multiplier << ";\n";
     }
 
-  cout << endl << "ML rates: " << " delta=" << delta << "; tau=" << tau << "; lambda="<<lambda//<<"; sigma="<<sigma_hat
+  cout << endl << "ML rates: " << " delta=" << delta << "; tau=" << tau << "; lambda="<<lambda << "; O_R="<< O_R//<<"; sigma="<<sigma_hat
        <<"."<<endl;
 
   if (ml_branch_ids.size()>0) cout << "ML rate multipliers:\n" << ml_rate_multipliers.str(); 
@@ -401,7 +437,7 @@ int main(int argc, char ** argv)
   for (int i=0;i<samples;i++)
     {
       ++pd;
-      string sample_tree=model->sample_undated();
+      string sample_tree=model->sample_undated(no_T);
       sample_strings.push_back(sample_tree);
       if (ale->last_leafset_id>3 and MRP)
 	{

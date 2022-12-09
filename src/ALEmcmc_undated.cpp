@@ -213,13 +213,15 @@ int main(int argc, char ** argv)
 
 	//a set of inital rates
   double priorOrigination =1.0,  priorDelta=0.01,priorTau=0.01,priorLambda=0.1;
-	size_t sampling_rate = 10;
+	size_t sampling_rate = 1;
 	scalar_type beta=1;
 
 	string fractionMissingFile = "";
 	map <string, map <int,scalar_type> >rate_multipliers;
 
 	string outputSpeciesTree = "";
+	model->set_model_parameter("undatedBL",false);
+	model->set_model_parameter("reldate",false);
 
 	for (int i=3;i<argc;i++)
 	{
@@ -227,7 +229,7 @@ int main(int argc, char ** argv)
 		vector <string> tokens;
 		boost::split(tokens,next_field,boost::is_any_of("=:"),boost::token_compress_on);
 		if (tokens[0]=="sample")
-		samples=atof(tokens[1].c_str());
+		  samples=atof(tokens[1].c_str());
 		else if (tokens[0]=="separators")
 		model->set_model_parameter("gene_name_separators", tokens[1]);
 		else if (tokens[0]=="delta")
@@ -243,7 +245,6 @@ int main(int argc, char ** argv)
 		else if (tokens[0]=="lambda")
 		{
 			priorLambda=atof(tokens[1].c_str());
-			priorLambda=true;
 			cout << "# priorLambda fixed to " << priorLambda << endl;
 
 		}
@@ -300,7 +301,11 @@ int main(int argc, char ** argv)
 		    cout << "# rate multiplier for rate " << rate_name << " on branch with ID " << e<< " set to " << rm << endl;
 		    rate_multipliers["rate_multiplier_"+rate_name][e]=rm;
 		  }
-
+		else if (tokens[0]=="reldate")
+		  {
+		    cout << "Respecting realtive ages from input S tree, please make sure input S tree is ultrametric!" << endl;
+		    model->set_model_parameter("reldate",true);	
+		  }
 
 	}
 
@@ -484,10 +489,9 @@ int main(int argc, char ** argv)
   fout << "# of\t Duplications\tTransfers\tLosses\tSpeciations" <<endl;
   fout <<"Total \t"<< numDuplications/samples << "\t" << numTransfers/samples << "\t" << numLosses/samples<< "\t" << numSpeciations/samples <<endl;
   fout << endl;
-  fout.close();
-  /*fout << "# of\t Duplications\tTransfers\tLosses\tcopies" <<endl;
+  fout << "# of\t Duplications\tTransfers\tLosses\tOriginations\tcopies\tsingletons\textinction_prob\tpresence\tLL" <<endl;
   fout << model->counts_string_undated(samples);
-*/
+  fout.close();
 
 // Outputting the species tree to its own file:
   if (outputSpeciesTree != "") {

@@ -16,8 +16,8 @@ int prune(string * tree,vector<string> keep_list,vector<string> * keep_leaves)
       boost::trim(name);
       vector<string> tokens;
       boost::split(tokens,name,boost::is_any_of("_"),boost::token_compress_on);
-      //string sp=tokens[0];
-      string sp=name;
+      string sp=tokens[0];
+      //string sp=name;
       if (keep_map.count(sp)==1) (*keep_leaves).push_back(name);
       if (not keep_map.count(sp)==1 )
 	{
@@ -120,7 +120,7 @@ int main(int argc, char ** argv)
   string ale_name=argv[1];
   vector<string> tokens;
   boost::split(tokens,ale_name,boost::is_any_of("."),boost::token_compress_on);
-  ale_name=tokens[0];
+  //ale_name=tokens[0];
 
   string footer=argv[2];
   boost::split(tokens,footer,boost::is_any_of("/"),boost::token_compress_on);
@@ -144,9 +144,9 @@ int main(int argc, char ** argv)
 	      string name=(*it)->getName();
 	      boost::trim(name);
 	      vector<string> tokens;
-	      //boost::split(tokens,name,boost::is_any_of("_"),boost::token_compress_on);
-	      //string sp=tokens[0];
-	      string sp=name;
+	      boost::split(tokens,name,boost::is_any_of("_"),boost::token_compress_on);
+	      string sp=tokens[0];
+	      //string sp=name;
 	      keep_list.push_back(sp);
 	    }
 	  break;

@@ -30,6 +30,7 @@ struct step
 class exODT_model
 {
  public:
+
   std::map <int,int> rank2label;
 
   std::map <std::string,scalar_type> scalar_parameter;//del_loc
@@ -97,6 +98,8 @@ class exODT_model
   std::map <bpp::Node *,std::string> node_name;
   std::map <std::string,std::map<std::string,int> > ancestral_names;
   std::map <int,std::map<int,int> > ancestral;
+  std::map <int,std::map<int,int> > below;
+  
   std::vector < std::vector <int> > ancestors; // contains the ancestors of a given branch; useful to forbid transfers to them.
 
   std::vector<scalar_type> fm; // Fraction of genes missing at the tips
@@ -139,14 +142,16 @@ class exODT_model
   std::map<long int, std::vector<long int> > gid_gidpp;             //del-loc
   std::map<std::string, scalar_type> fraction_missing;
 
+  double height(bpp::Node *node);
+  
   void construct_undated(const std::string& Sstring, const std::string& fractionMissingFile=""); //Constructs an object given a species tree and file containing fractions of missing genes per species.
   void calculate_undatedEs();
-  scalar_type pun(approx_posterior *ale, bool verbose=false);
+  scalar_type pun(approx_posterior *ale, bool verbose=false,bool no_T=false);
   std::string feSPR(int e, int f);
   std::vector<std::string> NNIs(int e);
 
-  std::string sample_undated();
-  std::string sample_undated(int e,int i,std::string last_event,std::string branch_string="");
+  std::string sample_undated(bool no_T=false);
+  std::string sample_undated(int e,int i,std::string last_event,std::string branch_string="",bool no_T=false);
   std::vector <long int>  g_ids;
   std::vector <long int>  g_id_sizes;
   std::map <long int,int> g_id2i;

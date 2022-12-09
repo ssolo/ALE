@@ -29,7 +29,7 @@ public:
   {
     //We declare parameters here:
  //   IncludingInterval* constraint = new IncludingInterval(1e-6, 10-1e-6);
-      IntervalConstraint* constraint = new IntervalConstraint ( 1e-10, 100-1e-10, true, true );
+      IntervalConstraint* constraint = new IntervalConstraint ( 1e-5, 1, true, true );
       delta_fixed=delta_fixed_in;
       tau_fixed=tau_fixed_in;
       lambda_fixed=lambda_fixed_in;
@@ -64,27 +64,27 @@ public:
     double getValue() const throw (Exception) { return fval_; }
     void fireParameterChanged(const ParameterList& pl)
     {
+      double delta,tau,lambda;
       if (not delta_fixed)
 	{
-	  double delta = getParameterValue("delta");
+	  delta = getParameterValue("delta");
 	  model_pointer->set_model_parameter("delta",delta);
 	}
       if (not tau_fixed)
 	{
-	  double tau = getParameterValue("tau");
+	  tau = getParameterValue("tau");
 	  model_pointer->set_model_parameter("tau",tau);
 	}
       if (not lambda_fixed)
 	{
-	  double lambda = getParameterValue("lambda");
+	  lambda = getParameterValue("lambda");
 	  model_pointer->set_model_parameter("lambda",lambda);
 	}
 
         model_pointer->calculate_EGb();
         double y=-log(model_pointer->p(ale_pointer));
-      //cout <<endl<< "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda //<< "\t lambda="<<sigma_hat << "\t ll="
-      //    << -y <<endl;
-      fval_ = y;
+	cout << "delta=" << delta << "\t tau=" << tau << "\t lambda=" << lambda << "\t ll=" << -y <<endl;
+	fval_ = y;
     }
 };
 
@@ -135,7 +135,7 @@ int main(int argc, char ** argv)
   bool delta_fixed=false;
   bool tau_fixed=false;
   bool lambda_fixed=false;
-  scalar_type delta=1e-6,tau=1e-6,lambda=1e-6;
+  scalar_type delta=1e-2,tau=1e-2,lambda=1e-1;
   string fractionMissingFile = "";
   string outputSpeciesTree = "";
   //############################################################
@@ -201,11 +201,11 @@ int main(int argc, char ** argv)
 
 
 
-  int D=10;
+  int D=2;
   model->set_model_parameter("BOOTSTRAP_LABELS","yes");
 
   model->set_model_parameter("min_D",D);
-  model->set_model_parameter("grid_delta_t",0.05);
+  model->set_model_parameter("grid_delta_t",0.1);
   model->construct(Sstring);
 
   model->set_model_parameter("event_node",0);

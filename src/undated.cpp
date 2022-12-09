@@ -13,14 +13,12 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
   node_name.clear();
   node_ids.clear();
   id_nodes.clear();
-
+  
   string_parameter["S_un"]=Sstring;
   S=TreeTemplateTools::parenthesisToTree(string_parameter["S_un"],  true);//(string_parameter["BOOTSTRAP_LABELS"]=="yes")
 
   S_root = S->getRootNode();
   vector <Node*> nodes = TreeTemplateTools::getNodes(*S_root);
-
-  //for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ ) (*it)->setDistanceToFather(1);
 
   for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
   if ((*it)->isLeaf())
@@ -44,6 +42,8 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
   last_branch=0;
   last_leaf=0;
 
+
+  
   set <Node*> saw;
   for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ )
   if ((*it).second->isLeaf())
@@ -74,6 +74,10 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
     vector_parameter["rate_multiplier_O"].push_back(1);
 
   }
+
+  
+
+  
   //ad-hoc postorder
   vector<Node*> next_generation;
   for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ )
@@ -126,6 +130,26 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
     next_generation.push_back((*it));
   }
 
+
+  //for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ ) (*it)->setDistanceToFather(1);
+  below.clear();  
+  for (int e=0;e<last_branch-1;e++)
+  {
+    for (int f=0;f<last_branch-1;f++)
+      {
+	//cout <<height(id_nodes[e]->getFather()) <<" e:"<<e<<" "<<" "<< height(id_nodes[f])  <<" f:"<<f<<" "<<" "<< endl;
+	if ( height(id_nodes[e]->getFather())  <  height(id_nodes[f]) )
+	  {
+	    //cout << e << " below " << f << endl;
+	  below[e][f]=1;
+	  }
+	else
+	  below[e][f]=0;
+      }
+  }
+
+
+  
   vector_parameter["BL_rate_multiplier"][last_branch]=scalar_parameter["root_BL"];
   vector_parameter["rate_multiplier_tau_to"].push_back(1);
   vector_parameter["rate_multiplier_tau_from"].push_back(1);
@@ -171,6 +195,9 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
     for (int f=0;f<last_branch;f++)
     ancestral[e][f]=0;
   }
+
+
+  
   for (vector <Node * >::iterator it=nodes.begin();it!=nodes.end();it++ )
   {
     Node * node=(*it);
@@ -189,11 +216,11 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
       if (f<last_leaf)
       name_to<<node_name[node];
       else
-      name_to<<f;
+	name_to<<f;
       node=node->getFather();
       ancestral_names[name_from.str()][name_to.str()]=1;
       if (not ancestral[e][f])
-      ancestors[e].push_back(f);
+	ancestors[e].push_back(f);
       ancestral[e][f]=1;
     }
     stringstream name_to;
@@ -201,10 +228,20 @@ void exODT_model::construct_undated(const string& Sstring, const string& fractio
     name_to<<f;
     ancestral_names[name_from.str()][name_to.str()]=1;
     if (not ancestral[e][f])
-    ancestors[e].push_back(f);
+      ancestors[e].push_back(f);
     ancestral[e][f]=1;
   }
-
+  if(scalar_parameter["reldate"]==true)
+    for (int e=0;e<last_branch;e++)
+      {
+	for (int f=0;f<last_branch;f++)
+	  if (below[e][f]==1)
+	    {
+	      if (not ancestral[e][f])
+		ancestors[e].push_back(f);
+	      ancestral[e][f]=1;
+	    }
+      }
 
 
   for (map <string,Node *>::iterator  it=name_node.begin();it!=name_node.end();it++ )
@@ -433,7 +470,7 @@ void exODT_model::calculate_undatedEs()
 }
 
 
-scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
+scalar_type exODT_model::pun(approx_posterior *ale, bool verbose,bool no_T)
 {
   scalar_type survive=0;
   scalar_type root_sum=0;
@@ -656,7 +693,7 @@ scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
             // D event
             uq_sum+=PD[e]*(uq[gp_i][e]*uq[gpp_i][e])*pp;//no factor of two needed here
             // T event
-            uq_sum+=(uq[gp_i][e]*(mPTuq[gpp_i]-mPTuq_ancestral_correction[gpp_i][e])/tau_norm[e]+ uq[gpp_i][e]*(mPTuq[gp_i]-mPTuq_ancestral_correction[gp_i][e])/tau_norm[e])*pp;
+            if (not no_T) uq_sum+=(uq[gp_i][e]*(mPTuq[gpp_i]-mPTuq_ancestral_correction[gpp_i][e])/tau_norm[e]+ uq[gpp_i][e]*(mPTuq[gp_i]-mPTuq_ancestral_correction[gp_i][e])/tau_norm[e])*pp;
           }
         }
         if (not (e<last_leaf) )
@@ -669,7 +706,7 @@ scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
         // DL event
         uq_sum+=PD[e]*(uq[i][e]*uE[e]*2);
         // TL event
-        uq_sum+=((mPTuq[i]-mPTuq_ancestral_correction[i][e])/tau_norm[e]*uE[e] + uq[i][e]* (mPTE- mPTE_ancestral_correction[e])/tau_norm[e]);
+        if (not no_T) uq_sum+=((mPTuq[i]-mPTuq_ancestral_correction[i][e])/tau_norm[e]*uE[e] + uq[i][e]* (mPTE- mPTE_ancestral_correction[e])/tau_norm[e]);
         if (uq_sum<EPSILON) uq_sum=EPSILON;
         uq[i][e]=uq_sum;
         new_mPTuq +=(wT[e])*uq_sum;
@@ -733,7 +770,7 @@ scalar_type exODT_model::pun(approx_posterior *ale, bool verbose)
 
 }
 
-string exODT_model::sample_undated()
+string exODT_model::sample_undated(bool no_T)
 {
 
   scalar_type r=RandomTools::giveRandomNumberBetweenZeroAndEntry(1);
@@ -757,13 +794,13 @@ string exODT_model::sample_undated()
     if (r*root_sum<root_resum)
     {
       register_O(e);
-      return sample_undated(e,root_i,"O")+";";
+      return sample_undated(e,root_i,"O","",no_T)+";";
     }
   }
   return "-!=-";
 }
 
-string exODT_model::sample_undated(int e, int i,string last_event,string branch_string)
+string exODT_model::sample_undated(int e, int i,string last_event,string branch_string,bool no_T)
 {
 
 
@@ -875,11 +912,11 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
       uq_sum+=PD[e]*(uq[gp_i][e]*uq[gpp_i][e]*2)*pp+EPSILON;
       // T event
       for (int f=0;f<last_branch;f++)
-      if (not ancestral[e][f])
-      {
-        uq_sum+=uq[gp_i][e]*(wT[f]/tau_norm[e])*uq[gpp_i][f]*pp+EPSILON;
-        uq_sum+=uq[gpp_i][e]*(wT[f]/tau_norm[e])*uq[gp_i][f]*pp+EPSILON;
-      }
+	if (not ancestral[e][f] and not no_T)
+	  {
+	    uq_sum+=uq[gp_i][e]*(wT[f]/tau_norm[e])*uq[gpp_i][f]*pp+EPSILON;
+	    uq_sum+=uq[gpp_i][e]*(wT[f]/tau_norm[e])*uq[gp_i][f]*pp+EPSILON;
+	  }
     }
   }
 
@@ -895,13 +932,12 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
   // DL event
   uq_sum+=PD[e]*(uq[i][e]*uE[e]*2)+EPSILON;
   // TL event
-
   for (int f=0;f<last_branch;f++)
-  if (not ancestral[e][f])
-  {
-    uq_sum+=(wT[f]/tau_norm[e])*uq[i][f]*uE[e]+EPSILON;
-    uq_sum+=(wT[f]/tau_norm[e])*uE[f]*uq[i][e]+EPSILON;
-  }
+    if (not ancestral[e][f] and not no_T)
+      {
+	uq_sum+=(wT[f]/tau_norm[e])*uq[i][f]*uE[e]+EPSILON;
+	uq_sum+=(wT[f]/tau_norm[e])*uE[f]*uq[i][e]+EPSILON;
+      }
 
   //######################################################################################################################
   //#########################################INNNER LOOP##################################################################
@@ -945,26 +981,26 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
         if (r*uq_sum<uq_resum)
         {
           register_Su(e,last_event);
-          return "("+sample_undated(f,gp_i,"S")+","+sample_undated(g,gpp_i,"S")+")."+estr+branch_string+":"+branch_length;
+          return "("+sample_undated(f,gp_i,"S","",no_T)+","+sample_undated(g,gpp_i,"S","",no_T)+")."+estr+branch_string+":"+branch_length;
         }
         uq_resum+=PS[e]*uq[gp_i][g]*uq[gpp_i][f]*pp+EPSILON;
         if (r*uq_sum<uq_resum)
         {
           register_Su(e,last_event);
-          return "("+sample_undated(g,gp_i,"S")+","+sample_undated(f,gpp_i,"S")+")."+estr+branch_string+":"+branch_length;
+          return "("+sample_undated(g,gp_i,"S","",no_T)+","+sample_undated(f,gpp_i,"S","",no_T)+")."+estr+branch_string+":"+branch_length;
         }
       }
       // D event
       uq_resum+=PD[e]*(uq[gp_i][e]*uq[gpp_i][e]*2)*pp+EPSILON;
-      if (r*uq_sum<uq_resum)
+      if (r*uq_sum<uq_resum or no_T)
       {
         register_D(e);
-        return "("+sample_undated(e,gp_i,"D")+","+sample_undated(e,gpp_i,"D")+").D@"+estr+branch_string+":"+branch_length;
+        return "("+sample_undated(e,gp_i,"D","",no_T)+","+sample_undated(e,gpp_i,"D","",no_T)+").D@"+estr+branch_string+":"+branch_length;
       }
 
       // T event
       for (int f=0;f<last_branch;f++)
-      if (not ancestral[e][f])
+      if (not ancestral[e][f] and not no_T)
       {
         stringstream fstring;
         if (not (f<last_leaf)) fstring << f; else fstring << extant_species[f];
@@ -980,7 +1016,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
           Ttoken<<estr<<">"<<fstr<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[g_ids[gpp_i]]);
           Ttokens.push_back(Ttoken.str());
 
-          return "("+sample_undated(e,gp_i,"S")+","+sample_undated(f,gpp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
+          return "("+sample_undated(e,gp_i,"S","",no_T)+","+sample_undated(f,gpp_i,"T","",no_T)+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
         }
         uq_resum+=uq[gpp_i][e]*(wT[f]/tau_norm[e])*uq[gp_i][f]*pp+EPSILON;
         if (r*uq_sum<uq_resum)
@@ -991,7 +1027,7 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
           stringstream Ttoken;
           Ttoken<<estr<<">"<<fstr<<"|"<<ale_pointer->set2name(ale_pointer->id_sets[g_ids[gp_i]]);
           Ttokens.push_back(Ttoken.str());
-          return "("+sample_undated(e,gpp_i,"S")+","+sample_undated(f,gp_i,"T")+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
+          return "("+sample_undated(e,gpp_i,"S","",no_T)+","+sample_undated(f,gp_i,"T","",no_T)+").T@"+estr+"->"+fstr+branch_string+":"+branch_length;
         }
 
       }
@@ -1007,25 +1043,25 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
     {
       register_Su(e,last_event);
       register_L(g);
-      return sample_undated(f,i,"S","."+estr+branch_string);
+      return sample_undated(f,i,"S","."+estr+branch_string,no_T);
     }
     uq_resum+=PS[e]*uq[i][g]*uE[f]+EPSILON;
     if (r*uq_sum<uq_resum)
     {
       register_Su(e,last_event);
       register_L(f);
-      return sample_undated(g,i,"S","."+estr+branch_string);
+      return sample_undated(g,i,"S","."+estr+branch_string,no_T);
     }
   }
   // DL event
   uq_resum+=PD[e]*(uq[i][e]*uE[e]*2)+EPSILON;
   if (r*uq_sum<uq_resum)
   {
-    return sample_undated(e,i,"S",branch_string);
+    return sample_undated(e,i,"S",branch_string,no_T);
   }
   // TL event
   for (int f=0;f<last_branch;f++)
-  if (not ancestral[e][f])
+  if (not ancestral[e][f] and not no_T)
   {
     stringstream fstring;
     if (not (f<last_leaf)) fstring << f; else fstring << extant_species[f];
@@ -1043,12 +1079,12 @@ string exODT_model::sample_undated(int e, int i,string last_event,string branch_
       Ttokens.push_back(Ttoken.str());
       */
       register_L(e);
-      return sample_undated(f,i,"T",".T@"+estr+"->"+fstr+branch_string);
+      return sample_undated(f,i,"T",".T@"+estr+"->"+fstr+branch_string,no_T);
     }
     uq_resum+=(wT[f]/tau_norm[e])*uE[f]*uq[i][e]+EPSILON;
     if (r*uq_sum<uq_resum)
     {
-      return sample_undated(e,i,"S");
+      return sample_undated(e,i,"S","",no_T);
     }
   }
   //######################################################################################################################
