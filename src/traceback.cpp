@@ -1110,12 +1110,14 @@ string exODT_model::counts_string()
 	   << branch_counts["Ds"][branch] << "\t"
 	   << branch_counts["Ts"][branch] << "\t"
 	   << branch_counts["Ls"][branch] << "\t"
+	   << branch_counts["Os"][branch] << "\t"
 	   << branch_counts["copies"][branch] << "\n";
       else
 	out<< "S_terminal_branch\t"<< named_branch.str() << "\t" 
 	   << branch_counts["Ds"][branch] << "\t"
 	   << branch_counts["Ts"][branch] << "\t"
 	   << branch_counts["Ls"][branch] << "\t"
+	   << branch_counts["Os"][branch] << "\t"
 	   << branch_counts["copies"][branch] << "\n";
 	
     }  
