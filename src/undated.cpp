@@ -728,7 +728,6 @@ scalar_type exODT_model::pun(approx_posterior *ale, bool verbose,bool no_T)
     }
     survive=0;
     root_sum=0;
-    O_norm=0;
     bool single_O=false;
     for (int e=0;e<last_branch;e++)
       if (vector_parameter["rate_multiplier_O"][e]<0)
@@ -752,21 +751,20 @@ scalar_type exODT_model::pun(approx_posterior *ale, bool verbose,bool no_T)
     {
       scalar_type O_p=vector_parameter["rate_multiplier_O"][e];
       if ( e==(last_branch-1) and O_p==1) O_p=scalar_parameter["O_R"];
-      O_norm+=O_p;
       root_sum+=uq[root_i][e]*O_p;
-      survive+=(1-uE[e]);
+      survive+=O_p*(1-uE[e]);
     }
     for (int e=0;e<last_branch;e++)
       {
 	scalar_type O_p=vector_parameter["rate_multiplier_O"][e];
 	if ( e==(last_branch-1) and O_p==1) O_p=scalar_parameter["O_R"];
-	branch_counts["O_LL"].at(e) = log(uq[root_i][e]) + log(O_p) - log(O_norm);
+	branch_counts["O_LL"].at(e) = log(uq[root_i][e]) + log(O_p);
       }
     //cout << root_sum/survive << endl;
 
     
   }
-  return root_sum/survive/O_norm*(last_branch);
+  return root_sum*last_branch/survive;
 
 }
 
