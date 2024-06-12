@@ -3,6 +3,12 @@ PROJECT(ale CXX)
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 add_definitions(-std=c++11)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# ignore BOOST deprecated headers
+add_definitions("-DBOOST_TIMER_ENABLE_DEPRECATED")
+# add_definitions("-DBOOST_BIND_GLOBAL_PLACEHOLDERS")
+
 IF(NOT NO_VIRTUAL_COV)
   SET(NO_VIRTUAL_COV FALSE CACHE BOOL
       "Disable covariant return type with virtual inheritance, for compilers that do not support it."
