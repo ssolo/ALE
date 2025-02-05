@@ -1,0 +1,86 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 989399a..94e915c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -63,15 +63,15 @@ add_subdirectory (src)
+ # Doxygen
+ FIND_PACKAGE(Doxygen)
+ IF (DOXYGEN_FOUND)
+-  ADD_CUSTOM_TARGET (apidoc cp Doxyfile ${CMAKE_BINARY_DIR}/Doxyfile-build
++  ADD_CUSTOM_TARGET (${PROJECT_NAME}-apidoc cp Doxyfile ${CMAKE_BINARY_DIR}/Doxyfile-build
+     COMMAND echo "OUTPUT_DIRECTORY=${CMAKE_BINARY_DIR}" >> ${CMAKE_BINARY_DIR}/Doxyfile-build
+     COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile-build
+-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+-  ADD_CUSTOM_TARGET (apidoc-stable cp Doxyfile ${CMAKE_BINARY_DIR}/Doxyfile-stable
++    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
++  ADD_CUSTOM_TARGET (${PROJECT_NAME}-apidoc-stable cp Doxyfile ${CMAKE_BINARY_DIR}/Doxyfile-stable
+     COMMAND echo "OUTPUT_DIRECTORY=${CMAKE_BINARY_DIR}" >> ${CMAKE_BINARY_DIR}/Doxyfile-stable
+     COMMAND echo "HTML_HEADER=header.html" >> ${CMAKE_BINARY_DIR}/Doxyfile-stable
+     COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile-stable
+-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
++    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+ ENDIF (DOXYGEN_FOUND)
+ 
+ # Packager
+@@ -82,9 +82,9 @@ SET(CPACK_PACKAGE_VERSION_MAJOR "2")
+ SET(CPACK_PACKAGE_VERSION_MINOR "4")
+ SET(CPACK_PACKAGE_VERSION_PATCH "1")
+ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Bio++ Core library")
+-SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING.txt")
+-SET(CPACK_RESOURCE_FILE_AUTHORS "${CMAKE_SOURCE_DIR}/AUTHORS.txt")
+-SET(CPACK_RESOURCE_FILE_INSTALL "${CMAKE_SOURCE_DIR}/INSTALL.txt")
++SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING.txt")
++SET(CPACK_RESOURCE_FILE_AUTHORS "${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS.txt")
++SET(CPACK_RESOURCE_FILE_INSTALL "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL.txt")
+ SET(CPACK_SOURCE_GENERATOR "TGZ")
+ # /!\ This assumes that an external build is used
+ SET(CPACK_SOURCE_IGNORE_FILES 
+@@ -101,13 +101,13 @@ SET(CPACK_DEBSOURCE_PACKAGE_FILE_NAME "lib${CMAKE_PROJECT_NAME}_${CPACK_PACKAGE_
+ INCLUDE(CPack)
+ 
+ #This adds the 'dist' target
+-ADD_CUSTOM_TARGET(dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
++ADD_CUSTOM_TARGET(${PROJECT_NAME}-dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
+ 
+ IF (UNIX)
+ 
+ #This creates rpm packages:
+-ADD_CUSTOM_TARGET(rpm rpmbuild -ta ${CPACK_SOURCE_PACKAGE_FILE_NAME}.tar.gz)
+-ADD_DEPENDENCIES(rpm dist)
++ADD_CUSTOM_TARGET(${PROJECT_NAME}-rpm rpmbuild -ta ${CPACK_SOURCE_PACKAGE_FILE_NAME}.tar.gz)
++ADD_DEPENDENCIES(${PROJECT_NAME}-rpm ${PROJECT_NAME}-dist)
+ 
+ ENDIF()
+ 
+diff --git a/src/Bpp/Graph/GlobalGraph.cpp b/src/Bpp/Graph/GlobalGraph.cpp
+index 1652f37..bd277bc 100644
+--- a/src/Bpp/Graph/GlobalGraph.cpp
++++ b/src/Bpp/Graph/GlobalGraph.cpp
+@@ -39,6 +39,7 @@
+ */
+ 
+ #include <algorithm>
++#include <limits>
+ #include <sstream>
+ #include <string>
+ #include <vector>
+diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
+index 7086962..e440b26 100644
+--- a/test/CMakeLists.txt
++++ b/test/CMakeLists.txt
+@@ -14,11 +14,11 @@ file (GLOB test_cpp_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
+ foreach (test_cpp_file ${test_cpp_files})
+   # Add each test (named as the filename without extension)
+   get_filename_component (test_name ${test_cpp_file} NAME_WE)
+-  add_executable (${test_name} ${test_cpp_file})
+-  target_link_libraries (${test_name} ${PROJECT_NAME}-shared)
++  add_executable (${PROJECT_NAME}-${test_name} ${test_cpp_file})
++  target_link_libraries (${PROJECT_NAME}-${test_name} ${PROJECT_NAME}-shared)
+   add_test (
+-    NAME ${test_name}
++    NAME ${PROJECT_NAME}-${test_name}
+     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+-    COMMAND ${test_name}
++    COMMAND ${PROJECT_NAME}-${test_name}
+     )
+ endforeach (test_cpp_file)

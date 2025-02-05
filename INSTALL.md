@@ -93,7 +93,10 @@ brew install gcc
 brew install git
 brew install cmake
 ```
-
+---
+**Note**
+Installing Boost and Bio++ libraries is no longer nesessary. ALE now downloads and builds the required boost libraries if not found on your system. The Bio++ libraries are downloaded and built, even if installed on your system.
+---
 
 #### Boost libraries
 
