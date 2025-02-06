@@ -1,9 +1,4 @@
-SET(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Weffc++ -Wshadow -std=c++11")
-SET(CMAKE_C_FLAGS_DEBUG "-g -Wall -Weffc++ -Wshadow")
-SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Weffc++ -Wshadow -DNDEBUG -std=c++11")
-SET(CMAKE_C_FLAGS_RELEASE "-O3 -Wall -Weffc++ -Wshadow -DNDEBUG")
-SET(CMAKE_CXX_FLAGS_DISTRIBUTION "-O3 -w -DNDEBUG -std=c++11")
-SET(CMAKE_C_FLAGS_DISTRIBUTION "-O3 -w -DNDEBUG")
+
 add_compile_definitions(BOOST_TIMER_ENABLE_DEPRECATED)
 
 SET(exODT_SRCS
@@ -19,7 +14,6 @@ SET(exODT_SRCS
 )
 
 add_library(exODT STATIC ${exODT_SRCS})
-target_compile_features(exODT PUBLIC cxx_std_11)
 target_link_libraries(exODT PUBLIC ${BPP_LIBRARIES} 
   Boost::algorithm Boost::mpi Boost::serialization Boost::timer)
 

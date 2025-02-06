@@ -2,6 +2,17 @@ cmake_minimum_required(VERSION 3.24.0)
 
 project(ale CXX)
 
+if(NOT CMAKE_BUILD_TYPE)
+SET(CMAKE_BUILD_TYPE Distribution)
+endif()
+
+SET(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Weffc++ -Wshadow -std=c++11")
+SET(CMAKE_C_FLAGS_DEBUG "-g -Wall -Weffc++ -Wshadow")
+SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Weffc++ -Wshadow -DNDEBUG -std=c++11")
+SET(CMAKE_C_FLAGS_RELEASE "-O3 -Wall -Weffc++ -Wshadow -DNDEBUG")
+SET(CMAKE_CXX_FLAGS_DISTRIBUTION "-O3 -w -DNDEBUG -std=c++11")
+SET(CMAKE_C_FLAGS_DISTRIBUTION "-O3 -w -DNDEBUG")
+
 find_package(MPI REQUIRED)
 
 # Require openMP for this project
