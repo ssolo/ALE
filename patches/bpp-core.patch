@@ -1,7 +1,16 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 989399a..94e915c 100644
+index 989399a..2a6f05d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
+@@ -5,7 +5,7 @@
+ #   Francois Gindraud (2017)
+ # Created: 17/09/2010
+ 
+-cmake_minimum_required (VERSION 2.8.11)
++cmake_minimum_required (VERSION 3.5)
+ project (bpp-core CXX)
+ 
+ # Compile options
 @@ -63,15 +63,15 @@ add_subdirectory (src)
  # Doxygen
  FIND_PACKAGE(Doxygen)
