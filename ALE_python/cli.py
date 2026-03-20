@@ -319,8 +319,16 @@ def ALEml_undated(argv):
 
         x0 = np.array(x0)
 
-        bounds = [(1e-10, 10.0)] * (len(x0) - len(ml_branch_multipliers))
-        bounds += [(1e-7, 10000.0)] * len(ml_branch_multipliers)
+        # Build per-parameter bounds matching C++ constraints
+        rate_lo = 1e-6 if no_T else 1e-10
+        bounds = []
+        for pname in param_names:
+            if pname == "O_R":
+                bounds.append((1e-10, 1000.0))
+            elif pname.startswith("rm_"):
+                bounds.append((1e-7, 10000.0))
+            else:
+                bounds.append((rate_lo, 100.0))
         result = minimize(
             neg_log_lk,
             x0,
@@ -892,9 +900,9 @@ def ALEadd(argv):
         for line in f:
             line = line.rstrip("\n")
             if "(" in line:
-                tree_i += 1
-                if tree_i > burnin and tree_i % every == 0:
+                if tree_i >= burnin and tree_i % every == 0:
                     trees.append(line)
+                tree_i += 1
 
     print("..")
 

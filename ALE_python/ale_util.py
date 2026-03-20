@@ -59,10 +59,15 @@ def observe_ALE_from_file(
                 line = line.rstrip("\n").strip()
                 if not line:
                     continue
-                if "(" in line or ";" in line:
+                if "(" in line:
                     tree_i += 1
                     if tree_i > burnin and tree_i % every == 0:
                         trees.append(line)
+                elif ";" in line:
+                    # Singleton tree like "A;" — strip delimiter
+                    tree_i += 1
+                    if tree_i > burnin and tree_i % every == 0:
+                        trees.append(line.rstrip(";"))
 
     if not trees:
         raise ValueError("No trees found in the provided file(s).")
