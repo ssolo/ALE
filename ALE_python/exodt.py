@@ -1047,7 +1047,7 @@ class ExODTModel:
 
                 # D event
                 uq_resum += self.PD[e] * (self.uq[gp_i][e] * self.uq[gpp_i][e] * 2) * pp + EPSILON
-                if r * uq_sum < uq_resum or no_T:
+                if r * uq_sum < uq_resum:
                     self.register_D(e)
                     return (
                         "("

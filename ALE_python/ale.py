@@ -380,8 +380,9 @@ class approx_posterior:
             Bip_count = self.observations
 
         if self.alpha > 0:
+            size = self.set_sizes.get(g_id, 0)
             return (Bip_count + self.alpha / self.N_Gamma
-                    * self.Bi(self.set_sizes[g_id])) / (
+                    * self.Bi(size)) / (
                         self.observations + self.alpha)
         else:
             return Bip_count / self.observations
@@ -802,8 +803,8 @@ class approx_posterior:
                     gp_id_t = self.set_ids.get(gammap, 0)
                     gpp_id_t = self.set_ids.get(gammapp, 0)
                     parts = (min(gp_id_t, gpp_id_t), max(gp_id_t, gpp_id_t))
-                    if (g_id >= len(self.Dip_counts)
-                            or parts not in self.Dip_counts.get(g_id, {})
+                    if (g_id < 0 or g_id >= len(self.Dip_counts)
+                            or parts not in self.Dip_counts[g_id]
                             or self.Dip_counts[g_id][parts] == 0):
                         break
                 break

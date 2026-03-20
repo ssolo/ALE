@@ -242,8 +242,8 @@ def ALEml_undated(argv):
     model.calculate_undatedEs()
     print("Reconciliation model initialised, starting DTL rate optimisation..")
 
-    # Optimize if not all rates are fixed
-    if not (delta_fixed and tau_fixed and lambda_fixed and not MLOR):
+    # Optimize if not all rates are fixed, or if branch multipliers need optimization
+    if not (delta_fixed and tau_fixed and lambda_fixed and not MLOR and not ml_branch_multipliers):
         print("#optimizing rates")
 
         from scipy.optimize import minimize
