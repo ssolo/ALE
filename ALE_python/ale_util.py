@@ -12,6 +12,35 @@ from typing import Union
 from .ale import ApproxPosterior
 
 
+def _build_singleton_ale(name: str) -> ApproxPosterior:
+    """Build a one-leaf ApproxPosterior, matching C++ singleton handling."""
+    import tempfile
+    import os
+
+    ale = ApproxPosterior()
+    # Write a minimal .ale state file and load it, matching C++ behavior
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".ale", delete=False) as f:
+        tmp = f.name
+        f.write("#constructor_string\n")
+        f.write(f"{name}\n")
+        f.write("#observations\n1\n")
+        f.write("#Bip_counts\n")
+        f.write("#Bip_bls\n")
+        f.write("1\t1\n")
+        f.write("#Dip_counts\n")
+        f.write("#last_leafset_id\n1\n")
+        f.write("#leaf-id\n")
+        f.write(f"{name}\t1\n")
+        f.write("#set-id\n")
+        f.write("1\t:\t1\n")
+        f.write("#END\n")
+    try:
+        ale.load_state(tmp)
+    finally:
+        os.unlink(tmp)
+    return ale
+
+
 def observe_ALE_from_file(
     fname_or_fnames: Union[str, list[str]],
     burnin: int = 0,
@@ -63,15 +92,12 @@ def observe_ALE_from_file(
                     tree_i += 1
                     if tree_i > burnin and tree_i % every == 0:
                         trees.append(line)
-                elif line.endswith(";"):
-                    # Singleton tree like "A;" — tokenize and take
-                    # the first field, matching C++ boost::split on
-                    # ",;: " delimiters.
+                elif ";" in line:
+                    # Singleton tree like "A;" — C++ immediately builds
+                    # a one-leaf ALE and returns, so we do the same.
                     name = line.rstrip(";").split(",")[0].split(":")[0].split()[0]
                     if name:
-                        tree_i += 1
-                        if tree_i > burnin and tree_i % every == 0:
-                            trees.append(name)
+                        return _build_singleton_ale(name)
 
     if not trees:
         raise ValueError("No trees found in the provided file(s).")
