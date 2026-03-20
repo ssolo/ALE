@@ -63,11 +63,15 @@ def observe_ALE_from_file(
                     tree_i += 1
                     if tree_i > burnin and tree_i % every == 0:
                         trees.append(line)
-                elif ";" in line:
-                    # Singleton tree like "A;" — strip delimiter
-                    tree_i += 1
-                    if tree_i > burnin and tree_i % every == 0:
-                        trees.append(line.rstrip(";"))
+                elif line.endswith(";"):
+                    # Singleton tree like "A;" — tokenize and take
+                    # the first field, matching C++ boost::split on
+                    # ",;: " delimiters.
+                    name = line.rstrip(";").split(",")[0].split(":")[0].split()[0]
+                    if name:
+                        tree_i += 1
+                        if tree_i > burnin and tree_i % every == 0:
+                            trees.append(name)
 
     if not trees:
         raise ValueError("No trees found in the provided file(s).")
