@@ -141,6 +141,7 @@ class TestMLUndated:
             f"Python LL={py_ll}, C++ LL={cpp_ll}"
         )
 
+    @pytest.mark.slow
     def test_ml_undated_optimized_rates(self, species_tree, gene_trees, tmp_dir):
         """Run optimization, check LL is around -34.6 (within 1.0 tolerance)."""
         s_copy, ale_path = _prepare_inputs(species_tree, gene_trees, tmp_dir)
@@ -150,6 +151,7 @@ class TestMLUndated:
             f"Optimized LL={ll}, expected around -34.6"
         )
 
+    @pytest.mark.slow
     def test_ml_undated_output_files(self, species_tree, gene_trees, tmp_dir):
         """Check that .uml_rec and .uTs files are created with correct format."""
         s_copy, ale_path = _prepare_inputs(species_tree, gene_trees, tmp_dir)
@@ -187,6 +189,7 @@ class TestMLUndated:
             ts_content = fh.read()
         assert "#from\tto\tfreq." in ts_content, ".uTs missing header"
 
+    @pytest.mark.slow
     def test_ml_undated_event_counts(self, species_tree, gene_trees, tmp_dir):
         """Run with sample=100, verify total events are reasonable.
         S should be 35 = n_leaves - 1 per sample."""

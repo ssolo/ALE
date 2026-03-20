@@ -459,6 +459,8 @@ def _scale_double_constrained(value, maxi, lam):
 
 def _compute_exponential_log_probability(param, value):
     """Log probability under Exponential(param)."""
+    if param <= 0:
+        return 0.0
     return math.log(param) - param * value
 
 
@@ -597,7 +599,7 @@ def ALEmcmc_undated(argv):
             model.vector_parameter[rm_name][e] = rm_val
 
     # Draw initial values from exponential priors
-    current_origination = random.expovariate(prior_origination)
+    current_origination = random.expovariate(prior_origination) if prior_origination > 0 else 1.0
     current_delta = random.expovariate(prior_delta) if prior_delta > 0 else 0.01
     current_tau = random.expovariate(prior_tau) if prior_tau > 0 else 0.01
     current_lambda = random.expovariate(prior_lambda) if prior_lambda > 0 else 0.1
@@ -666,9 +668,10 @@ def ALEmcmc_undated(argv):
             prior_origination, prior_delta, prior_tau, prior_lambda,
         )
 
-        acceptance_prob = math.exp(
-            (new_log_lk + new_log_prior) - (current_log_lk + current_log_prior)
-        ) * hastings_ratio
+        log_ratio = (new_log_lk + new_log_prior) - (current_log_lk + current_log_prior)
+        # Clamp exponent to prevent OverflowError; large positive values
+        # mean the proposal is overwhelmingly better, so auto-accept.
+        acceptance_prob = math.exp(min(log_ratio, 700.0)) * hastings_ratio
 
         if random.random() < acceptance_prob:
             current_origination = new_origination
