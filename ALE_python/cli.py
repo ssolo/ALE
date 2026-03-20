@@ -140,6 +140,7 @@ def ALEml_undated(argv):
     fraction_missing_file = ""
     output_species_tree = ""
     rate_multipliers = {}
+    ml_branch_multipliers = []  # [(branch_id, rate_name)] for per-branch optimization
 
     model.set_model_parameter("undatedBL", 0)
     model.set_model_parameter("reldate", 0)
@@ -211,11 +212,8 @@ def ALEml_undated(argv):
                 print(f"# rate multiplier for rate {rate_name} on branch with ID {e} set to {rm}")
                 rate_multipliers.setdefault("rate_multiplier_" + rate_name, {})[e] = rm
             else:
-                print(
-                    f"WARNING: per-branch rate optimization (rate_multiplier:{rate_name}:{e}:{rm}) "
-                    f"is not yet implemented in the Python port. This branch multiplier will be ignored.",
-                    file=sys.stderr,
-                )
+                print(f"# rate multiplier for rate {rate_name} on branch with ID {e} to be optimized")
+                ml_branch_multipliers.append((e, "rate_multiplier_" + rate_name))
         elif key == "output_species_tree":
             val = tokens[1].lower()
             if val in ("y", "ye", "yes"):
@@ -274,6 +272,11 @@ def ALEml_undated(argv):
                 o_val = params[idx]
                 idx += 1
 
+            for branch_e, rm_name in ml_branch_multipliers:
+                multiplier = params[idx]
+                idx += 1
+                model.vector_parameter[rm_name][branch_e] = max(multiplier, 1e-7)
+
             model.set_model_parameter("delta", max(d_val, 1e-10))
             model.set_model_parameter("tau", max(t_val, 1e-10))
             model.set_model_parameter("lambda", max(l_val, 1e-10))
@@ -309,9 +312,15 @@ def ALEml_undated(argv):
             param_names.append("O_R")
             print("#optimizing O_R")
 
+        for branch_e, rm_name in ml_branch_multipliers:
+            x0.append(1.0)
+            param_names.append(f"rm_{rm_name}_{branch_e}")
+            print(f"#optimizing for branch {branch_e} ratemultiplier {rm_name}")
+
         x0 = np.array(x0)
 
-        bounds = [(1e-10, 10.0)] * len(x0)
+        bounds = [(1e-10, 10.0)] * (len(x0) - len(ml_branch_multipliers))
+        bounds += [(1e-7, 10000.0)] * len(ml_branch_multipliers)
         result = minimize(
             neg_log_lk,
             x0,
@@ -339,12 +348,23 @@ def ALEml_undated(argv):
             O_R = result.x[idx]
             idx += 1
 
+        ml_rm_strings = []
+        for branch_e, rm_name in ml_branch_multipliers:
+            multiplier = result.x[idx]
+            idx += 1
+            model.vector_parameter[rm_name][branch_e] = multiplier
+            ml_rm_strings.append(f"{rm_name}\t{branch_e}\t{multiplier};")
+
         mlll = -result.fun
     else:
         mlll = math.log(model.pun(ale, False, no_T))
 
     print()
     print(f"ML rates:  delta={delta}; tau={tau}; lambda={lambda_}; O_R={O_R}.")
+    if ml_branch_multipliers:
+        print("ML rate multipliers:")
+        for s in ml_rm_strings:
+            print(s)
     print(f"LL={mlll}")
 
     # Set final rates for sampling
