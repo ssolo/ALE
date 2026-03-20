@@ -11,8 +11,6 @@ import os
 import random
 import sys
 
-import numpy as np
-
 from .ale import approx_posterior as ApproxPosterior
 from .ale_util import (
     load_ALE_from_file,
@@ -91,6 +89,8 @@ def ALEobserve(argv):
 
 def ALEml_undated(argv):
     """Maximum-likelihood reconciliation under the undated DTL model."""
+    import numpy as np
+
     print(f"ALEml_undated using ALE v{ALE_VERSION}")
 
     if len(argv) < 2:

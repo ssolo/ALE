@@ -56,8 +56,10 @@ def observe_ALE_from_file(
         with open(fname) as fh:
             tree_i = 0
             for line in fh:
-                line = line.rstrip("\n")
-                if "(" in line:
+                line = line.rstrip("\n").strip()
+                if not line:
+                    continue
+                if "(" in line or ";" in line:
                     tree_i += 1
                     if tree_i > burnin and tree_i % every == 0:
                         trees.append(line)

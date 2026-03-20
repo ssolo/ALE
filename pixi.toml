@@ -20,5 +20,5 @@ pytest = "*"
 configure = "cmake -S . -B build"
 build = { cmd = "cmake --build build -j4", depends-on = ["configure"] }
 python_ale = "python -m ALE_python"
-test = "pytest ALE_python/tests -v"
+test = { cmd = "pytest ALE_python/tests -v", depends-on = ["build"] }
 test-fast = "pytest ALE_python/tests -v -m 'not slow'"
