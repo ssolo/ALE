@@ -211,7 +211,11 @@ def ALEml_undated(argv):
                 print(f"# rate multiplier for rate {rate_name} on branch with ID {e} set to {rm}")
                 rate_multipliers.setdefault("rate_multiplier_" + rate_name, {})[e] = rm
             else:
-                print(f"# rate multiplier for rate {rate_name} on branch with ID {e} to be optimized ")
+                print(
+                    f"WARNING: per-branch rate optimization (rate_multiplier:{rate_name}:{e}:{rm}) "
+                    f"is not yet implemented in the Python port. This branch multiplier will be ignored.",
+                    file=sys.stderr,
+                )
         elif key == "output_species_tree":
             val = tokens[1].lower()
             if val in ("y", "ye", "yes"):
@@ -565,11 +569,12 @@ def ALEmcmc_undated(argv):
     model.set_model_parameter("BOOTSTRAP_LABELS", "yes")
     model.set_model_parameter("seq_beta", beta)
 
+    model.construct_undated(Sstring, fraction_missing_file)
+
+    # Apply rate multipliers after construct_undated so vectors are initialized
     for rm_name, rm_dict in rate_multipliers.items():
         for e, rm_val in rm_dict.items():
             model.vector_parameter[rm_name][e] = rm_val
-
-    model.construct_undated(Sstring, fraction_missing_file)
 
     # Draw initial values from exponential priors
     current_origination = random.expovariate(prior_origination)
@@ -642,7 +647,7 @@ def ALEmcmc_undated(argv):
         )
 
         acceptance_prob = math.exp(
-            min(0, (new_log_lk + new_log_prior) - (current_log_lk + current_log_prior))
+            (new_log_lk + new_log_prior) - (current_log_lk + current_log_prior)
         ) * hastings_ratio
 
         if random.random() < acceptance_prob:
