@@ -158,3 +158,40 @@ class TestObserve:
         assert leaf_names == expected_leaves, (
             f"Leaf name mismatch between mpp tree and ale object"
         )
+
+    def test_observe_singleton_tree_file(self, tmp_dir):
+        """Singleton input should produce a stable one-leaf ALE."""
+        source_dir = os.path.join(tmp_dir, "src")
+        os.makedirs(source_dir, exist_ok=True)
+        singleton_path = os.path.join(source_dir, "singleton.trees")
+        with open(singleton_path, "w") as fh:
+            fh.write("A;\n")
+
+        py_ale = observe_ALE_from_file(singleton_path)
+
+        assert py_ale.observations == pytest.approx(1.0)
+        assert py_ale.Gamma_size == 1
+        assert py_ale.get_leaf_names() == ["A"]
+        assert py_ale.Bip_bls[1] == pytest.approx(1.0)
+
+        roundtrip_path = os.path.join(tmp_dir, "singleton.ale")
+        py_ale.save_state(roundtrip_path)
+        loaded = load_ALE_from_file(roundtrip_path)
+        assert loaded.observations == pytest.approx(py_ale.observations)
+        assert loaded.Gamma_size == py_ale.Gamma_size
+        assert loaded.get_leaf_names() == py_ale.get_leaf_names()
+
+    def test_observe_singleton_then_tree_returns_singleton(self, tmp_dir):
+        """If a singleton appears first, observe should return that one-leaf ALE."""
+        source_dir = os.path.join(tmp_dir, "src")
+        os.makedirs(source_dir, exist_ok=True)
+        mixed_path = os.path.join(source_dir, "singleton_then_tree.trees")
+        with open(mixed_path, "w") as fh:
+            fh.write("A;\n")
+            fh.write("(A,B);\n")
+
+        py_ale = observe_ALE_from_file(mixed_path)
+
+        assert py_ale.observations == pytest.approx(1.0)
+        assert py_ale.Gamma_size == 1
+        assert py_ale.get_leaf_names() == ["A"]
