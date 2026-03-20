@@ -309,6 +309,16 @@ class ExODTModel:
                 self.daughter[self._node_ids[nd.id]] = self._node_ids[sons[0].id]
                 self.son[self._node_ids[nd.id]] = self._node_ids[sons[1].id]
 
+        # Generate S_with_ranks: species tree with branch IDs as labels
+        # Mirrors C++: node->setBranchProperty("ID", rank) then treeToParenthesis
+        def _to_newick_with_ranks(nd):
+            if is_leaf(nd):
+                return nd.name
+            child_strs = [_to_newick_with_ranks(c) for c in nd.children]
+            rank = self._node_ids[nd.id]
+            return "(" + ",".join(child_strs) + ")" + str(rank)
+        self.string_parameter["S_with_ranks"] = _to_newick_with_ranks(root) + ";"
+
         # Initialise branch_counts
         count_keys = [
             "Os", "Ds", "Ts", "Tfroms", "Ls", "count",

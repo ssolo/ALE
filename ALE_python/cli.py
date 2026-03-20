@@ -701,6 +701,7 @@ def ALEmcmc_undated(argv):
     num_duplications = 0.0
     num_transfers = 0.0
     num_losses = 0.0
+    t_to_from_accum = {}  # {("from_name", "to_name"): count}
 
     for i in range(total_iterations):
         _do_mcmc_step()
@@ -722,6 +723,14 @@ def ALEmcmc_undated(argv):
             num_duplications += model.MLRec_events.get("D", 0)
             num_transfers += model.MLRec_events.get("T", 0)
             num_losses += model.MLRec_events.get("L", 0)
+            # Accumulate T_to_from into running aggregate
+            for e in range(model.last_branch):
+                for f in range(model.last_branch):
+                    if model.T_to_from[e][f] > 0:
+                        e_name = model._node_name[model._id_nodes[e].id] if e < model.last_leaf else str(e)
+                        f_name = model._node_name[model._id_nodes[f].id] if f < model.last_leaf else str(f)
+                        key = (e_name, f_name)
+                        t_to_from_accum[key] = t_to_from_accum.get(key, 0.0) + model.T_to_from[e][f]
             print(f"{i}\t{current_log_lk}\t{current_log_prior}\t{current_origination}\t{current_delta}\t{current_tau}\t{current_lambda}")
 
         mcmc_fh.write(f"{i}\t{current_log_lk}\t{current_log_prior}\t{current_origination}\t{current_delta}\t{current_tau}\t{current_lambda}\n")
@@ -758,22 +767,12 @@ def ALEmcmc_undated(argv):
 
     print(f"Results in: {outname}")
 
-    # Transfer file
+    # Transfer file (from accumulated counts across all samples)
     t_name = ale_file + "_mcmc.uTs"
     with open(t_name, "w") as tout:
         tout.write("#from\tto\tfreq.\n")
-        for e in range(model.last_branch):
-            for f in range(model.last_branch):
-                if model.T_to_from[e][f] > 0:
-                    if e < model.last_leaf:
-                        e_name = model._node_name[model._id_nodes[e].id]
-                    else:
-                        e_name = str(e)
-                    if f < model.last_leaf:
-                        f_name = model._node_name[model._id_nodes[f].id]
-                    else:
-                        f_name = str(f)
-                    tout.write(f"\t{e_name}\t{f_name}\t{model.T_to_from[e][f] / samples}\n")
+        for (e_name, f_name), count in sorted(t_to_from_accum.items()):
+            tout.write(f"\t{e_name}\t{f_name}\t{count / samples}\n")
     print(f"Transfers in: {t_name}")
     return 0
 
@@ -1009,11 +1008,14 @@ def ALEevaluate_undated(argv):
     if output_files:
         print("\n\tSampling reconciled gene trees..")
         sample_strings = []
+        total_events = {"D": 0.0, "T": 0.0, "L": 0.0, "S": 0.0}
         for i in range(int(samples)):
             model.MLRec_events.clear()
             model.Ttokens = []
             sample_tree = model.sample_undated()
             sample_strings.append(sample_tree)
+            for key in total_events:
+                total_events[key] += model.MLRec_events.get(key, 0.0)
 
         ale_name = os.path.basename(gene_tree_file)
         outname = ale_name + ".uml_rec"
@@ -1032,10 +1034,10 @@ def ALEevaluate_undated(argv):
                 fout.write(s + "\n")
             fout.write("# of\t Duplications\tTransfers\tLosses\tSpeciations\n")
             fout.write(
-                f"Total \t{model.MLRec_events.get('D', 0) / samples}\t"
-                f"{model.MLRec_events.get('T', 0) / samples}\t"
-                f"{model.MLRec_events.get('L', 0) / samples}\t"
-                f"{model.MLRec_events.get('S', 0) / samples}\n"
+                f"Total \t{total_events['D'] / samples}\t"
+                f"{total_events['T'] / samples}\t"
+                f"{total_events['L'] / samples}\t"
+                f"{total_events['S'] / samples}\n"
             )
             fout.write("\n")
             fout.write("# of\t Duplications\tTransfers\tLosses\tOriginations\tcopies\n")
