@@ -1093,24 +1093,227 @@ PROGRAMS = {
 }
 
 
+def _build_argparse():
+    """Build an argparse parser with subcommands for help/documentation.
+
+    The actual argument parsing is done by each subcommand's bespoke
+    parser for backward compatibility with the C++ key=value syntax.
+    argparse is used only for --help and subcommand dispatch.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        prog="python -m ALE_python",
+        description=(
+            "ALE (Amalgamated Likelihood Estimation) — "
+            "Python port of the phylogenetic reconciliation toolkit. "
+            "Use 'python -m ALE_python <command> --help' for per-command help."
+        ),
+    )
+    parser.add_argument(
+        "--version", action="version", version=f"ALE {ALE_VERSION}",
+    )
+    subparsers = parser.add_subparsers(dest="command", title="commands")
+
+    # --- ALEobserve ---
+    p = subparsers.add_parser(
+        "ALEobserve",
+        help="Build an .ale file from a sample of gene trees",
+        description=(
+            "Read a sample of gene trees in Newick format and construct an "
+            "approximate posterior (ALE) file summarising clade frequencies. "
+            "The output .ale file is used as input by ALEml_undated, "
+            "ALEmcmc_undated, and other tools."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "examples:\n"
+            "  python -m ALE_python ALEobserve gene_trees.newicks\n"
+            "  python -m ALE_python ALEobserve gene_trees.newicks burnin=1000"
+        ),
+    )
+    p.add_argument("gene_trees", nargs="+", help="one or more Newick gene tree files")
+    p.add_argument("burnin", nargs="?", default="burnin=0", help="burnin=N — discard the first N trees per file (default: 0)")
+
+    # --- ALEml_undated ---
+    p = subparsers.add_parser(
+        "ALEml_undated",
+        help="Maximum-likelihood reconciliation under the undated DTL model",
+        description=(
+            "Optimise duplication, transfer, and loss (DTL) rates by maximum "
+            "likelihood under the undated reconciliation model, then sample "
+            "reconciled gene trees. Reads a species tree and an .ale file."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "All options use key=value or key:value syntax after the two positional files.\n\n"
+            "options:\n"
+            "  sample=N                  number of reconciled trees to sample (default: 100)\n"
+            "  seed=INT                  random seed for reproducibility\n"
+            "  separators=STR            gene-name separator characters\n"
+            "  delta=FLOAT               fix duplication rate (skip optimisation)\n"
+            "  tau=FLOAT                 fix transfer rate (tau<1e-10 disables transfers)\n"
+            "  lambda=FLOAT              fix loss rate\n"
+            "  O_R=FLOAT                 origination-at-root multiplier (default: 1.0)\n"
+            "  MLOR                      optimise the root origination multiplier\n"
+            "  DT=FLOAT                  fix duplication/transfer ratio\n"
+            "  beta=FLOAT                weight of sequence evidence (default: 1.0)\n"
+            "  fraction_missing=FILE     file with per-species missing-gene fractions\n"
+            "  S_branch_lengths:ROOT_BL  use species-tree branch lengths as rate multipliers\n"
+            "  reldate                   respect relative dates from an ultrametric species tree\n"
+            "  output_species_tree=y     write annotated species tree to a .spTree file\n"
+            "  rate_multiplier:RATE:BRANCH:VALUE\n"
+            "                            set or optimise a per-branch rate multiplier\n"
+            "                            (value >= -1 → fixed; value < -1 → optimised)\n\n"
+            "examples:\n"
+            "  python -m ALE_python ALEml_undated species.nwk genes.ale\n"
+            "  python -m ALE_python ALEml_undated species.nwk genes.ale sample=1000 seed=42\n"
+            "  python -m ALE_python ALEml_undated species.nwk genes.ale delta=0.01 tau=0.01 lambda=0.1"
+        ),
+    )
+    p.add_argument("species_tree", help="species tree in Newick format")
+    p.add_argument("ale_file", help=".ale file from ALEobserve")
+    p.add_argument("options", nargs="*", help="key=value options (see below)")
+
+    # --- ALEmcmc_undated ---
+    p = subparsers.add_parser(
+        "ALEmcmc_undated",
+        help="MCMC sampling of reconciliation under the undated DTL model",
+        description=(
+            "Run a Metropolis-Hastings MCMC chain to sample DTL rates and "
+            "reconciled gene trees under the undated model. Priors are "
+            "exponential distributions parametrised by the given rate values."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "All options use key=value or key:value syntax after the two positional files.\n\n"
+            "options:\n"
+            "  sample=N                  total MCMC iterations (default: 100)\n"
+            "  sampling_rate=N           record a sample every N iterations (default: 1)\n"
+            "  separators=STR            gene-name separator characters\n"
+            "  delta=FLOAT               prior rate for duplications (default: 0.01)\n"
+            "  tau=FLOAT                 prior rate for transfers (default: 0.01)\n"
+            "  lambda=FLOAT              prior rate for losses (default: 0.1)\n"
+            "  O_R=FLOAT                 prior for origination at root (default: 1.0)\n"
+            "  beta=FLOAT                weight of sequence evidence (default: 1.0)\n"
+            "  fraction_missing=FILE     file with per-species missing-gene fractions\n"
+            "  S_branch_lengths:ROOT_BL  use species-tree branch lengths as rate multipliers\n"
+            "  rate_multiplier:RATE:BRANCH:VALUE\n"
+            "                            fix a per-branch rate multiplier\n"
+            "  output_species_tree=y     write annotated species tree\n"
+            "  reldate                   respect relative dates from an ultrametric species tree\n\n"
+            "examples:\n"
+            "  python -m ALE_python ALEmcmc_undated species.nwk genes.ale sample=10000\n"
+            "  python -m ALE_python ALEmcmc_undated species.nwk genes.ale sample=5000 sampling_rate=10"
+        ),
+    )
+    p.add_argument("species_tree", help="species tree in Newick format")
+    p.add_argument("ale_file", help=".ale file from ALEobserve")
+    p.add_argument("options", nargs="*", help="key=value options (see below)")
+
+    # --- ALEcount ---
+    p = subparsers.add_parser(
+        "ALEcount",
+        help="Print the number of amalgamated trees in an .ale file",
+        description="Load an .ale file and print the number of distinct amalgamated gene tree topologies.",
+    )
+    p.add_argument("ale_file", help=".ale file to count trees from")
+
+    # --- ls_leaves ---
+    p = subparsers.add_parser(
+        "ls_leaves",
+        help="List leaf names from one or more tree files",
+        description="Parse each Newick tree file and print sorted leaf names with occurrence counts.",
+    )
+    p.add_argument("tree_files", nargs="+", help="one or more Newick tree files")
+
+    # --- CCPscore ---
+    p = subparsers.add_parser(
+        "CCPscore",
+        help="Score a tree under the conditional clade probability model",
+        description="Load an .ale file and a tree, then print log(P(tree)) under the CCP model.",
+    )
+    p.add_argument("ale_file", help=".ale file with clade posteriors")
+    p.add_argument("tree_file", help="Newick tree file to score")
+
+    # --- ALEadd ---
+    p = subparsers.add_parser(
+        "ALEadd",
+        help="Add new tree observations to an existing .ale file",
+        description=(
+            "Load an existing .ale file and observe additional gene trees from "
+            "a Newick file, updating the clade frequencies."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "options:\n"
+            "  weight=FLOAT   observation weight for new trees (default: 1.0)\n"
+            "  burnin=N       discard first N trees (default: 0)\n"
+            "  every=N        keep every Nth tree (default: 1)\n"
+            "  until=N        use at most N trees (default: all)\n"
+            "  outfile=PATH   output .ale file name (default: overwrite input)\n\n"
+            "examples:\n"
+            "  python -m ALE_python ALEadd existing.ale new_trees.newicks\n"
+            "  python -m ALE_python ALEadd existing.ale new_trees.newicks burnin=100 weight=0.5"
+        ),
+    )
+    p.add_argument("ale_file", help="existing .ale file")
+    p.add_argument("gene_trees", help="Newick gene tree file to add")
+    p.add_argument("options", nargs="*", help="key=value options (see below)")
+
+    # --- ALEevaluate_undated ---
+    p = subparsers.add_parser(
+        "ALEevaluate_undated",
+        help="Evaluate a single gene tree under the undated DTL model",
+        description=(
+            "Compute the reconciliation likelihood of a single gene tree "
+            "against a species tree under the undated DTL model with fixed rates."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "options:\n"
+            "  sample=N           number of reconciled trees to sample (default: 100)\n"
+            "  separators=STR     gene-name separator characters\n"
+            "  delta=FLOAT        duplication rate (default: 0.01)\n"
+            "  tau=FLOAT          transfer rate (default: 0.01)\n"
+            "  lambda=FLOAT       loss rate (default: 0.1)\n"
+            "  O_R=FLOAT          origination-at-root multiplier (default: 1.0)\n"
+            "  beta=FLOAT         weight of sequence evidence (default: 1.0)\n"
+            "  fraction_missing=FILE  per-species missing-gene fractions\n"
+            "  outputFiles=y      write .uml_rec and .uTs output files\n\n"
+            "examples:\n"
+            "  python -m ALE_python ALEevaluate_undated species.nwk gene.nwk\n"
+            "  python -m ALE_python ALEevaluate_undated species.nwk gene.nwk delta=0.02 outputFiles=y"
+        ),
+    )
+    p.add_argument("species_tree", help="species tree in Newick format")
+    p.add_argument("gene_tree", help="gene tree in Newick format")
+    p.add_argument("options", nargs="*", help="key=value options (see below)")
+
+    return parser
+
+
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python -m ALE_python <program_name> [args...]")
-        print(f"Available programs: {', '.join(sorted(PROGRAMS.keys()))}")
-        sys.exit(1)
+    # If invoked with no args or with --help/-h, use argparse for nice output
+    if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help", "--version"):
+        parser = _build_argparse()
+        parser.parse_args()
+        return
 
     program_name = sys.argv[1]
-    remaining_args = sys.argv[2:]
 
-    if program_name in ("-h", "--help"):
-        print("Usage: python -m ALE_python <program_name> [args...]")
-        print(f"Available programs: {', '.join(sorted(PROGRAMS.keys()))}")
-        sys.exit(0)
+    # If the subcommand itself is followed by --help, use argparse
+    if "--help" in sys.argv[2:] or "-h" in sys.argv[2:]:
+        parser = _build_argparse()
+        parser.parse_args()
+        return
 
     if program_name not in PROGRAMS:
         print(f"Error: unknown program '{program_name}'")
         print(f"Available programs: {', '.join(sorted(PROGRAMS.keys()))}")
         sys.exit(1)
 
+    # Dispatch to the original bespoke parser for backward compatibility
+    remaining_args = sys.argv[2:]
     ret = PROGRAMS[program_name](remaining_args)
     sys.exit(ret or 0)
