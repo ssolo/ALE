@@ -28,6 +28,12 @@ ALE_VERSION = "1.0"
 # Argument parsing helpers
 # ---------------------------------------------------------------------------
 
+def _print_subcommand_help(name):
+    """Print the argparse help for a specific subcommand and exit."""
+    parser = _build_argparse()
+    parser.parse_args([name, "--help"])
+
+
 def _normalize_argv(argv):
     """Convert ``--key value`` long options to ``key=value`` form.
 
@@ -91,7 +97,7 @@ def ALEobserve(argv):
     print(f"ALEobserve using ALE v{ALE_VERSION}")
 
     if not argv:
-        print("usage:\n ALEobserve gene_tree_sample.newicks [burnin=0]")
+        _print_subcommand_help("ALEobserve")
         return 1
 
     positional, kwargs = _parse_kwargs(argv)
@@ -124,14 +130,7 @@ def ALEml_undated(argv):
     print(f"ALEml_undated using ALE v{ALE_VERSION}")
 
     if len(argv) < 2:
-        print(
-            "\nUsage:\n ALEml_undated species_tree.newick gene_tree_sample.ale "
-            "sample=number_of_samples seed=integer separators=gene_name_separator "
-            "O_R=OriginationAtRoot delta=DuplicationRate tau=TransferRate "
-            "lambda=LossRate beta=weight_of_sequence_evidence "
-            "fraction_missing=file_with_fraction_of_missing_genes_per_species "
-            "output_species_tree=n S_branch_lengths:root_length DT=ratio"
-        )
+        _print_subcommand_help("ALEml_undated")
         return 1
 
     S_treefile = argv[0]
@@ -529,14 +528,7 @@ def ALEmcmc_undated(argv):
     print(f"ALEmcmc using ALE v{ALE_VERSION}")
 
     if len(argv) < 2:
-        print(
-            "\nUsage:\n ALEmcmc_undated species_tree.newick gene_tree_sample.ale "
-            "sample=number_of_samples separators=gene_name_separator "
-            "O_R=OriginationAtRootPrior delta=DuplicationRatePrior "
-            "tau=TransferRatePrior lambda=LossRatePrior "
-            "sampling_rate=sampling_rate beta=weight_of_sequence_evidence "
-            "fraction_missing=file_with_fraction_of_missing_genes_per_species"
-        )
+        _print_subcommand_help("ALEmcmc_undated")
         return 1
 
     S_treefile = argv[0]
@@ -828,7 +820,7 @@ def ALEmcmc_undated(argv):
 def ALEcount(argv):
     """Load an ALE file and print the number of amalgamated trees."""
     if not argv:
-        print("usage: ALEcount ale_file.ale")
+        _print_subcommand_help("ALEcount")
         return 1
 
     ale_file = argv[0]
@@ -844,7 +836,7 @@ def ALEcount(argv):
 def ls_leaves(argv):
     """For each file: parse tree, list leaves with counts."""
     if not argv:
-        print("usage: ls_leaves tree_file1 [tree_file2 ...]")
+        _print_subcommand_help("ls_leaves")
         return 1
 
     names = {}
@@ -869,7 +861,7 @@ def ls_leaves(argv):
 def CCPscore(argv):
     """Load an ALE file, read a tree, and print log(p(tree))."""
     if len(argv) < 2:
-        print("usage: CCPscore ale_file.ale tree_file")
+        _print_subcommand_help("CCPscore")
         return 1
 
     ale_file = argv[0]
@@ -895,7 +887,7 @@ def ALEadd(argv):
     print(f"ALEadd using ALE v{ALE_VERSION}")
 
     if len(argv) < 2:
-        print("usage:\n ALEadd ale_file.ale gene_tree_sample.newicks [weight=1] [burnin=0] [every=1] [until=end] [outfile=filename]")
+        _print_subcommand_help("ALEadd")
         return 1
 
     ale_file = argv[0].strip()
@@ -962,12 +954,7 @@ def ALEevaluate_undated(argv):
     print(f"ALEestimate using ALE v{ALE_VERSION}")
 
     if len(argv) < 2:
-        print(
-            "usage:\n ALEevaluate_undated species_tree_file gene_tree_file "
-            "separators=gene_name_separator O_R=OriginationAtRoot "
-            "delta=DuplicationRate tau=TransferRate lambda=LossRate "
-            "beta=weight_of_sequence_evidence outputFiles=n"
-        )
+        _print_subcommand_help("ALEevaluate_undated")
         return 1
 
     species_tree_file = argv[0].strip()
