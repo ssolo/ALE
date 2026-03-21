@@ -1,0 +1,4 @@
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests that run the full optimizer (deselect with '-m \"not slow\"')",
+]
