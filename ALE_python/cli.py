@@ -28,6 +28,36 @@ ALE_VERSION = "1.0"
 # Argument parsing helpers
 # ---------------------------------------------------------------------------
 
+def _normalize_argv(argv):
+    """Convert ``--key value`` long options to ``key=value`` form.
+
+    This allows callers to use either the original C++ style
+    (``delta=0.01``, ``rate_multiplier:tau_to:43:0.0``) or standard
+    long options (``--delta 0.01``, ``--rate-multiplier tau_to:43:0.0``).
+    Positional arguments (not starting with ``--``) are passed through
+    unchanged.  Bare flags (``--MLOR``, ``--reldate``) become ``MLOR``
+    and ``reldate``.
+    """
+    result = []
+    i = 0
+    while i < len(argv):
+        arg = argv[i]
+        if arg.startswith("--"):
+            key = arg[2:].replace("-", "_")
+            # Peek: is the next token a value (doesn't start with --)?
+            if i + 1 < len(argv) and not argv[i + 1].startswith("--"):
+                result.append(f"{key}={argv[i + 1]}")
+                i += 2
+            else:
+                # Boolean flag like --MLOR or --reldate
+                result.append(key)
+                i += 1
+        else:
+            result.append(arg)
+            i += 1
+    return result
+
+
 def _parse_kwargs(argv):
     """Parse key=value and key:value arguments from an argv list.
 
@@ -411,11 +441,12 @@ def ALEml_undated(argv):
         for s in sample_strings:
             fout.write(s + "\n")
         fout.write("# of\t Duplications\tTransfers\tLosses\tSpeciations\n")
+        div = samples if samples > 0 else 1
         fout.write(
-            f"Total \t{total_events['D'] / samples}\t"
-            f"{total_events['T'] / samples}\t"
-            f"{total_events['L'] / samples}\t"
-            f"{total_events['S'] / samples}\n"
+            f"Total \t{total_events['D'] / div}\t"
+            f"{total_events['T'] / div}\t"
+            f"{total_events['L'] / div}\t"
+            f"{total_events['S'] / div}\n"
         )
         fout.write("\n")
         fout.write("# of\t Duplications\tTransfers\tLosses\tOriginations\tcopies\tsingletons\textinction_prob\tpresence\tLL\n")
@@ -444,7 +475,7 @@ def ALEml_undated(argv):
                         f_name = f"{model._node_name[model._id_nodes[f].id]}({f})"
                     else:
                         f_name = str(f)
-                    tout.write(f"\t{e_name}\t{f_name}\t{model.T_to_from[e][f] / samples}\n")
+                    tout.write(f"\t{e_name}\t{f_name}\t{model.T_to_from[e][f] / div}\n")
     print(f"Transfers in: {t_name}")
     return 0
 
@@ -761,11 +792,12 @@ def ALEmcmc_undated(argv):
         for s in sample_strings:
             fout.write(s + "\n")
         fout.write("# of\t Duplications\tTransfers\tLosses\tSpeciations\n")
+        div = samples if samples > 0 else 1
         fout.write(
-            f"Total \t{num_duplications / samples}\t"
-            f"{num_transfers / samples}\t"
-            f"{num_losses / samples}\t"
-            f"{num_speciations / samples}\n"
+            f"Total \t{num_duplications / div}\t"
+            f"{num_transfers / div}\t"
+            f"{num_losses / div}\t"
+            f"{num_speciations / div}\n"
         )
         fout.write("\n")
         fout.write("# of\t Duplications\tTransfers\tLosses\tOriginations\tcopies\tsingletons\textinction_prob\tpresence\tLL\n")
@@ -782,8 +814,9 @@ def ALEmcmc_undated(argv):
     t_name = ale_file + "_mcmc.uTs"
     with open(t_name, "w") as tout:
         tout.write("#from\tto\tfreq.\n")
+        div = samples if samples > 0 else 1
         for (e_name, f_name), count in sorted(t_to_from_accum.items()):
-            tout.write(f"\t{e_name}\t{f_name}\t{count / samples}\n")
+            tout.write(f"\t{e_name}\t{f_name}\t{count / div}\n")
     print(f"Transfers in: {t_name}")
     return 0
 
@@ -1044,11 +1077,12 @@ def ALEevaluate_undated(argv):
             for s in sample_strings:
                 fout.write(s + "\n")
             fout.write("# of\t Duplications\tTransfers\tLosses\tSpeciations\n")
+            div = samples if samples > 0 else 1
             fout.write(
-                f"Total \t{total_events['D'] / samples}\t"
-                f"{total_events['T'] / samples}\t"
-                f"{total_events['L'] / samples}\t"
-                f"{total_events['S'] / samples}\n"
+                f"Total \t{total_events['D'] / div}\t"
+                f"{total_events['T'] / div}\t"
+                f"{total_events['L'] / div}\t"
+                f"{total_events['S'] / div}\n"
             )
             fout.write("\n")
             fout.write("# of\t Duplications\tTransfers\tLosses\tOriginations\tcopies\n")
@@ -1071,7 +1105,7 @@ def ALEevaluate_undated(argv):
                             f_name = model._node_name[model._id_nodes[f].id]
                         else:
                             f_name = str(f)
-                        tout.write(f"\t{e_name}\t{f_name}\t{model.T_to_from[e][f] / samples}\n")
+                        tout.write(f"\t{e_name}\t{f_name}\t{model.T_to_from[e][f] / div}\n")
         print(f"Transfers in: {t_name}")
 
     return 0
@@ -1107,6 +1141,8 @@ def _build_argparse():
         description=(
             "ALE (Amalgamated Likelihood Estimation) — "
             "Python port of the phylogenetic reconciliation toolkit. "
+            "Options accept both C++ style (delta=0.01) and long-option "
+            "style (--delta 0.01). "
             "Use 'python -m ALE_python <command> --help' for per-command help."
         ),
     )
@@ -1127,9 +1163,11 @@ def _build_argparse():
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
+            "Both key=value and --key value styles are accepted for options.\n\n"
             "examples:\n"
             "  python -m ALE_python ALEobserve gene_trees.newicks\n"
-            "  python -m ALE_python ALEobserve gene_trees.newicks burnin=1000"
+            "  python -m ALE_python ALEobserve gene_trees.newicks burnin=1000\n"
+            "  python -m ALE_python ALEobserve gene_trees.newicks --burnin 1000"
         ),
     )
     p.add_argument("gene_trees", nargs="+", help="one or more Newick gene tree files")
@@ -1146,7 +1184,7 @@ def _build_argparse():
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
-            "All options use key=value or key:value syntax after the two positional files.\n\n"
+            "Both key=value and --key value styles are accepted for options.\n\n"
             "options:\n"
             "  sample=N                  number of reconciled trees to sample (default: 100)\n"
             "  seed=INT                  random seed for reproducibility\n"
@@ -1168,7 +1206,7 @@ def _build_argparse():
             "examples:\n"
             "  python -m ALE_python ALEml_undated species.nwk genes.ale\n"
             "  python -m ALE_python ALEml_undated species.nwk genes.ale sample=1000 seed=42\n"
-            "  python -m ALE_python ALEml_undated species.nwk genes.ale delta=0.01 tau=0.01 lambda=0.1"
+            "  python -m ALE_python ALEml_undated species.nwk genes.ale --delta 0.01 --tau 0.01 --lambda 0.1"
         ),
     )
     p.add_argument("species_tree", help="species tree in Newick format")
@@ -1186,7 +1224,7 @@ def _build_argparse():
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
-            "All options use key=value or key:value syntax after the two positional files.\n\n"
+            "Both key=value and --key value styles are accepted for options.\n\n"
             "options:\n"
             "  sample=N                  total MCMC iterations (default: 100)\n"
             "  sampling_rate=N           record a sample every N iterations (default: 1)\n"
@@ -1204,7 +1242,7 @@ def _build_argparse():
             "  reldate                   respect relative dates from an ultrametric species tree\n\n"
             "examples:\n"
             "  python -m ALE_python ALEmcmc_undated species.nwk genes.ale sample=10000\n"
-            "  python -m ALE_python ALEmcmc_undated species.nwk genes.ale sample=5000 sampling_rate=10"
+            "  python -m ALE_python ALEmcmc_undated species.nwk genes.ale --sample 5000 --sampling-rate 10"
         ),
     )
     p.add_argument("species_tree", help="species tree in Newick format")
@@ -1246,6 +1284,7 @@ def _build_argparse():
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
+            "Both key=value and --key value styles are accepted for options.\n\n"
             "options:\n"
             "  weight=FLOAT   observation weight for new trees (default: 1.0)\n"
             "  burnin=N       discard first N trees (default: 0)\n"
@@ -1254,7 +1293,7 @@ def _build_argparse():
             "  outfile=PATH   output .ale file name (default: overwrite input)\n\n"
             "examples:\n"
             "  python -m ALE_python ALEadd existing.ale new_trees.newicks\n"
-            "  python -m ALE_python ALEadd existing.ale new_trees.newicks burnin=100 weight=0.5"
+            "  python -m ALE_python ALEadd existing.ale new_trees.newicks --burnin 100 --weight 0.5"
         ),
     )
     p.add_argument("ale_file", help="existing .ale file")
@@ -1271,6 +1310,7 @@ def _build_argparse():
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
+            "Both key=value and --key value styles are accepted for options.\n\n"
             "options:\n"
             "  sample=N           number of reconciled trees to sample (default: 100)\n"
             "  separators=STR     gene-name separator characters\n"
@@ -1283,7 +1323,7 @@ def _build_argparse():
             "  outputFiles=y      write .uml_rec and .uTs output files\n\n"
             "examples:\n"
             "  python -m ALE_python ALEevaluate_undated species.nwk gene.nwk\n"
-            "  python -m ALE_python ALEevaluate_undated species.nwk gene.nwk delta=0.02 outputFiles=y"
+            "  python -m ALE_python ALEevaluate_undated species.nwk gene.nwk --delta 0.02 --outputFiles y"
         ),
     )
     p.add_argument("species_tree", help="species tree in Newick format")
@@ -1313,7 +1353,8 @@ def main():
         print(f"Available programs: {', '.join(sorted(PROGRAMS.keys()))}")
         sys.exit(1)
 
-    # Dispatch to the original bespoke parser for backward compatibility
-    remaining_args = sys.argv[2:]
+    # Normalize --key value args to key=value, then dispatch to the
+    # original bespoke parser for backward compatibility
+    remaining_args = _normalize_argv(sys.argv[2:])
     ret = PROGRAMS[program_name](remaining_args)
     sys.exit(ret or 0)
