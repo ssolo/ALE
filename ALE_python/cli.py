@@ -1334,8 +1334,12 @@ def _build_argparse():
 
 
 def main():
-    # If invoked with no args or with --help/-h, use argparse for nice output
-    if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help", "--version"):
+    # If invoked with no args, print help; for --help/--version let argparse handle it
+    if len(sys.argv) < 2:
+        parser = _build_argparse()
+        parser.print_help()
+        return
+    if sys.argv[1] in ("-h", "--help", "--version"):
         parser = _build_argparse()
         parser.parse_args()
         return
